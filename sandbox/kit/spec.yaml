@@ -1,0 +1,83 @@
+schemaVersion: "2"
+kind: mixin
+name: filmnotes-dev
+displayName: filmnotes development mixin
+description: Git identity, tools, network allow-list and agent instructions for developing the filmnotes monorepo inside a Docker Sandbox.
+
+environment:
+  variables:
+    EXPO_NO_TELEMETRY: "1"
+    NPM_CONFIG_UPDATE_NOTIFIER: "false"
+    NPM_CONFIG_FUND: "false"
+    FILMNOTES_PB_BIN: /opt/pocketbase/pocketbase
+    GIT_EDITOR: "true"
+
+setup:
+  install:
+    - command: "command -v unzip >/dev/null && command -v jq >/dev/null && command -v sqlite3 >/dev/null || (apt-get update && apt-get install -y --no-install-recommends unzip zip jq sqlite3 && rm -rf /var/lib/apt/lists/*)"
+      user: "0"
+      description: System tools (no-op when the filmnotes-sbx template already provides them)
+    - command: "test -x /opt/pocketbase/pocketbase || (PB_VERSION=0.40.4; ARCH=$(dpkg --print-architecture); mkdir -p /opt/pocketbase && cd /opt/pocketbase && curl -fsSL -o pb.zip https://github.com/pocketbase/pocketbase/releases/download/v${PB_VERSION}/pocketbase_${PB_VERSION}_linux_${ARCH}.zip && unzip -o pb.zip pocketbase && rm pb.zip && chmod 755 pocketbase)"
+      user: "0"
+      description: PocketBase binary for backend integration tests (no-op with the template)
+  startup:
+    - command: ["sh", "-c", "mkdir -p /home/agent/.ssh && chmod 700 /home/agent/.ssh && chmod 600 /home/agent/.ssh/config"]
+  files:
+    # Mirrors ~/.gitconfig-github-xela1601 on the host. No GPG signing in the sandbox: the private key stays on the host.
+    - path: /home/agent/.gitconfig
+      onlyIfMissing: false
+      content: |
+        [user]
+        	name = Alexander Schreiner
+        	email = github@alexander-schreiner.de
+        [commit]
+        	gpgsign = false
+        [init]
+        	defaultBranch = main
+        [pull]
+        	rebase = true
+        [push]
+        	autoSetupRemote = true
+        [core]
+        	autocrlf = input
+        [safe]
+        	directory = *
+    # GitHub with the deploy key that sbxenv.yaml mounts read-only at its host path.
+    - path: /home/agent/.ssh/config
+      onlyIfMissing: false
+      content: |
+        Host github-xela1601 github.com
+            HostName github.com
+            User git
+            IdentityFile /Users/alexander.schreiner/.ssh/id_github
+            IdentitiesOnly yes
+            StrictHostKeyChecking accept-new
+
+permissions:
+  network:
+    allow:
+      - registry.npmjs.org
+      - registry.yarnpkg.com
+      - github.com
+      - api.github.com
+      - "*.githubusercontent.com"
+      - codeload.github.com
+      - api.expo.dev
+      - exp.host
+      - "*.expo.dev"
+      - nodejs.org
+      - deb.debian.org
+      - security.debian.org
+
+agentInstructions:
+  content: |
+    ## filmnotes sandbox
+
+    You are running inside a Docker Sandbox for the `filmnotes` monorepo (analogue photography notes app).
+    - Start by reading `docs/HANDOFF.md`, then the spec and `docs/tickets/README.md`.
+    - Git identity is preconfigured (~/.gitconfig). Commits are NOT GPG-signed in the sandbox; the owner
+      signs on the host. Never change ~/.gitconfig.
+    - Pushing to GitHub uses the read-only mounted deploy key (host alias `github-xela1601`). Only push when asked.
+    - `docker` is not available. The PocketBase binary is at `$FILMNOTES_PB_BIN` for backend tests.
+    - Node/npm are provided by the image; use the project-local npm cache (`.npmrc`).
+    - Ports 8081 (Expo web/Metro) and 8090 (PocketBase) are published to the host.

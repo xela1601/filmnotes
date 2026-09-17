@@ -1,0 +1,21 @@
+{
+  "sandbox": {
+    "enabled": true,
+    "autoAllowBashIfSandboxed": true,
+    "allowUnsandboxedCommands": false,
+    "network": {
+      "allowedDomains": [
+        "registry.npmjs.org",
+        "registry.yarnpkg.com",
+        "github.com",
+        "*.github.com",
+        "*.githubusercontent.com",
+        "api.expo.dev",
+        "*.expo.dev",
+        "exp.host",
+        "nodejs.org"
+      ],
+      "allowLocalBinding": true
+    }
+  }
+}

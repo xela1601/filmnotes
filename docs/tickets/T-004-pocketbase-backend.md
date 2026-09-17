@@ -1,0 +1,55 @@
+# T-004 – PocketBase backend (`backend/`)
+
+**Wave:** 1
+**Depends on:** T-001 (types as documentation of the schema)
+**Owns:** `backend/**`
+
+**Goal:** A versioned PocketBase schema (JS migrations) for all collections, owner-scoped API rules, a Docker image + compose file for the home server, a dev script that downloads the PocketBase binary, and an integration smoke test that runs against a real local PocketBase.
+
+**Interfaces produced:** PocketBase collections with these names and fields (consumed by T-008 sync, T-009 upload, T-013 CLI). Field names are **camelCase exactly as in `types.ts`**, except the id/system fields PocketBase owns.
+
+| collection | fields (type) |
+|---|---|
+| `cameras` | make text, model text, aliases json, year number, format text, mount text, exposureModes json, shutterSpeedsManual json, shutterSpeedsAutoExtra json, bulbOnlyInModes json, exposureCompensation json, iso json, focusModes json, driveModes json, flashSync text, metering text, notes text, conditionNotes json, defaultsForNewFrame json, deleted date, clientUpdated date, owner relation(users) |
+| `lenses` | make, model, focalMinMm number, focalMaxMm number, maxAperture number, minAperture number, apertureValues json, filterThreadMm number, minFocusM number, macroNote text, weightG number, defaultFilterIds json, handheldMinShutter text, hasHood bool, deleted, clientUpdated, owner |
+| `filters` | make, model, threadMm number, type text, exposureFactorEv number, afCompatible select(yes,no,limited), warning text, mountedOnLensId text, deleted, clientUpdated, owner |
+| `flashes` | make, model, guideNumberIso100M number, powerLevels json, headPositions json, afIlluminator bool, sync text, notes text, deleted, clientUpdated, owner |
+| `film_stocks` | name, maker, iso number, process select(C41,BW,E6), color bool, exposures number, dxCoded bool, notes, deleted, clientUpdated, owner |
+| `rolls` | cameraId text, filmStockId text, isoSet number, isoSource select(DX,manual), exposures number, pushPullEv number, status select(loaded,shot,at_lab,developed,archived), loadedAt date, unloadedAt date, lab text, notes text, deleted, clientUpdated, owner |
+| `frames` | rollId text, frameNo number, takenAt date, lensId text, focalLengthMm number, exposureMode text, shutterSpeed text, aperture number, exposureCompensationEv number, programShift bool, aeLock bool, focusMode text, afResult text, driveMode text, flashId text, flashHead text, flashPower text, flashOk bool, filterIds json, lensHood bool, support text, beepWarning bool, light text, subject text, location json, notes text, deleted, clientUpdated, owner |
+| `scans` | rollId text, frameId text, fileName text, sortIndex number, file file(single, image/jpeg,image/png,image/tiff,image/webp, max 50 MB, thumbs `200x200`, `800x0`), width number, height number, importedAt date, deleted, clientUpdated, owner |
+| `export_logs` | frameId text, target text, externalId text, url text, exportedAt date, deleted, clientUpdated, owner |
+
+Notes: relations between our own records are plain `text` ids (not PocketBase relations) so offline-created records can reference each other before upload. `clientUpdated` stores the client's `updated` timestamp for last-write-wins; PocketBase's own `updated` is server time. API rules for every collection (list/view/create/update/delete): `@request.auth.id != "" && owner = @request.auth.id`; create rule additionally `@request.body.owner = @request.auth.id`. Custom ids: keep PocketBase's 15-char id field (clients send `id` on create).
+
+## Files
+
+```
+backend/README.md
+backend/Dockerfile
+backend/docker-compose.yml
+backend/.env.example                      PB_ENCRYPTION_KEY=, PB_ADMIN_EMAIL=, PB_ADMIN_PASSWORD=
+backend/package.json                      name @filmnotes/backend, scripts: fetch-pb, start:dev, test
+backend/scripts/fetch-pocketbase.mjs      downloads matching release zip for current OS/arch into backend/bin/
+backend/pb_migrations/1758150000_init_collections.js
+backend/test/smoke.test.mjs               node:test, starts backend/bin/pocketbase on a free port
+backend/test/helpers.mjs
+```
+
+## Steps
+
+- [ ] **Step 1: package.json + fetch script.** `fetch-pocketbase.mjs`: if `process.env.FILMNOTES_PB_BIN` points to an executable, symlink it to `bin/pocketbase` and exit (the Docker sandbox provides it); otherwise read version from `PB_VERSION` env or default `0.40.4`; map `process.platform/arch` → `darwin_arm64|darwin_amd64|linux_amd64|linux_arm64`; download `https://github.com/pocketbase/pocketbase/releases/download/v${v}/pocketbase_${v}_${target}.zip` with `fetch`, unzip with `node:zlib`-free approach: write zip to `bin/` and extract using `unzip` CLI if present, else the `fflate` package (add as devDependency). Make `bin/pocketbase` executable. Commit `chore(backend): pocketbase fetch script`.
+- [ ] **Step 2: test/helpers.mjs** – `startPocketBase({ dir })`: copies `pb_migrations` into a temp data dir, spawns `bin/pocketbase serve --http 127.0.0.1:<freePort> --dir <tmp>/pb_data --migrationsDir pb_migrations --dev`, waits until `GET /api/health` returns 200, returns `{ url, stop() }`. `createSuperuser(url)`: run `bin/pocketbase superuser upsert <email> <pw> --dir …` before serve. `createUser(url, superuserToken)`: `POST /api/collections/users/records`. `login(url, email, pw)`: `POST /api/collections/users/auth-with-password`.
+- [ ] **Step 3: smoke.test.mjs (failing)** – `node --test backend/test`; `test.skip` when `bin/pocketbase` is missing (print hint to run `npm run fetch-pb -w @filmnotes/backend`). Cases:
+  1. all 9 collections exist (`GET /api/collections` as superuser).
+  2. authenticated user can create a roll with a client id (`id: 'roll0smoketest01'`, 15 chars) and `owner = user.id`; response id equals the sent id.
+  3. the same user can create a frame referencing that `rollId`, list frames filtered by `rollId = 'roll0smoketest01'` → 1 record.
+  4. a second user listing rolls gets 0 records; unauthenticated list → 401/403.
+  5. `scans` accepts a multipart upload with a tiny PNG (`Buffer` of a 1×1 PNG) and returns a `file` name; `GET /api/files/scans/<id>/<file>?thumb=200x200` returns 200.
+- [ ] **Step 4: write the migration** `1758150000_init_collections.js` using the PocketBase ≥ 0.23 JS migration API (`migrate((app) => { const users = app.findCollectionByNameOrId('users'); const c = new Collection({ name: 'rolls', type: 'base', fields: [ {name:'cameraId', type:'text', required:true}, … {name:'owner', type:'relation', collectionId: users.id, maxSelect:1, cascadeDelete:true}, {name:'deleted', type:'date'}, {name:'clientUpdated', type:'date'} ], listRule: RULE, viewRule: RULE, createRule: CREATE_RULE, updateRule: RULE, deleteRule: RULE, indexes: ['CREATE INDEX idx_rolls_owner ON rolls (owner)'] }); app.save(c); }, (app) => { /* down: delete collections in reverse */ })`. Build the field lists from a small helper object so the 9 collections stay readable. Add indexes on `owner` for all, `rollId` for frames/scans, `frameId` for export_logs.
+- [ ] **Step 5: run the smoke test** (`npm run fetch-pb -w @filmnotes/backend` once, then `npm test -w @filmnotes/backend`) until green. Commit `feat(backend): initial PocketBase schema with owner-scoped rules`.
+- [ ] **Step 6: Dockerfile** (multi-stage: `alpine` downloads the linux release for `TARGETARCH`, final `alpine` with `ca-certificates`, `COPY pb_migrations /pb/pb_migrations`, `EXPOSE 8090`, `HEALTHCHECK` on `/api/health`, `CMD ["/pb/pocketbase","serve","--http=0.0.0.0:8090","--dir=/pb/pb_data","--migrationsDir=/pb/pb_migrations"]`). **docker-compose.yml**: service `filmnotes-pb`, `build: .`, volume `pb_data:/pb/pb_data`, `restart: unless-stopped`, `env_file: .env`, port `8090` bound to `127.0.0.1` (reverse proxy in front). Docker is not available in the sandbox – do not try to build; the integrator/owner builds it on the server. Commit `chore(backend): Dockerfile and compose for home server`.
+- [ ] **Step 7: README.md** – local dev (`fetch-pb`, `start:dev` = `bin/pocketbase serve --dev --dir pb_data --migrationsDir pb_migrations`), first-run superuser creation, creating the single app user, running tests, deploying with compose, backups (`pb_data` volume). Commit `docs(backend): setup and deployment`.
+- [ ] **Step 8: root jest** – jest must not pick up `backend/test/*.mjs` (they use `node:test`). Add `backend/jest.config.js` with `testMatch: []`? No – instead set `"test": "node --test test/"` in backend's package.json and add `testPathIgnorePatterns: ['/backend/']` is a root file you don't own → tell the integrator in your final report to add `'<rootDir>/backend'` exclusion; meanwhile ensure the root `jest` run does not fail (no `*.test.ts` files under backend/).
+
+**Done when:** smoke test green locally with the fetched binary; migration file has an up **and** down function; README explains deployment.

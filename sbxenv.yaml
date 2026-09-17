@@ -1,0 +1,35 @@
+# Docker Sandboxes environment for filmnotes (sbx >= 0.43).
+#   sbx env plan      # preview
+#   sbx env run       # create sandbox + attach Claude Code
+# Prerequisite (optional but recommended): docker build -t filmnotes-sbx:latest sandbox/
+schemaVersion: "1"
+name: filmnotes
+agent: claude
+
+kits:
+  - source: ./sandbox/kit
+
+# Bind-mount the repository itself (not clone mode) so git commits land directly in this checkout.
+workspace:
+  path: .
+  clone: false
+
+# GitHub deploy key, read-only, at the same absolute path inside the sandbox
+# (the kit's ~/.ssh/config points IdentityFile there). No SSH agent is needed.
+additionalWorkspaces:
+  - path: /Users/alexander.schreiner/.ssh/id_github
+    readOnly: true
+
+sandboxOptions:
+  template: filmnotes-sbx:latest
+  cpus: 4
+  memory: 8g
+  skills: readonly
+
+ports:
+  - sandbox: 8081   # Expo web / Metro
+    host: 8081
+    hostIP: 127.0.0.1
+  - sandbox: 8090   # PocketBase (backend/bin or $FILMNOTES_PB_BIN)
+    host: 8090
+    hostIP: 127.0.0.1
