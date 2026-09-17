@@ -1,0 +1,37 @@
+# mise-en-place (https://mise.jdx.dev) – CLI tooling and task runner for filmnotes.
+#
+# Host:    install mise, then `mise install` and `mise run test`.
+# Sandbox: use the wrapper `sandbox/mise` ($HOME is read-only and HTTP needs the
+#          sandbox proxy) – e.g. `sandbox/mise run test`.
+
+[tools]
+node = "22"
+
+[env]
+# npm keeps its cache inside the repo (see .npmrc), never in the read-only $HOME.
+EXPO_NO_TELEMETRY = "1"
+
+[tasks.install]
+description = "Install all workspace dependencies"
+run = "npm install"
+
+[tasks.test]
+description = "Run the Jest suites of every workspace"
+run = "npm test"
+
+[tasks.typecheck]
+description = "TypeScript project references build (no emit of stale output)"
+run = "npm run typecheck"
+
+[tasks.lint]
+description = "ESLint over all TypeScript sources"
+run = "npm run lint"
+
+[tasks.web]
+description = "Start the Expo app for the web (port 8081, published to the host)"
+run = "npx expo start --web --port 8081"
+dir = "apps/mobile"
+
+[tasks.backend]
+description = "Run PocketBase locally (port 8090, published to the host)"
+run = "backend/scripts/serve.sh"

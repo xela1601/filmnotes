@@ -1,0 +1,32 @@
+#!/usr/bin/env bash
+# mise (https://mise.jdx.dev) wrapper for the Docker Sandbox.
+#
+# Two things differ from a normal host:
+#   * $HOME is read-only here, so mise's data/cache/state dirs are redirected into the
+#     git-ignored .mise/ directory inside the repo.
+#   * outbound HTTP needs the authenticating sandbox proxy, see proxy/with-proxy.sh.
+#
+# On a normal host just use `mise` directly; mise.toml is the same.
+set -euo pipefail
+
+here="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+repo="$(cd "$here/.." && pwd)"
+
+if [ ! -x "$here/bin/mise" ]; then
+  "$here/install-mise.sh"
+fi
+
+# Tool installs must not land on the virtiofs bind mount: extracting a tarball there
+# fails with "archive directory changed before metadata restoration". The container's
+# own overlay fs under $TMPDIR works and is cheap to rebuild after a sandbox restart.
+mise_home="${TMPDIR:-/tmp}/filmnotes-mise"
+export MISE_DATA_DIR="$mise_home/data"
+export MISE_CACHE_DIR="$mise_home/cache"
+export MISE_STATE_DIR="$mise_home/state"
+export MISE_CONFIG_DIR="$mise_home/config"
+# The repo's own mise.toml is trusted by definition; the trust store would otherwise
+# have to be re-confirmed in every fresh worktree.
+export MISE_TRUSTED_CONFIG_PATHS="$repo"
+mkdir -p "$MISE_DATA_DIR" "$MISE_CACHE_DIR" "$MISE_STATE_DIR" "$MISE_CONFIG_DIR"
+
+exec "$here/proxy/with-proxy.sh" "$here/bin/mise" "$@"

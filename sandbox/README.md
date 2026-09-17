@@ -6,6 +6,8 @@ Development of filmnotes runs with Claude Code **inside** a Docker Sandbox, not 
 |---|---|
 | `Dockerfile` | Custom template based on `docker/sandbox-templates:claude-code`: adds unzip/zip/jq/sqlite3 and the PocketBase binary (`/opt/pocketbase/pocketbase`). |
 | `kit/spec.yaml` | Mixin kit (spec v2) applied at sandbox creation: env vars, install commands (no-ops when the template already has the tools), network allow-list, agent instructions, and two generated files: `~/.gitconfig` (identity `github@alexander-schreiner.de`, mirrors the host's `~/.gitconfig-github-xela1601`, **no GPG signing** – the private key stays on the host) and `~/.ssh/config` (GitHub via the deploy key that `sbxenv.yaml` mounts read-only). |
+| `proxy/with-proxy.sh`, `proxy/relay.js` | Run a command with a working proxy: the sandbox proxy requires Basic auth on `CONNECT`, which npm cannot send (`407 Proxy Authentication Required`). `relay.js` is a local proxy that injects the credentials; `with-proxy.sh` starts it, exports `http(s)_proxy` and runs the given command. Needed for `npm install`, `npx expo install`, downloads. |
+| `mise`, `install-mise.sh` | [mise](https://mise.jdx.dev) wrapper: fetches the binary from GitHub (mise.jdx.dev is not on the allow-list), redirects mise's data dirs to `$TMPDIR` (`$HOME` is read-only, and tar extraction fails on the virtiofs bind mount) and routes downloads through the proxy wrapper. Tools and tasks are declared in `../mise.toml`. |
 | `../sbxenv.yaml` | Declarative environment: agent, template, kit, bind-mounted workspace, read-only mount of `~/.ssh/id_github`, ports 8081/8090. |
 
 ## One-time
@@ -33,6 +35,14 @@ sbx env run      # creates (or re-attaches to) the sandbox and starts Claude Cod
 Inside Claude Code: "Follow docs/HANDOFF.md".
 
 Without the custom image: `sbx run claude --kit ./sandbox/kit` – the kit's install commands then download the tools at creation time.
+
+## Daily commands inside the sandbox
+
+```bash
+sandbox/mise install                      # provision the pinned toolchain (node)
+sandbox/mise run test                     # npm test at the repo root
+sandbox/proxy/with-proxy.sh npm install   # anything that talks to a registry
+```
 
 ## Notes
 
