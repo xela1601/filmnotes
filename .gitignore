@@ -1,0 +1,19 @@
+node_modules/
+.npm-cache/
+dist/
+build/
+coverage/
+.expo/
+.expo-shared/
+*.log
+.DS_Store
+backend/bin/
+backend/pb_data/
+backend/test/pb_data_*/
+.env
+.env.*
+!.env.example
+.claude/worktrees/
+
+# mise: the binary is fetched per sandbox, tool installs live under $TMPDIR
+sandbox/bin/

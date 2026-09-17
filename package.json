@@ -1,0 +1,19 @@
+{
+  "name": "filmnotes",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Per-frame notes for analogue film rolls – Expo app + PocketBase backend",
+  "license": "MIT",
+  "workspaces": ["packages/*", "apps/*", "tools/*"],
+  "scripts": {
+    "test": "jest",
+    "typecheck": "tsc -b packages/domain",
+    "lint": "eslint . --ext .ts,.tsx"
+  },
+  "devDependencies": {
+    "@types/jest": "^30.0.0",
+    "jest": "^30.5.1",
+    "ts-jest": "^29.4.12",
+    "typescript": "^5.9.3"
+  }
+}
