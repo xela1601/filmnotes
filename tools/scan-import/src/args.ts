@@ -21,6 +21,13 @@ export interface Args {
   yes: boolean;
   /** Show the plan and stop before the first upload. */
   dryRun: boolean;
+  /**
+   * Print one line of JSON instead of the human report.
+   *
+   * For the scan automation (`docs/automation.md`): it needs the counts and the file names that
+   * failed, not a plan table.
+   */
+  json: boolean;
 }
 
 /** A usage problem: the caller made a mistake, so `main` prints the usage and exits with 2. */
@@ -61,6 +68,7 @@ Options:
   --roll <rollId>       Id of the roll the scans belong to
   -y, --yes             Do not ask for confirmation
       --dry-run         Print the plan and exit without uploading
+      --json            One line of JSON instead of the report (for automation)
   -h, --help            Show this help
 
 Environment (from .env, see .env.example; an explicit flag always wins):
@@ -85,6 +93,7 @@ export function parseArgs(
   const positional: string[] = [];
   let yes = false;
   let dryRun = false;
+  let json = false;
 
   for (let index = 0; index < argv.length; index += 1) {
     const token = argv[index] as string;
@@ -95,6 +104,10 @@ export function parseArgs(
     }
     if (token === "--dry-run") {
       dryRun = true;
+      continue;
+    }
+    if (token === "--json") {
+      json = true;
       continue;
     }
 
@@ -147,7 +160,7 @@ export function parseArgs(
   const fromEnv = env[PASSWORD_ENV];
   const password = blank(fromFlag) ? (blank(fromEnv) ? undefined : fromEnv) : fromFlag;
 
-  return { server, email, password, roll, source: positional[0] as string, yes, dryRun };
+  return { server, email, password, roll, source: positional[0] as string, yes, dryRun, json };
 }
 
 /** True when the argument list only asks for the usage text. */

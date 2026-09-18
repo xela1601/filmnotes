@@ -183,6 +183,16 @@ still be corrected on the phone. Note: the CLI **does not** advance the roll sta
 **"entwickelt"** yourself. Running it twice creates a second set of scans, so always
 `--dry-run` first.
 
+### 4c. Automatically, when the lab mail arrives
+
+Optional, and it uses the same CLI: n8n watches the mailbox, takes the download link out of the
+mail, finds the roll by its order number (`Film bearbeiten` → "Auftragsnummer Labor"), runs the
+import, sets the roll to "developed" and mails you the result. Setup and the two places that need
+adjusting once your first delivery arrives: [`automation.md`](automation.md).
+
+The mapping still wants a look afterwards — open the roll's scan import screen and correct the
+pairs where the lab dropped a frame.
+
 ## 5. Publishing **(server)**
 
 Export needs the uploaded scan, so it needs the server. One frame at a time from

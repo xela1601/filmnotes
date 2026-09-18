@@ -31,6 +31,15 @@ const pocketbaseGlobals = {
   $filesystem: "readonly",
   Collection: "readonly",
   Record: "readonly",
+  // The typed field constructors a migration needs to add a field to an existing collection.
+  TextField: "readonly",
+  NumberField: "readonly",
+  BoolField: "readonly",
+  DateField: "readonly",
+  JSONField: "readonly",
+  FileField: "readonly",
+  RelationField: "readonly",
+  SelectField: "readonly",
   DynamicModel: "readonly",
   require: "readonly",
 };

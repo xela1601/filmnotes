@@ -32,6 +32,8 @@ export interface RollFormValues {
   /** Empty while the date field holds something unparseable, which `validateRollForm` flags. */
   loadedAt: ISODateTime;
   lab: string;
+  /** The lab's order number; the automation finds the roll by it (docs/automation.md). */
+  labOrderId: string;
   notes: string;
 }
 
@@ -59,6 +61,7 @@ export function defaultRollForm(
     pushPullEv: 0,
     loadedAt: now,
     lab: "",
+    labOrderId: "",
     notes: "",
   };
 }
@@ -98,6 +101,7 @@ export function rollFromForm(
   now: ISODateTime,
 ): Roll {
   const lab = values.lab.trim();
+  const labOrderId = values.labOrderId.trim();
 
   return {
     id: existing?.id ?? newId(),
@@ -116,6 +120,7 @@ export function rollFromForm(
     loadedAt: values.loadedAt,
     unloadedAt: existing?.unloadedAt ?? null,
     lab: lab === "" ? null : lab,
+    labOrderId: labOrderId === "" ? null : labOrderId,
     notes: values.notes,
   };
 }
@@ -131,6 +136,7 @@ export function formFromRoll(roll: Roll): RollFormValues {
     pushPullEv: roll.pushPullEv,
     loadedAt: roll.loadedAt,
     lab: roll.lab ?? "",
+    labOrderId: roll.labOrderId ?? "",
     notes: roll.notes,
   };
 }

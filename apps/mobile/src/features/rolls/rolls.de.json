@@ -33,7 +33,8 @@
     "pushPull": "Push/Pull (EV)",
     "loadedAt": "Eingelegt am",
     "lab": "Labor",
-    "notes": "Notizen"
+    "notes": "Notizen",
+    "labOrderId": "Auftragsnummer Labor"
   },
   "filmTypes": {
     "color": "Farbe",
@@ -54,5 +55,8 @@
   "errors": {
     "required": "Pflichtfeld",
     "iso_range": "ISO muss zwischen 6 und 12800 liegen."
+  },
+  "placeholders": {
+    "labOrderId": "z. B. 540996 – für den automatischen Import"
   }
 }

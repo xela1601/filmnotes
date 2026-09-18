@@ -118,7 +118,12 @@ Import lab scans from the desktop instead of the phone:
 
 ```bash
 npm run import -w @filmnotes/scan-import -- --help
+npm run import -w @filmnotes/scan-import -- --roll <rollId> <folder|zip|url>
 ```
+
+A source may be a folder, a `.zip` or an **http(s) URL** — the lab's download link works directly.
+[`docs/automation.md`](docs/automation.md) wires that to n8n, which is optional: the app and this
+command stay the way in without it.
 
 ### With mise
 

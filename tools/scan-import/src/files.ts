@@ -7,7 +7,7 @@
  * those dirs again.
  */
 import { mkdtempSync, rmSync } from "node:fs";
-import { mkdir, readFile, readdir, stat, writeFile } from "node:fs/promises";
+import { mkdir, open, readFile, readdir, stat, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { basename, extname, join } from "node:path";
 
@@ -123,8 +123,39 @@ async function fromZip(zipPath: string): Promise<ImageFile[]> {
   );
 }
 
+/** True for a source the CLI has to download first. */
+export function isUrl(source: string): boolean {
+  return /^https?:\/\//i.test(source);
+}
+
 /**
- * Lists the scan files of `source`, a folder (searched recursively) or a `.zip`.
+ * Downloads a remote archive into a temp dir and returns the local path.
+ *
+ * This is what makes the automation possible without a second uploader: n8n (or anything else)
+ * hands over the lab's download link, and the import runs exactly as it does for a local file.
+ *
+ * @throws Error when the download fails or answers with something that is not a file.
+ */
+export async function downloadSource(url: string, fetchImpl = fetch): Promise<string> {
+  const response = await fetchImpl(url);
+  if (!response.ok) {
+    throw new Error(`could not download ${url}: HTTP ${response.status}`);
+  }
+
+  const dir = mkdtempSync(join(tmpdir(), "filmnotes-download-"));
+  tempDirs.push(dir);
+  // The name in the URL, or a neutral one: only the extension matters, and a lab link often
+  // carries none - a zip is detected by its content below.
+  const fromUrl = basename(new URL(url).pathname);
+  const name = fromUrl === "" || fromUrl === "/" ? "download" : fromUrl;
+  const target = join(dir, name);
+  await writeFile(target, new Uint8Array(await response.arrayBuffer()));
+  return target;
+}
+
+/**
+ * Lists the scan files of `source`: a folder (searched recursively), a `.zip`, or a file whose
+ * first bytes are a zip header - which is what a download link without a file extension gives.
  *
  * @throws Error when the source does not exist or is a file that is not a zip.
  */
@@ -138,5 +169,18 @@ export async function listImageFiles(source: string): Promise<ImageFile[]> {
 
   if (entry.isDirectory()) return toImageFiles(await walk(source));
   if (extname(source).toLowerCase() === ".zip") return fromZip(source);
+  if (await looksLikeZip(source)) return fromZip(source);
   throw new Error(`${source} is not a folder or a .zip file`);
+}
+
+/** `PK\x03\x04` - a zip, whatever the file is called. */
+async function looksLikeZip(path: string): Promise<boolean> {
+  const handle = await open(path, "r");
+  try {
+    const header = Buffer.alloc(4);
+    const { bytesRead } = await handle.read(header, 0, 4, 0);
+    return bytesRead === 4 && header.toString("latin1") === "PK\u0003\u0004";
+  } finally {
+    await handle.close();
+  }
 }

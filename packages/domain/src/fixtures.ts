@@ -191,6 +191,7 @@ export function makeRoll(overrides: Partial<Roll> = {}): Roll {
     loadedAt: FIXTURE_NOW,
     unloadedAt: null,
     lab: null,
+    labOrderId: null,
     notes: "",
     ...overrides,
   };

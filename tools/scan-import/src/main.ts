@@ -10,7 +10,7 @@
 import type { Frame, Id } from "@filmnotes/domain";
 
 import { ArgumentError, PASSWORD_ENV, USAGE, parseArgs, wantsHelp } from "./args";
-import { cleanupTempDirs, listImageFiles } from "./files";
+import { cleanupTempDirs, downloadSource, isUrl, listImageFiles } from "./files";
 import { planImport, renderPlan, unassignedCount } from "./plan";
 import type { PocketBaseLike } from "./upload";
 import { uploadPlan } from "./upload";
@@ -59,6 +59,17 @@ function isYes(answer: string): boolean {
   return normalized === "y" || normalized === "yes";
 }
 
+/** One line of JSON for a caller that is a program, not a person (`--json`). */
+function summary(fields: {
+  uploaded: number;
+  skipped: number;
+  failed: string[];
+  files: number;
+  dryRun?: boolean;
+}): string {
+  return JSON.stringify({ ...fields, dryRun: fields.dryRun ?? false });
+}
+
 export async function main(argv: string[], io: Io, deps: Deps): Promise<number> {
   if (wantsHelp(argv)) {
     io.stdout(USAGE);
@@ -77,9 +88,13 @@ export async function main(argv: string[], io: Io, deps: Deps): Promise<number> 
   }
 
   try {
-    const files = await listImageFiles(args.source);
+    // A URL source is downloaded first, so the automation can hand over the lab's link and the
+    // import still runs through exactly one code path (see docs/automation.md).
+    const source = isUrl(args.source) ? await downloadSource(args.source) : args.source;
+    const files = await listImageFiles(source);
     if (files.length === 0) {
       io.stderr(`filmnotes-import: no image files in ${args.source}`);
+      if (args.json) io.stdout(summary({ uploaded: 0, skipped: 0, failed: [], files: 0 }));
       return EXIT_FAILED;
     }
 
@@ -110,20 +125,29 @@ export async function main(argv: string[], io: Io, deps: Deps): Promise<number> 
 
     const assignments = planImport(files, frames);
     const unassigned = unassignedCount(assignments);
-    io.stdout(
-      `Roll ${args.roll}: ${files.length} file(s) from ${args.source}, ${alive.length} frame(s) on the server`,
-    );
-    io.stdout("");
-    io.stdout(renderPlan(assignments, frames));
-    io.stdout("");
-    if (unassigned > 0) {
+    if (!args.json)
       io.stdout(
-        `${unassigned} file(s) have no frame; they are uploaded unassigned and can be attached in the app.`,
+        `Roll ${args.roll}: ${files.length} file(s) from ${args.source}, ${alive.length} frame(s) on the server`,
       );
+    if (!args.json) {
+      io.stdout("");
+      io.stdout(renderPlan(assignments, frames));
+      io.stdout("");
+      if (unassigned > 0) {
+        io.stdout(
+          `${unassigned} file(s) have no frame; they are uploaded unassigned and can be attached in the app.`,
+        );
+      }
     }
 
     if (args.dryRun) {
-      io.stdout("Dry run: nothing was uploaded.");
+      if (args.json) {
+        io.stdout(
+          summary({ uploaded: 0, skipped: 0, failed: [], files: files.length, dryRun: true }),
+        );
+      } else {
+        io.stdout("Dry run: nothing was uploaded.");
+      }
       return EXIT_OK;
     }
 
@@ -136,10 +160,22 @@ export async function main(argv: string[], io: Io, deps: Deps): Promise<number> 
     }
 
     const result = await uploadPlan(client, ownerId, args.roll, files, assignments, (line) =>
-      io.stdout(line),
+      args.json ? undefined : io.stdout(line),
     );
-    io.stdout("");
-    io.stdout(`Uploaded ${result.uploaded} of ${files.length} scan(s).`);
+    if (!args.json) {
+      io.stdout("");
+      io.stdout(`Uploaded ${result.uploaded} of ${files.length} scan(s).`);
+    }
+    if (args.json) {
+      io.stdout(
+        summary({
+          uploaded: result.uploaded,
+          skipped: 0,
+          failed: result.failed,
+          files: files.length,
+        }),
+      );
+    }
     if (result.failed.length > 0) {
       io.stderr(`filmnotes-import: ${result.failed.length} failed: ${result.failed.join(", ")}`);
       return EXIT_FAILED;

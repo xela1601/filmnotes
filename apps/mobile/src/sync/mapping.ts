@@ -125,6 +125,7 @@ const FIELD_SPECS: { [K in CollectionName]: FieldSpec<K> } = {
     loadedAt: "date",
     unloadedAt: "date?",
     lab: "text?",
+    labOrderId: "text?",
     notes: "text",
   },
   frames: {

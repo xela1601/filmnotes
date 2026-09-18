@@ -256,6 +256,14 @@ function RollFormFields({ existing }: { existing: Roll | null }) {
         />
 
         <TextField
+          label={t("fields.labOrderId")}
+          value={values.labOrderId}
+          onChangeText={(labOrderId) => patch({ labOrderId })}
+          placeholder={t("placeholders.labOrderId")}
+          testID="roll-form-lab-order-id"
+        />
+
+        <TextField
           label={t("fields.notes")}
           value={values.notes}
           onChangeText={(notes) => patch({ notes })}

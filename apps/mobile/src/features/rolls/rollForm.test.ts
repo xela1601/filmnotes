@@ -23,6 +23,7 @@ function validValues(overrides: Partial<RollFormValues> = {}): RollFormValues {
     exposures: 36,
     pushPullEv: 0,
     loadedAt: NOW,
+    labOrderId: "",
     lab: "",
     notes: "",
     ...overrides,
@@ -46,6 +47,7 @@ describe("defaultRollForm", () => {
       pushPullEv: 0,
       loadedAt: NOW,
       lab: "",
+      labOrderId: "",
       notes: "",
     });
   });
@@ -150,6 +152,7 @@ describe("formFromRoll", () => {
       pushPullEv: 1,
       loadedAt: roll.loadedAt,
       lab: "",
+      labOrderId: "",
       notes: "",
     });
   });
@@ -170,5 +173,18 @@ describe("the loaded-at date field", () => {
     expect(isoFromDateInput("2026-13-01")).toBeNull();
     expect(isoFromDateInput("2026-02-30")).toBeNull();
     expect(isoFromDateInput("")).toBeNull();
+  });
+});
+
+describe("the lab order number", () => {
+  it("is stored trimmed and an empty field becomes null", () => {
+    expect(rollFromForm(validValues({ labOrderId: "  540996 " }), null, NOW).labOrderId).toBe(
+      "540996",
+    );
+    expect(rollFromForm(validValues({ labOrderId: "   " }), null, NOW).labOrderId).toBeNull();
+  });
+
+  it("comes back into the form when the roll is edited", () => {
+    expect(formFromRoll(makeRoll({ labOrderId: "540996" })).labOrderId).toBe("540996");
   });
 });

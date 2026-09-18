@@ -131,6 +131,14 @@ export interface Roll extends SyncedRecord {
   loadedAt: ISODateTime;
   unloadedAt: ISODateTime | null;
   lab: string | null;
+  /**
+   * The lab's own order number, as printed on the receipt.
+   *
+   * It is what connects a roll to a delivery: the automation polls the lab with it and knows
+   * which roll the scans belong to (see `docs/automation.md`). Nothing in the app depends on it -
+   * a roll without an order number is imported by hand, exactly as before.
+   */
+  labOrderId: string | null;
   notes: string;
 }
 

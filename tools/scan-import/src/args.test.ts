@@ -21,6 +21,7 @@ describe("parseArgs", () => {
       source: "/scans/roll-42",
       yes: true,
       dryRun: true,
+      json: false,
     });
   });
 
@@ -117,6 +118,7 @@ describe("parseArgs with a credentials file loaded into the environment", () => 
       source: "/scans/roll-42",
       yes: false,
       dryRun: false,
+      json: false,
     });
   });
 
@@ -143,5 +145,12 @@ describe("parseArgs with a credentials file loaded into the environment", () => 
     expect(() =>
       parseArgs(["--roll", "roll100000000000", "/scans"], { FILMNOTES_SERVER_URL: "" }),
     ).toThrow(/--server is required/);
+  });
+});
+
+describe("parseArgs --json", () => {
+  it("is off unless asked for", () => {
+    expect(parseArgs([...BASE, "/scans"], {}).json).toBe(false);
+    expect(parseArgs([...BASE, "--json", "/scans"], {}).json).toBe(true);
   });
 });

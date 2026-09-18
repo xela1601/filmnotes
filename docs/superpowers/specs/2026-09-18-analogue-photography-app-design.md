@@ -222,6 +222,11 @@ Multi-user UI, registration, lab APIs (none public), Instagram/Facebook Graph AP
   not. Images now need a short-lived file token.
 - **The sync watermark comes from the data**, never from a device clock, because PocketBase
   filters against its own `updated` column.
+- **`Roll.labOrderId`** (owner's decision): the lab's order number on the roll record, which is what
+  ties a delivery to a roll. The scan import accepts an http(s) URL as its source, so the lab's
+  download link can be imported directly - by hand or from the optional n8n workflow in
+  `automation/n8n/`. The CLI stays the only uploader; n8n does transport and notification
+  (`docs/automation.md`).
 - **@eslint-react replaces eslint-plugin-react** in the app: the latter has no ESLint 10 release
   (jsx-eslint/eslint-plugin-react#4018). `eslint-config-expo` keeps providing the RN globals,
   import resolution and `react-hooks`.

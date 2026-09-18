@@ -1,0 +1,372 @@
+{
+  "name": "filmnotes – scan import",
+  "meta": {
+    "description": "Imports the lab's scans for a roll: the download link arrives by mail, the CLI uploads the files into PocketBase, the roll moves to 'developed' and a summary comes back by mail. A second, scheduled branch only reports what the lab says about an open order. See docs/automation.md."
+  },
+  "settings": { "executionOrder": "v1", "saveManualExecutions": true },
+  "nodes": [
+    {
+      "id": "trigger-mail",
+      "name": "Lab mail arrives",
+      "type": "n8n-nodes-base.emailReadImap",
+      "typeVersion": 2,
+      "position": [-640, 0],
+      "parameters": {
+        "postProcessAction": "read",
+        "options": {
+          "customEmailConfig": "[\"UNSEEN\", [\"FROM\", \"photoprintit.com\"]]"
+        }
+      },
+      "credentials": { "imap": { "id": "REPLACE_IMAP_CREDENTIAL", "name": "mail.example.org" } },
+      "notes": "The lab mail. Narrow the FROM filter once you have seen the real sender."
+    },
+    {
+      "id": "extract-link",
+      "name": "Extract order and download link",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [-420, 0],
+      "parameters": {
+        "jsCode": "// The one place that knows what the lab's mail looks like - adjust it when you have\n// the first real mail in front of you (Executions -> this node -> Input).\n//\n// Everything downstream only needs { orderId, downloadUrl }:\n//  - orderId    the lab's order number, which matches Roll.labOrderId in filmnotes\n//  - downloadUrl a link the CLI can GET; it may point at a zip without a .zip in the URL\nconst item = $input.first().json;\nconst text = [item.textPlain, item.textHtml, item.subject].filter(Boolean).join('\\n');\n\n// dm/CEWE print a 12-digit order number on the receipt; the mail carries it as\n// `orderID=540996-624893` or in plain text. Both forms are accepted, the first part wins.\nconst orderMatch = /order(?:ID|nummer|number)?[=:\\s]*([0-9]{5,14})/i.exec(text);\nconst orderId = orderMatch?.[1] ?? null;\n\n// Any https link that looks like a download rather than a marketing link.\nconst urls = [...text.matchAll(/https?:\\/\\/[^\\s\"'<>)]+/gi)].map((match) => match[0]);\nconst downloadUrl =\n  urls.find((url) => /download|digital|bilder|images|zip/i.test(url)) ?? null;\n\nreturn [{ json: { orderId, downloadUrl, subject: item.subject ?? '', urls } }];"
+      }
+    },
+    {
+      "id": "have-link",
+      "name": "Order and link found?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [-200, 0],
+      "parameters": {
+        "conditions": {
+          "options": { "caseSensitive": true, "version": 2 },
+          "combinator": "and",
+          "conditions": [
+            {
+              "operator": { "type": "string", "operation": "notEmpty" },
+              "leftValue": "={{ $json.downloadUrl }}",
+              "rightValue": ""
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "pb-login",
+      "name": "PocketBase: log in",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [40, -100],
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.FILMNOTES_SERVER_URL }}/api/collections/users/auth-with-password",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ identity: $env.FILMNOTES_EMAIL, password: $env.FILMNOTES_PASSWORD }) }}",
+        "options": {}
+      },
+      "notes": "Same three variables the CLI uses; set them in n8n's environment, not in the workflow."
+    },
+    {
+      "id": "find-roll",
+      "name": "PocketBase: roll for this order",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [260, -100],
+      "parameters": {
+        "url": "={{ $env.FILMNOTES_SERVER_URL }}/api/collections/rolls/records",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "filter",
+              "value": "={{ `labOrderId = \"${$('Extract order and download link').first().json.orderId}\" && deleted = null` }}"
+            },
+            { "name": "perPage", "value": "2" }
+          ]
+        },
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [{ "name": "Authorization", "value": "={{ $json.token }}" }]
+        },
+        "options": {}
+      },
+      "notes": "The order number is a field on the roll (Roll.labOrderId) - that is how the workflow knows which roll the files belong to."
+    },
+    {
+      "id": "one-roll",
+      "name": "Exactly one roll?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [480, -100],
+      "parameters": {
+        "conditions": {
+          "options": { "caseSensitive": true, "version": 2 },
+          "combinator": "and",
+          "conditions": [
+            {
+              "operator": { "type": "number", "operation": "equals" },
+              "leftValue": "={{ $json.totalItems }}",
+              "rightValue": 1
+            }
+          ]
+        }
+      },
+      "notes": "Zero means the order number is not on any roll yet; two means it is on two - both need a human, so the false branch only mails."
+    },
+    {
+      "id": "run-import",
+      "name": "Run filmnotes-import",
+      "type": "n8n-nodes-base.executeCommand",
+      "typeVersion": 1,
+      "position": [700, -200],
+      "parameters": {
+        "command": "=cd {{ $env.FILMNOTES_REPO }} && npm run --silent import -w @filmnotes/scan-import -- --roll {{ $json.items[0].id }} --json --yes '{{ $('Extract order and download link').first().json.downloadUrl }}'"
+      },
+      "notes": "The same CLI a person runs by hand: it downloads the link, plans the file-to-frame mapping, uploads, and prints one line of JSON. Replace with an SSH node if n8n does not run on the machine that holds the checkout."
+    },
+    {
+      "id": "parse-result",
+      "name": "Read the import result",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [920, -200],
+      "parameters": {
+        "jsCode": "// `--json` prints exactly one line: { uploaded, skipped, failed, files, dryRun }.\nconst { stdout = '', stderr = '', exitCode } = $input.first().json;\nconst line = stdout.trim().split('\\n').filter(Boolean).pop() ?? '{}';\n\nlet result = {};\ntry {\n  result = JSON.parse(line);\n} catch {\n  // Keep going: the mail below is more useful with the raw output than with an exception.\n  result = { uploaded: 0, failed: [], files: 0, parseError: line.slice(0, 500) };\n}\n\nconst roll = $('PocketBase: roll for this order').first().json.items[0];\nreturn [\n  {\n    json: {\n      ...result,\n      exitCode,\n      stderr: stderr.slice(0, 2000),\n      rollId: roll.id,\n      orderId: roll.labOrderId,\n    },\n  },\n];"
+      }
+    },
+    {
+      "id": "advance-roll",
+      "name": "PocketBase: roll is developed",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1140, -200],
+      "parameters": {
+        "method": "PATCH",
+        "url": "={{ $env.FILMNOTES_SERVER_URL }}/api/collections/rolls/records/{{ $json.rollId }}",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ status: 'developed', clientUpdated: new Date().toISOString() }) }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "={{ $('PocketBase: log in').first().json.token }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "notes": "Only when something was uploaded - see the IF in front of it. clientUpdated is what the app's last-write-wins sync compares."
+    },
+    {
+      "id": "uploaded-something",
+      "name": "Anything uploaded?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [1140, 0],
+      "parameters": {
+        "conditions": {
+          "options": { "caseSensitive": true, "version": 2 },
+          "combinator": "and",
+          "conditions": [
+            {
+              "operator": { "type": "number", "operation": "gt" },
+              "leftValue": "={{ $json.uploaded }}",
+              "rightValue": 0
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "mail-result",
+      "name": "Mail: import summary",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2,
+      "position": [1360, -100],
+      "parameters": {
+        "fromEmail": "filmnotes@example.org",
+        "toEmail": "={{ $env.FILMNOTES_NOTIFY_EMAIL }}",
+        "subject": "=filmnotes: {{ $json.uploaded }} Scans für Auftrag {{ $json.orderId }}",
+        "emailFormat": "text",
+        "text": "=Auftrag {{ $json.orderId }} (Film {{ $json.rollId }})\n\n{{ $json.uploaded }} von {{ $json.files }} Dateien hochgeladen.\n{{ $json.failed && $json.failed.length ? 'Nicht hochgeladen: ' + JSON.stringify($json.failed) : 'Keine Fehler.' }}\n\nZuordnung prüfen: in der App unter Filme -> der Film -> \"Scans importieren\".\n{{ $json.stderr ? '\\nstderr:\\n' + $json.stderr : '' }}",
+        "options": {}
+      },
+      "credentials": { "smtp": { "id": "REPLACE_SMTP_CREDENTIAL", "name": "mail.example.org" } }
+    },
+    {
+      "id": "mail-needs-help",
+      "name": "Mail: needs a human",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2,
+      "position": [700, 40],
+      "parameters": {
+        "fromEmail": "filmnotes@example.org",
+        "toEmail": "={{ $env.FILMNOTES_NOTIFY_EMAIL }}",
+        "subject": "=filmnotes: Scans da, aber kein passender Film",
+        "emailFormat": "text",
+        "text": "=Der Download ist da, aber die Auftragsnummer passt auf {{ $json.totalItems }} Filme.\n\nAuftragsnummer: {{ $('Extract order and download link').first().json.orderId }}\nDownload: {{ $('Extract order and download link').first().json.downloadUrl }}\n\nTrag die Nummer am Film ein (Film bearbeiten -> \"Auftragsnummer Labor\") und starte den Workflow erneut,\noder importiere von Hand:\n  npm run import -w @filmnotes/scan-import -- --roll <rollId> '<download-url>'",
+        "options": {}
+      },
+      "credentials": { "smtp": { "id": "REPLACE_SMTP_CREDENTIAL", "name": "mail.example.org" } }
+    },
+    {
+      "id": "trigger-schedule",
+      "name": "Every 6 hours",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [-640, 320],
+      "parameters": { "rule": { "interval": [{ "field": "hours", "hoursInterval": 6 }] } }
+    },
+    {
+      "id": "open-orders",
+      "name": "PocketBase: rolls at the lab",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [-420, 320],
+      "parameters": {
+        "url": "={{ $env.FILMNOTES_SERVER_URL }}/api/collections/rolls/records",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "filter",
+              "value": "=status = \"at_lab\" && labOrderId != \"\" && deleted = null"
+            }
+          ]
+        },
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "={{ $('PocketBase: log in for the status check').first().json.token }}"
+            }
+          ]
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "pb-login-status",
+      "name": "PocketBase: log in for the status check",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [-640, 480],
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.FILMNOTES_SERVER_URL }}/api/collections/users/auth-with-password",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ identity: $env.FILMNOTES_EMAIL, password: $env.FILMNOTES_PASSWORD }) }}",
+        "options": {}
+      }
+    },
+    {
+      "id": "split-orders",
+      "name": "One roll at a time",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [-200, 320],
+      "parameters": {
+        "jsCode": "// One item per roll, so the HTTP node below asks the lab about one order at a time.\nreturn ($input.first().json.items ?? []).map((roll) => ({\n  json: { rollId: roll.id, orderId: roll.labOrderId, status: roll.status },\n}));"
+      }
+    },
+    {
+      "id": "lab-status",
+      "name": "Lab: order info",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [20, 320],
+      "parameters": {
+        "url": "={{ $env.FILMNOTES_LAB_STATUS_URL.replace('{order}', $json.orderId) }}",
+        "options": { "response": { "response": { "neverError": true } } }
+      },
+      "notes": "FILMNOTES_LAB_STATUS_URL carries the shop-specific part, e.g. https://spot.photoprintit.com/spotapi/orderInfo/forShop?config=<config>&shop=<shop>&order={order}"
+    },
+    {
+      "id": "status-changed",
+      "name": "Is the order finished?",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [240, 320],
+      "parameters": {
+        "jsCode": "// The second place that knows about the lab - adjust once you have seen one real answer\n// (Executions -> 'Lab: order info' -> Output). Everything below only needs { finished, label }.\nconst info = $input.first().json;\nconst roll = $('One roll at a time').first().json;\n\n// Defensive: the field names are not documented, so anything that looks like a state is read.\nconst state = String(\n  info.orderState ?? info.state ?? info.status ?? info.orderStatus ?? '',\n).toLowerCase();\nconst finished = /fertig|abgeschlossen|versand|shipped|complete|done|ready/.test(state);\n\nreturn [\n  {\n    json: {\n      ...roll,\n      finished,\n      label: state === '' ? JSON.stringify(info).slice(0, 300) : state,\n    },\n  },\n];"
+      }
+    },
+    {
+      "id": "mail-status",
+      "name": "Mail: order status",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2,
+      "position": [460, 320],
+      "parameters": {
+        "fromEmail": "filmnotes@example.org",
+        "toEmail": "={{ $env.FILMNOTES_NOTIFY_EMAIL }}",
+        "subject": "=filmnotes: Auftrag {{ $json.orderId }} ist {{ $json.finished ? 'fertig' : 'noch unterwegs' }}",
+        "emailFormat": "text",
+        "text": "=Film {{ $json.rollId }}, Auftrag {{ $json.orderId }}\nStatus laut Labor: {{ $json.label }}\n\nDer Import startet von selbst, sobald die Mail mit dem Downloadlink eintrifft.",
+        "options": {}
+      },
+      "credentials": { "smtp": { "id": "REPLACE_SMTP_CREDENTIAL", "name": "mail.example.org" } },
+      "notes": "Only a heads-up. The import hangs off the mail trigger, because that is where the download link is."
+    }
+  ],
+  "connections": {
+    "Lab mail arrives": {
+      "main": [[{ "node": "Extract order and download link", "type": "main", "index": 0 }]]
+    },
+    "Extract order and download link": {
+      "main": [[{ "node": "Order and link found?", "type": "main", "index": 0 }]]
+    },
+    "Order and link found?": {
+      "main": [[{ "node": "PocketBase: log in", "type": "main", "index": 0 }], []]
+    },
+    "PocketBase: log in": {
+      "main": [[{ "node": "PocketBase: roll for this order", "type": "main", "index": 0 }]]
+    },
+    "PocketBase: roll for this order": {
+      "main": [[{ "node": "Exactly one roll?", "type": "main", "index": 0 }]]
+    },
+    "Exactly one roll?": {
+      "main": [
+        [{ "node": "Run filmnotes-import", "type": "main", "index": 0 }],
+        [{ "node": "Mail: needs a human", "type": "main", "index": 0 }]
+      ]
+    },
+    "Run filmnotes-import": {
+      "main": [[{ "node": "Read the import result", "type": "main", "index": 0 }]]
+    },
+    "Read the import result": {
+      "main": [[{ "node": "Anything uploaded?", "type": "main", "index": 0 }]]
+    },
+    "Anything uploaded?": {
+      "main": [
+        [{ "node": "PocketBase: roll is developed", "type": "main", "index": 0 }],
+        [{ "node": "Mail: import summary", "type": "main", "index": 0 }]
+      ]
+    },
+    "PocketBase: roll is developed": {
+      "main": [[{ "node": "Mail: import summary", "type": "main", "index": 0 }]]
+    },
+    "Every 6 hours": {
+      "main": [[{ "node": "PocketBase: log in for the status check", "type": "main", "index": 0 }]]
+    },
+    "PocketBase: log in for the status check": {
+      "main": [[{ "node": "PocketBase: rolls at the lab", "type": "main", "index": 0 }]]
+    },
+    "PocketBase: rolls at the lab": {
+      "main": [[{ "node": "One roll at a time", "type": "main", "index": 0 }]]
+    },
+    "One roll at a time": {
+      "main": [[{ "node": "Lab: order info", "type": "main", "index": 0 }]]
+    },
+    "Lab: order info": {
+      "main": [[{ "node": "Is the order finished?", "type": "main", "index": 0 }]]
+    },
+    "Is the order finished?": {
+      "main": [[{ "node": "Mail: order status", "type": "main", "index": 0 }]]
+    }
+  }
+}

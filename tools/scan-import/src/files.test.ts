@@ -4,7 +4,7 @@ import { basename, join } from "node:path";
 
 import { zipSync } from "fflate";
 
-import { cleanupTempDirs, listImageFiles } from "./files";
+import { cleanupTempDirs, downloadSource, isUrl, listImageFiles } from "./files";
 import { jpegBytes, pngBytes } from "./testImages";
 
 let workDir: string;
@@ -126,5 +126,34 @@ describe("listImageFiles from a zip", () => {
     writeFileSync(path, "not an archive");
 
     await expect(listImageFiles(path)).rejects.toThrow(/folder or a \.zip/);
+  });
+});
+
+describe("isUrl / downloadSource", () => {
+  it("recognises a remote source", () => {
+    expect(isUrl("https://spot.example/download/540996")).toBe(true);
+    expect(isUrl("http://localhost:8080/scans.zip")).toBe(true);
+    expect(isUrl("/home/me/scans")).toBe(false);
+    expect(isUrl("scans.zip")).toBe(false);
+  });
+
+  it("downloads an archive and lists its images, even without a .zip in the URL", async () => {
+    // What a lab download link looks like: no file extension, a zip behind it.
+    const zip = zipSync({ "img001.jpg": jpegBytes(), "img002.jpg": jpegBytes() });
+    const fetchImpl = (async () => new Response(zip, { status: 200 })) as unknown as typeof fetch;
+
+    const local = await downloadSource("https://lab.example/orders/540996/download", fetchImpl);
+    const files = await listImageFiles(local);
+
+    expect(files.map((file) => file.name)).toEqual(["img001.jpg", "img002.jpg"]);
+  });
+
+  it("says which download failed", async () => {
+    const fetchImpl = (async () =>
+      new Response("nope", { status: 404 })) as unknown as typeof fetch;
+
+    await expect(downloadSource("https://lab.example/gone", fetchImpl)).rejects.toThrow(
+      /could not download .*HTTP 404/,
+    );
   });
 });
