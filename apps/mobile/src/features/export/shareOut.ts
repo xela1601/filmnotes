@@ -19,6 +19,23 @@ import { Share } from 'react-native';
 /** The cache file the image is shared from; it is overwritten by every export. */
 const SHARE_FILE_PREFIX = 'filmnotes-share-';
 
+/** Apple's uniform type identifiers for the formats a lab scan arrives in. */
+const UTI_BY_MIME_TYPE: Record<string, string> = {
+  'image/jpeg': 'public.jpeg',
+  'image/png': 'public.png',
+  'image/tiff': 'public.tiff',
+  'image/webp': 'org.webmproject.webp',
+};
+
+/**
+ * A file name that is safe inside a cache path. Scan names come from a lab, so they may contain
+ * anything, and a path separator in them would point the write somewhere else entirely.
+ */
+function safeFileName(fileName: string): string {
+  const cleaned = fileName.replace(/[^A-Za-z0-9._-]/g, '_');
+  return cleaned === '' || cleaned.startsWith('.') ? `scan${cleaned}` : cleaned;
+}
+
 export async function shareOut(payload: SharePayload): Promise<void> {
   if (payload.text !== '') await Clipboard.setStringAsync(payload.text);
 
@@ -28,7 +45,7 @@ export async function shareOut(payload: SharePayload): Promise<void> {
     return;
   }
 
-  const file = new File(Paths.cache, `${SHARE_FILE_PREFIX}${payload.image.fileName}`);
+  const file = new File(Paths.cache, `${SHARE_FILE_PREFIX}${safeFileName(payload.image.fileName)}`);
   if (file.exists) file.delete();
   file.create();
   file.write(payload.image.bytes);
@@ -36,6 +53,6 @@ export async function shareOut(payload: SharePayload): Promise<void> {
   await Sharing.shareAsync(file.uri, {
     mimeType: payload.image.mimeType,
     dialogTitle: payload.text === '' ? undefined : payload.text,
-    UTI: payload.image.mimeType === 'image/png' ? 'public.png' : 'public.jpeg',
+    UTI: UTI_BY_MIME_TYPE[payload.image.mimeType],
   });
 }

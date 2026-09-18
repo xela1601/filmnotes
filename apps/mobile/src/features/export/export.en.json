@@ -36,6 +36,8 @@
     "selectAll": "Select all",
     "selectNone": "Clear selection",
     "run": "Export {{count}} frames",
+    "run_one": "Export {{count}} frame",
+    "run_other": "Export {{count}} frames",
     "progress": "{{done}} / {{total}}",
     "done": "{{ok}} of {{total}} frames exported.",
     "failures": "Failed:",

@@ -36,6 +36,8 @@
     "selectAll": "Alle auswählen",
     "selectNone": "Auswahl aufheben",
     "run": "{{count}} Bilder exportieren",
+    "run_one": "{{count}} Bild exportieren",
+    "run_other": "{{count}} Bilder exportieren",
     "progress": "{{done}} / {{total}}",
     "done": "{{ok}} von {{total}} Bildern exportiert.",
     "failures": "Fehlgeschlagen:",
