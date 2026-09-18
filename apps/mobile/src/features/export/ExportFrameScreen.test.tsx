@@ -163,17 +163,15 @@ describe("ExportFrameScreen", () => {
   it("loads the 1600 px thumbnail of the uploaded scan for the share package", async () => {
     seedFrame();
     useStore.getState().updateSettings({ serverUrl: "https://pb.test" });
-    useStore
-      .getState()
-      .upsert(
-        "scans",
-        makeScan({
-          rollId: ROLL_ID,
-          frameId: FRAME_ID,
-          fileName: "img001.jpg",
-          file: "img001_x.jpg",
-        }),
-      );
+    useStore.getState().upsert(
+      "scans",
+      makeScan({
+        rollId: ROLL_ID,
+        frameId: FRAME_ID,
+        fileName: "img001.jpg",
+        file: "img001_x.jpg",
+      }),
+    );
     const calls = mockFetch([{ match: "/api/files/", body: {} }]);
 
     render(<ExportFrameScreen frameId={FRAME_ID} />);

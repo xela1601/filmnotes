@@ -12,3 +12,7 @@ backend/pb_data/
 
 # Generated
 package-lock.json
+
+# Owned by the host and mounted read-only (or unreadable) inside the sandbox
+sbxenv.yaml
+.zshrc
