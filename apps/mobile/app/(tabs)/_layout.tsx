@@ -1,8 +1,8 @@
-import { Ionicons } from '@expo/vector-icons';
-import { Tabs } from 'expo-router';
-import { useTranslation } from 'react-i18next';
+import { Ionicons } from "@expo/vector-icons";
+import { Tabs } from "expo-router";
+import { useTranslation } from "react-i18next";
 
-import { useTheme } from '../../src/ui/theme';
+import { useTheme } from "../../src/ui/theme";
 
 export default function TabsLayout() {
   const { t } = useTranslation();
@@ -22,14 +22,18 @@ export default function TabsLayout() {
       <Tabs.Screen
         name="index"
         options={{
-          title: t('tabs.rolls'),
-          tabBarIcon: ({ color, size }) => <Ionicons name="film-outline" color={color} size={size} />,
+          title: t("tabs.rolls"),
+          tabBarButtonTestID: "tab-rolls",
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="film-outline" color={color} size={size} />
+          ),
         }}
       />
       <Tabs.Screen
         name="equipment"
         options={{
-          title: t('tabs.equipment'),
+          title: t("tabs.equipment"),
+          tabBarButtonTestID: "tab-equipment",
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="camera-outline" color={color} size={size} />
           ),
@@ -38,7 +42,8 @@ export default function TabsLayout() {
       <Tabs.Screen
         name="settings"
         options={{
-          title: t('tabs.settings'),
+          title: t("tabs.settings"),
+          tabBarButtonTestID: "tab-settings",
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="settings-outline" color={color} size={size} />
           ),
