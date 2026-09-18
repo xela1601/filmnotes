@@ -8,6 +8,7 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { setAppLanguage } from '../src/i18n';
 import { now } from '../src/lib/clock';
 import { useStore } from '../src/store/store';
+import { useSync } from '../src/sync/useSync';
 import { useTheme } from '../src/ui/theme';
 
 /** True once the persisted state has been read back from storage. */
@@ -27,6 +28,9 @@ function useStoreHydrated(): boolean {
 export default function RootLayout() {
   const { palette, scheme } = useTheme();
   const hydrated = useStoreHydrated();
+  // Mounted here so the automatic foreground sync runs wherever the user is in the app,
+  // not only while the server settings screen happens to be open.
+  useSync();
   const locale = useStore((state) => state.settings.locale);
   const seedPresets = useStore((state) => state.seedPresets);
 

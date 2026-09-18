@@ -2,7 +2,7 @@ import { act, renderHook } from '@testing-library/react-native';
 import { AppState as RNAppState, type AppStateStatus } from 'react-native';
 
 import { FakeSyncClient } from './fakeClient';
-import { AUTO_SYNC_INTERVAL_MS, useSync } from './useSync';
+import { AUTO_SYNC_INTERVAL_MS, resetSyncSchedule, useSync } from './useSync';
 import type { SecretKey } from '../lib/secureStore';
 import { useStore } from '../store/store';
 import { makeRoll } from '../testing/fixtures';
@@ -55,6 +55,7 @@ describe('useSync', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     jest.restoreAllMocks();
+    resetSyncSchedule();
     useStore.getState().resetAll();
     mockGetSecret.mockResolvedValue(null);
     mockSetSecret.mockResolvedValue(undefined);
@@ -190,6 +191,25 @@ describe('useSync', () => {
     });
 
     expect(mockCreateClient).not.toHaveBeenCalled();
+  });
+
+  it('runs once even when several screens mount the hook', async () => {
+    // The root layout mounts it for the foreground sync while the server settings screen
+    // mounts it for its button; per-instance guards would push the outbox twice.
+    jest.useFakeTimers();
+    jest.setSystemTime(new Date('2026-09-18T12:00:00.000Z'));
+    const foreground = captureForegroundListener();
+    configureServer();
+    mockGetSecret.mockImplementation(async (key) => (key === 'serverToken' ? TOKEN : null));
+
+    renderHook(() => useSync());
+    renderHook(() => useSync());
+
+    await act(async () => {
+      foreground.fire('active');
+    });
+
+    expect(mockCreateClient).toHaveBeenCalledTimes(1);
   });
 
   it('does not register a foreground listener without a server', () => {

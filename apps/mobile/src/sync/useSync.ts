@@ -7,7 +7,7 @@
  * restart never shows a stale "running".
  */
 import type { Id } from '@filmnotes/domain';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { AppState as ReactNativeAppState } from 'react-native';
 
 import { createPocketBaseClient } from './client';
@@ -29,6 +29,21 @@ export interface UseSyncResult {
 /** Shortest gap between two automatic foreground syncs. */
 export const AUTO_SYNC_INTERVAL_MS = 60_000;
 
+/**
+ * Sync runs are app-wide, not per component: the hook is mounted by the root layout for
+ * the foreground sync and again by the server settings screen for its button. Guarding
+ * per instance would let those two overlap and push the same outbox entries twice.
+ */
+let syncRunning = false;
+/** `Date.now()` of the last started run; drives the auto-sync interval. */
+let lastRunStartedAt = 0;
+
+/** Test seam: forget that a sync ever ran. */
+export function resetSyncSchedule(): void {
+  syncRunning = false;
+  lastRunStartedAt = 0;
+}
+
 function failure(message: string): SyncResult {
   return { pushed: 0, pulled: 0, conflictsLocalWon: 0, errors: [message] };
 }
@@ -43,17 +58,13 @@ export function useSync(): UseSyncResult {
   const [status, setStatus] = useState<SyncStatus>('idle');
   const [lastResult, setLastResult] = useState<SyncResult | null>(null);
 
-  /** Guards against two overlapping runs (manual button plus foreground event). */
-  const running = useRef(false);
-  /** `Date.now()` of the last started run; drives the auto-sync interval. */
-  const lastRunAt = useRef(0);
 
   const isConfigured = serverUrl !== null;
 
   const syncNow = useCallback(async (): Promise<void> => {
-    if (serverUrl === null || running.current) return;
-    running.current = true;
-    lastRunAt.current = Date.now();
+    if (serverUrl === null || syncRunning) return;
+    syncRunning = true;
+    lastRunStartedAt = Date.now();
     setStatus('running');
 
     try {
@@ -80,7 +91,7 @@ export function useSync(): UseSyncResult {
       setLastResult(failure(messageOf(error)));
       setStatus('error');
     } finally {
-      running.current = false;
+      syncRunning = false;
     }
   }, [serverEmail, serverUrl]);
 
@@ -88,7 +99,7 @@ export function useSync(): UseSyncResult {
     if (!isConfigured) return;
     const subscription = ReactNativeAppState.addEventListener('change', (next) => {
       if (next !== 'active') return;
-      if (Date.now() - lastRunAt.current < AUTO_SYNC_INTERVAL_MS) return;
+      if (Date.now() - lastRunStartedAt < AUTO_SYNC_INTERVAL_MS) return;
       void syncNow();
     });
     return () => subscription.remove();
