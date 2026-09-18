@@ -1,0 +1,26 @@
+{
+  "name": "@filmnotes/scan-import",
+  "version": "0.1.0",
+  "private": true,
+  "description": "CLI that imports a folder or ZIP of lab scans for a roll into PocketBase",
+  "license": "MIT",
+  "main": "src/main.ts",
+  "types": "src/main.ts",
+  "bin": {
+    "filmnotes-import": "bin/filmnotes-import.cjs"
+  },
+  "scripts": {
+    "build": "tsc -b",
+    "test": "jest",
+    "import": "node bin/filmnotes-import.cjs"
+  },
+  "dependencies": {
+    "@filmnotes/domain": "*",
+    "fflate": "^0.8.2",
+    "pocketbase": "^0.28.1",
+    "tsx": "^4.20.6"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0"
+  }
+}

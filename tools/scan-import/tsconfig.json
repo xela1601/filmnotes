@@ -1,0 +1,22 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "rootDir": "src",
+    "outDir": "dist",
+    "composite": true,
+    // The CLI runs in Node, not in a bundler: `Node16` emits CommonJS, resolves
+    // `node:`/`fflate` the way Node does and keeps dynamic `import()` intact, which is how
+    // the ESM-only `pocketbase` SDK is loaded from this CommonJS output (see src/pb.ts).
+    "module": "Node16",
+    "moduleResolution": "Node16",
+    // Pin the ambient types: without this TypeScript would pull in every @types package it
+    // can see from here up to the repository root (react, jsdom, …), and both copies of
+    // @types/node (this workspace's and the hoisted one) at the same time.
+    "types": ["node", "jest"],
+    // Required by ts-jest for the hybrid Node16 module kind, and a good idea anyway: every
+    // file has to be compilable on its own.
+    "isolatedModules": true
+  },
+  "include": ["src"],
+  "references": [{ "path": "../../packages/domain" }]
+}
