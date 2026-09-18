@@ -102,6 +102,7 @@ export function ServerSettingsScreen() {
           label={t('password')}
           value={password}
           onChangeText={setPassword}
+          secret
           testID="sync-password"
         />
 

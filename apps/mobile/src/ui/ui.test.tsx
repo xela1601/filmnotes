@@ -56,6 +56,16 @@ describe('ui kit', () => {
     expect(onChangeText).toHaveBeenCalledWith('neu');
   });
 
+  it('masks a TextField marked as secret', () => {
+    render(
+      <TextField label="Passwort" value="s3cret" onChangeText={jest.fn()} secret testID="password" />,
+    );
+
+    const input = screen.getByTestId('password');
+    expect(input.props.secureTextEntry).toBe(true);
+    expect(input.props.autoCapitalize).toBe('none');
+  });
+
   it('renders NumberField and steps the value', () => {
     const onChange = jest.fn();
     render(

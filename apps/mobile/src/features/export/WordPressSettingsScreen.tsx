@@ -173,6 +173,7 @@ export function WordPressSettingsScreen() {
           value={appPassword}
           onChangeText={setAppPassword}
           testID="wordpress-app-password"
+          secret
         />
         <Text style={muted}>{t('wordpress.appPasswordHint')}</Text>
 

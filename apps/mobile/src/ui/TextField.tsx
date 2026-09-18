@@ -9,6 +9,8 @@ export interface TextFieldProps {
   onChangeText: (value: string) => void;
   multiline?: boolean;
   placeholder?: string;
+  /** Masks the input and keeps it out of autocorrect and autocapitalisation. */
+  secret?: boolean;
   testID?: string;
 }
 
@@ -18,6 +20,7 @@ export function TextField({
   onChangeText,
   multiline = false,
   placeholder,
+  secret = false,
   testID,
 }: TextFieldProps) {
   const { palette, fontSize } = useTheme();
@@ -31,6 +34,10 @@ export function TextField({
         value={value}
         onChangeText={onChangeText}
         multiline={multiline}
+        secureTextEntry={secret}
+        autoComplete={secret ? 'current-password' : undefined}
+        autoCapitalize={secret ? 'none' : undefined}
+        autoCorrect={secret ? false : undefined}
         placeholder={placeholder}
         placeholderTextColor={palette.textMuted}
         style={[
