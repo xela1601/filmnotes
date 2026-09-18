@@ -1,7 +1,7 @@
-import type { Frame, Roll } from '@filmnotes/domain';
 import type { StateStorage } from 'zustand/middleware';
 
 import * as clock from '../lib/clock';
+import { makeFrame, makeRoll } from '../testing/fixtures';
 import { createAppStore, PERSIST_KEY } from './store';
 
 const T0 = '2026-09-18T10:00:00.000Z';
@@ -18,65 +18,6 @@ function createMemoryStorage(): StateStorage & { map: Map<string, string> } {
     removeItem: (name) => {
       map.delete(name);
     },
-  };
-}
-
-function makeRoll(overrides: Partial<Roll> = {}): Roll {
-  return {
-    id: 'roll00000000001',
-    created: T0,
-    updated: T0,
-    deleted: null,
-    owner: null,
-    cameraId: 'cam0minolta7000',
-    filmStockId: 'film0kodakgold2',
-    isoSet: 200,
-    isoSource: 'DX',
-    exposures: 36,
-    pushPullEv: 0,
-    status: 'loaded',
-    loadedAt: T0,
-    unloadedAt: null,
-    lab: null,
-    notes: '',
-    ...overrides,
-  };
-}
-
-function makeFrame(overrides: Partial<Frame> = {}): Frame {
-  return {
-    id: 'frame0000000001',
-    created: T0,
-    updated: T0,
-    deleted: null,
-    owner: null,
-    rollId: 'roll00000000001',
-    frameNo: 1,
-    takenAt: T0,
-    lensId: null,
-    focalLengthMm: null,
-    exposureMode: null,
-    shutterSpeed: null,
-    aperture: null,
-    exposureCompensationEv: 0,
-    programShift: false,
-    aeLock: false,
-    focusMode: null,
-    afResult: null,
-    driveMode: null,
-    flashId: null,
-    flashHead: null,
-    flashPower: null,
-    flashOk: null,
-    filterIds: [],
-    lensHood: false,
-    support: null,
-    beepWarning: false,
-    light: null,
-    subject: null,
-    location: null,
-    notes: '',
-    ...overrides,
   };
 }
 
