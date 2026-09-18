@@ -44,6 +44,20 @@ sandbox/mise run test                     # npm test at the repo root
 sandbox/proxy/with-proxy.sh npm install   # anything that talks to a registry
 ```
 
+## Headless browser
+
+The template carries the shared libraries a headless Chrome needs (`libglib2.0-0t64`,
+`libnss3`, `libx11-6`, … – Ubuntu 26.04 uses the `t64` names for six of them), so a
+downloaded Chrome links and runs. Puppeteer or Playwright fetch the binary itself, nothing
+is baked into the image.
+
+Claude Code's own command sandbox denies `socket(AF_UNIX)`, and Chrome needs a unix socket
+for its process singleton – under that sandbox it cannot start, however complete the
+library list is. Driving the web build in a real browser therefore works from a shell in
+the container or in CI, not from an agent's Bash tool while that sandbox is on. The check
+that always works is `npm run check:web` in `apps/mobile`: the same walkthrough against the
+exported bundle in jsdom.
+
 ## Notes
 
 - The workspace is bind-mounted at the same absolute path, so `git commit` inside the sandbox writes to this checkout. Commits are unsigned; sign or rebase on the host if signing is required.

@@ -67,8 +67,11 @@ permissions:
       - "*.expo.dev"
       - nodejs.org
       - deb.debian.org
+      - ports.ubuntu.com      # arm64 (Apple Silicon)
+      - archive.ubuntu.com    # amd64
+      - security.ubuntu.com
       - security.debian.org
-
+      - mise.jdx.dev
 agentInstructions:
   content: |
     ## filmnotes sandbox
