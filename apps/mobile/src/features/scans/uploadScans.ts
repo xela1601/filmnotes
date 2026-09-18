@@ -12,8 +12,14 @@
  * reason*, and pressing "upload" again really is a plain repeat - the files that already have
  * an uploaded scan on this roll are skipped instead of being uploaded a second time.
  */
-import { isServerScanMimeType, newId, PB_COLLECTION, naturalCompare } from "@filmnotes/domain";
-import type { Id, ISODateTime, Scan, ScanAssignment } from "@filmnotes/domain";
+import {
+  isServerScanMimeType,
+  newId,
+  naturalCompare,
+  PB_COLLECTION,
+  uploadOneScan,
+} from "@filmnotes/domain";
+import type { Id, ISODateTime, Scan, ScanAssignment, ScanUploadPort } from "@filmnotes/domain";
 
 import type { PickedFile } from "./pickScans";
 import type { SyncClient, UploadFile } from "../../sync/client";
@@ -70,9 +76,28 @@ function inAssignmentOrder(files: PickedFile[]): PickedFile[] {
   return [...files].sort((a, b) => naturalCompare(a.name, b.name));
 }
 
-function messageOf(error: unknown): string | null {
-  if (error instanceof Error && error.message !== "") return error.message;
-  return null;
+/** The three server operations of `uploadOneScan`, on the sync client. */
+function portFor(deps: UploadScansDeps, collection: string): ScanUploadPort<PickedFile> {
+  return {
+    createRecord: async (scan) => {
+      await deps.client.create(collection, toRemote("scans", scan, deps.ownerId));
+    },
+    uploadFile: async (scan, file) => {
+      const remote = await deps.client.uploadFile(collection, scan.id, FILE_FIELD, asUpload(file));
+      // PocketBase renames an uploaded file (it appends a random suffix), and that name is what
+      // the file URL needs.
+      const stored = remote[FILE_FIELD];
+      return typeof stored === "string" ? stored : null;
+    },
+    markDeleted: async (scan, deletedAt) => {
+      await deps.client.update(collection, scan.id, {
+        id: scan.id,
+        deleted: deletedAt,
+        updated: deletedAt,
+        clientUpdated: deletedAt,
+      });
+    },
+  };
 }
 
 export async function uploadScans(deps: UploadScansDeps): Promise<UploadScansResult> {
@@ -119,32 +144,12 @@ export async function uploadScans(deps: UploadScansDeps): Promise<UploadScansRes
       importedAt: at,
     };
 
-    try {
-      await deps.client.create(collection, toRemote("scans", scan, deps.ownerId));
-      const remote = await deps.client.uploadFile(collection, scan.id, FILE_FIELD, asUpload(file));
-      // PocketBase renames an uploaded file (it appends a random suffix), and that name
-      // is what the file URL needs.
-      const stored = remote[FILE_FIELD];
-      deps.upsert("scans", {
-        ...scan,
-        file: typeof stored === "string" && stored !== "" ? stored : file.name,
-      });
+    const outcome = await uploadOneScan(portFor(deps, collection), scan, file, at);
+    if (outcome.status === "uploaded") {
+      deps.upsert("scans", outcome.scan);
       uploaded += 1;
-    } catch (error) {
-      failed.push({ name: file.name, reason: "upload_failed", detail: messageOf(error) });
-      // The record may already be on the server while its file never arrived. Left alone
-      // it would be pulled back by the next sync as a scan without an image, so it is
-      // marked deleted here – best effort, because the same connection just failed.
-      try {
-        await deps.client.update(collection, scan.id, {
-          id: scan.id,
-          deleted: at,
-          updated: at,
-          clientUpdated: at,
-        });
-      } catch {
-        // Nothing left to do: either the record was never created, or the server is gone.
-      }
+    } else {
+      failed.push({ name: file.name, reason: "upload_failed", detail: outcome.reason });
     }
   }
 

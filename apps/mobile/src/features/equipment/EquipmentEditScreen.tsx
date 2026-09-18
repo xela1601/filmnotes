@@ -9,6 +9,8 @@ import type { Id } from "@filmnotes/domain";
 import { router } from "expo-router";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
+
+import { EQUIPMENT_NAMESPACE } from "./i18n";
 import { StyleSheet, Text, View } from "react-native";
 
 import { now } from "../../lib/clock";
@@ -44,7 +46,6 @@ import {
   type FieldDescriptor,
   type RecordErrors,
 } from "./descriptors";
-import "./i18n";
 
 export interface EquipmentEditScreenProps {
   type: EquipmentType;
@@ -54,7 +55,7 @@ export interface EquipmentEditScreenProps {
 
 /** Shown for a record (or a `[type]` segment) that does not exist. */
 function NotFound() {
-  const { t } = useTranslation("equipment");
+  const { t } = useTranslation(EQUIPMENT_NAMESPACE);
   return (
     <Screen testID="equipment-editor">
       <EmptyState
@@ -123,7 +124,7 @@ function EquipmentFields({
   type: EquipmentType;
   existing: EquipmentRecord | null;
 }) {
-  const { t } = useTranslation("equipment");
+  const { t } = useTranslation(EQUIPMENT_NAMESPACE);
   const { palette, fontSize } = useTheme();
   const upsert = useStore((state) => state.upsert);
   const softDelete = useStore((state) => state.softDelete);

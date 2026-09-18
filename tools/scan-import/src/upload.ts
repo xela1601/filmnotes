@@ -10,8 +10,8 @@
  */
 import { readFile } from "node:fs/promises";
 
-import type { Id, ScanAssignment } from "@filmnotes/domain";
-import { newId } from "@filmnotes/domain";
+import type { Id, ISODateTime, Scan, ScanAssignment, ScanUploadPort } from "@filmnotes/domain";
+import { newId, scanMimeType, uploadOneScan } from "@filmnotes/domain";
 
 import type { ImageFile } from "./files";
 
@@ -46,29 +46,48 @@ function messageOf(error: unknown): string {
 }
 
 /**
- * Marks a record whose file never arrived as deleted, and says so for the log.
+ * The three server operations of `uploadOneScan`, on the PocketBase SDK.
  *
- * A scan record without a file would reach the app through the next sync as a scan without an
- * image, so it is soft-deleted – exactly the repair `uploadScans` does in the app. Best effort:
- * the connection that just failed is the same one this needs.
+ * The sequence itself - record, bytes, and the repair of the half-written record when the bytes
+ * do not arrive - lives in `@filmnotes/domain`, so the CLI and the app cannot drift apart.
  */
-async function softDelete(
-  pb: PocketBaseLike,
-  recordId: string | null,
-  timestamp: string,
-): Promise<string> {
-  if (recordId === null) return "";
-  try {
-    await pb.collection(SCANS).update(recordId, {
-      id: recordId,
-      deleted: timestamp,
-      updated: timestamp,
-      clientUpdated: timestamp,
-    });
-    return ` (scan ${recordId} was marked deleted again)`;
-  } catch {
-    return ` (scan ${recordId} has no file and could not be cleaned up)`;
-  }
+function portFor(pb: PocketBaseLike, ownerId: Id): ScanUploadPort<ArrayBuffer> {
+  return {
+    createRecord: async (scan) => {
+      await pb.collection(SCANS).create(toRemotePayload(scan, ownerId));
+    },
+    uploadFile: async (scan, bytes) => {
+      const form = new FormData();
+      const mimeType = scanMimeType(scan.fileName) ?? "image/jpeg";
+      form.append(FILE_FIELD, new Blob([bytes], { type: mimeType }), scan.fileName);
+      const updated = await pb.collection(SCANS).update(scan.id, form);
+      const stored: unknown = (updated as Record<string, unknown>)[FILE_FIELD];
+      return typeof stored === "string" ? stored : null;
+    },
+    markDeleted: async (scan, at) => {
+      await pb.collection(SCANS).update(scan.id, {
+        id: scan.id,
+        deleted: at,
+        updated: at,
+        clientUpdated: at,
+      });
+    },
+  };
+}
+
+/** The record a scan is created from; `created`/`updated` stay with PocketBase (autodate). */
+function toRemotePayload(scan: Scan, ownerId: Id): Record<string, unknown> {
+  return {
+    id: scan.id,
+    rollId: scan.rollId,
+    frameId: scan.frameId,
+    fileName: scan.fileName,
+    sortIndex: scan.sortIndex,
+    importedAt: scan.importedAt,
+    deleted: null,
+    owner: ownerId,
+    clientUpdated: scan.updated,
+  };
 }
 
 /**
@@ -103,34 +122,45 @@ export async function uploadPlan(
     }
 
     const target = assignment.frameNo === null ? "(unassigned)" : `#${assignment.frameNo}`;
-    let recordId: string | null = null;
-    let timestamp = new Date().toISOString();
+    let bytes: ArrayBuffer;
     try {
-      const bytes = await readFile(file.path);
-      timestamp = new Date().toISOString();
-      const created = await pb.collection(SCANS).create({
-        id: newId(),
-        rollId,
-        frameId: assignment.frameId,
-        fileName: file.name,
-        sortIndex: assignment.sortIndex,
-        importedAt: timestamp,
-        deleted: null,
-        owner: ownerId,
-        clientUpdated: timestamp,
-      });
-      recordId = created.id;
-
-      const form = new FormData();
-      form.append(FILE_FIELD, new Blob([bytes], { type: file.mimeType }), file.name);
-      await pb.collection(SCANS).update(created.id, form);
-
-      uploaded += 1;
-      log(`${file.name} -> ${target} (scan ${created.id})`);
+      // The bytes as a plain ArrayBuffer: a Node `Buffer` may sit on a SharedArrayBuffer, which
+      // `Blob` does not accept.
+      const read = await readFile(file.path);
+      bytes = read.buffer.slice(read.byteOffset, read.byteOffset + read.byteLength);
     } catch (error) {
       failed.push(assignment.fileName);
-      const repaired = await softDelete(pb, recordId, timestamp);
-      log(`${file.name}: ${messageOf(error)}${repaired}`);
+      log(`${file.name}: ${messageOf(error)}`);
+      continue;
+    }
+
+    const at: ISODateTime = new Date().toISOString();
+    const scan: Scan = {
+      id: newId(),
+      created: at,
+      updated: at,
+      deleted: null,
+      owner: ownerId,
+      rollId,
+      frameId: assignment.frameId,
+      fileName: file.name,
+      sortIndex: assignment.sortIndex,
+      file: null,
+      width: null,
+      height: null,
+      importedAt: at,
+    };
+
+    const outcome = await uploadOneScan(portFor(pb, ownerId), scan, bytes, at);
+    if (outcome.status === "uploaded") {
+      uploaded += 1;
+      log(`${file.name} -> ${target} (scan ${scan.id})`);
+    } else {
+      failed.push(assignment.fileName);
+      const repaired = outcome.repaired
+        ? ` (scan ${scan.id} was marked deleted again)`
+        : ` (scan ${scan.id} has no file and could not be cleaned up)`;
+      log(`${file.name}: ${outcome.reason}${repaired}`);
     }
   }
 

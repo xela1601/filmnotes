@@ -5,6 +5,8 @@ import type { Roll } from "@filmnotes/domain";
 import { router } from "expo-router";
 import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
+
+import { ROLLS_NAMESPACE } from "./i18n";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 import { useShallow } from "zustand/react/shallow";
 
@@ -12,11 +14,10 @@ import { useActive } from "../../store/hooks";
 import { useStore } from "../../store/store";
 import { selectFramesForRoll } from "../../store/selectors";
 import { EmptyState, ListItem, Screen, useTheme } from "../../ui";
-import "./i18n";
 import { rollProgress, rollTitle } from "./rollLabel";
 
 export function RollsListScreen() {
-  const { t } = useTranslation("rolls");
+  const { t } = useTranslation(ROLLS_NAMESPACE);
   const rolls = useActive("rolls");
 
   const sorted = useMemo(
@@ -64,7 +65,7 @@ function NewRollAction({ label }: { label: string }) {
 }
 
 function RollRow({ roll }: { roll: Roll }) {
-  const { t } = useTranslation("rolls");
+  const { t } = useTranslation(ROLLS_NAMESPACE);
   const filmStock = useStore((state) => state.entities.filmStocks[roll.filmStockId]);
   // Shallow-compared: the selector builds a new array on every call.
   const frames = useStore(useShallow((state) => selectFramesForRoll(state, roll.id)));

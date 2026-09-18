@@ -506,7 +506,7 @@ export function emptyRecord<T extends EquipmentType>(type: T, now: ISODateTime):
       };
       return flash as EntityOf<T>;
     }
-    default: {
+    case "filmStocks": {
       const stock: FilmStock = {
         ...sync,
         name: "",
@@ -519,6 +519,12 @@ export function emptyRecord<T extends EquipmentType>(type: T, now: ISODateTime):
         notes: "",
       };
       return stock as EntityOf<T>;
+    }
+    default: {
+      // A sixth equipment type has to bring its own empty record; the default used to hand out
+      // a film stock, which compiled and then produced the wrong kind of record.
+      const exhaustive: never = type;
+      throw new Error(`no empty record defined for ${String(exhaustive)}`);
     }
   }
 }

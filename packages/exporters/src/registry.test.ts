@@ -24,7 +24,9 @@ describe("registerExporter / getExporter", () => {
     const exporter = fakeExporter("registry-get");
     registerExporter(exporter);
 
-    expect(getExporter("registry-get")).toBe(exporter);
+    // Not the same object: registration wraps the exporter so its config is validated.
+    expect(getExporter("registry-get")?.id).toBe("registry-get");
+    expect(getExporter("registry-get")?.nameKey).toBe(exporter.nameKey);
   });
 
   it("returns undefined for an unknown id", () => {
@@ -38,7 +40,7 @@ describe("registerExporter / getExporter", () => {
     registerExporter(first);
     registerExporter(second);
 
-    expect(getExporter("registry-duplicate")).toBe(second);
+    expect(getExporter("registry-duplicate")?.nameKey).toBe(second.nameKey);
     expect(listExporters().filter((entry) => entry.id === "registry-duplicate")).toHaveLength(1);
   });
 });
@@ -51,7 +53,7 @@ describe("listExporters", () => {
 
     const after = listExporters();
     expect(after.map((entry) => entry.id)).toEqual([...before, "registry-list"]);
-    expect(after).toContain(exporter);
+    expect(after.some((entry) => entry.id === exporter.id)).toBe(true);
   });
 
   it("returns a copy, so callers cannot mutate the registry", () => {
@@ -59,5 +61,47 @@ describe("listExporters", () => {
     listed.length = 0;
 
     expect(listExporters().length).toBeGreaterThan(0);
+  });
+});
+
+describe("the erased exporter", () => {
+  const strictSchema = z.object({ siteUrl: z.string().url() });
+
+  function strictExporter(id: string): Exporter<z.infer<typeof strictSchema>> {
+    return {
+      id,
+      nameKey: `exporters.${id}`,
+      configSchema: strictSchema,
+      requiresImage: false,
+      exportFrame: async (_input, config): Promise<ExportResult> => ({
+        externalId: config.siteUrl,
+        url: null,
+        sharePayload: null,
+      }),
+    };
+  }
+
+  it("validates the config before the exporter sees it", async () => {
+    // The hole this closes: `Exporter<unknown>` accepted `exportFrame(input, {}, deps)` at compile
+    // time (method parameters are bivariant) and blew up inside the exporter at runtime.
+    registerExporter(strictExporter("registry-strict"));
+    const exporter = getExporter("registry-strict");
+
+    await expect(
+      exporter?.exportFrame({} as never, {}, { fetch: globalThis.fetch }),
+    ).rejects.toThrow();
+  });
+
+  it("passes a valid config through", async () => {
+    registerExporter(strictExporter("registry-strict-ok"));
+    const exporter = getExporter("registry-strict-ok");
+
+    const result = await exporter?.exportFrame(
+      {} as never,
+      { siteUrl: "https://blog.example" },
+      { fetch: globalThis.fetch },
+    );
+
+    expect(result?.externalId).toBe("https://blog.example");
   });
 });

@@ -65,3 +65,18 @@ export interface Exporter<C> {
   requiresImage: boolean;
   exportFrame(input: ExportInput, config: C, deps: ExporterDeps): Promise<ExportResult>;
 }
+
+/**
+ * An exporter as the registry hands it out: the config type is gone, because a caller that only
+ * knows an id cannot know it either.
+ *
+ * `exportFrame` therefore validates the settings itself with the exporter's own `configSchema`
+ * and throws a `ZodError` on anything else. Storing `Exporter<unknown>` instead looked like the
+ * same thing and was not: TypeScript's method parameters are bivariant, so
+ * `getExporter("wordpress")!.exportFrame(input, {}, deps)` type-checked and blew up at runtime
+ * inside the exporter.
+ */
+export interface ErasedExporter extends Omit<Exporter<unknown>, "exportFrame" | "configSchema"> {
+  configSchema: z.ZodType<unknown>;
+  exportFrame(input: ExportInput, config: unknown, deps: ExporterDeps): Promise<ExportResult>;
+}

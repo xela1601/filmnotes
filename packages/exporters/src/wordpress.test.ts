@@ -1,12 +1,12 @@
+import { buildCaption } from "@filmnotes/domain";
 import {
-  buildCaption,
   makeCamera,
   makeFilmStock,
   makeFilter,
   makeFrame,
   makeLens,
   makeRoll,
-} from "@filmnotes/domain";
+} from "@filmnotes/domain/testing";
 import {
   buildPostHtml,
   buildPostTitle,

@@ -8,6 +8,21 @@ It is the same matching the app uses (`matchScansToFrames` from `@filmnotes/doma
 imported from the terminal looks exactly like one imported on the phone – including the review
 screen, where a wrong mapping can still be shifted.
 
+## Credentials
+
+`--server`, `--email` and the password come from the environment when the flags are left out,
+normally from a `.env` file (see `.env.example` at the repository root):
+
+```bash
+FILMNOTES_SERVER_URL=https://pb.example.com
+FILMNOTES_EMAIL=me@example.com
+FILMNOTES_PASSWORD=            # empty: asked interactively, never in the shell history
+```
+
+The file is read by Node itself (`process.loadEnvFile`). `FILMNOTES_ENV_FILE` points at one
+somewhere else - use it to keep the credentials out of the repository, which is bind-mounted into
+the development sandbox.
+
 ## Usage
 
 ```bash

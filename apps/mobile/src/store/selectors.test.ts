@@ -93,20 +93,18 @@ describe("selectors", () => {
 
     it("takes the newest uploaded scan of the frame", () => {
       const state = stateWith((store) => {
-        store
-          .getState()
-          .applyRemote("scans", [
-            uploaded({
-              id: "scan00000000001",
-              sortIndex: 1,
-              importedAt: "2026-09-20T10:00:00.000Z",
-            }),
-            uploaded({
-              id: "scan00000000002",
-              sortIndex: 2,
-              importedAt: "2026-09-21T10:00:00.000Z",
-            }),
-          ]);
+        store.getState().applyRemote("scans", [
+          uploaded({
+            id: "scan00000000001",
+            sortIndex: 1,
+            importedAt: "2026-09-20T10:00:00.000Z",
+          }),
+          uploaded({
+            id: "scan00000000002",
+            sortIndex: 2,
+            importedAt: "2026-09-21T10:00:00.000Z",
+          }),
+        ]);
       });
 
       expect(selectScanForFrame(state, "fram00000000001")?.id).toBe("scan00000000002");

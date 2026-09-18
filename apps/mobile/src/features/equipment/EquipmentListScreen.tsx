@@ -8,6 +8,8 @@
 import { router } from "expo-router";
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
+
+import { EQUIPMENT_NAMESPACE } from "./i18n";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import { useActive } from "../../store/hooks";
@@ -19,7 +21,6 @@ import {
   type EquipmentRecord,
   type EquipmentType,
 } from "./descriptors";
-import "./i18n";
 
 /** The subset of i18next's `t` the summaries need. */
 type Translate = (key: string, params?: Record<string, string | number>) => string;
@@ -71,7 +72,7 @@ function summaryOf(type: EquipmentType, record: EquipmentRecord, t: Translate): 
 }
 
 export function EquipmentListScreen() {
-  const { t } = useTranslation("equipment");
+  const { t } = useTranslation(EQUIPMENT_NAMESPACE);
   const [type, setType] = useState<EquipmentType>("cameras");
   const records = useActive(type);
 
@@ -142,7 +143,7 @@ function TypeSwitch({
   value: EquipmentType;
   onChange: (type: EquipmentType) => void;
 }) {
-  const { t } = useTranslation("equipment");
+  const { t } = useTranslation(EQUIPMENT_NAMESPACE);
   const { palette, fontSize } = useTheme();
 
   return (

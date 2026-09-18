@@ -1,3 +1,6 @@
+import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { dirname, join } from "node:path";
+
 import type { RemoteRecord } from "./client";
 import { fromRemote, toRemote } from "./mapping";
 import { makeFrame, makeRoll, makeScan } from "../testing/fixtures";
@@ -173,5 +176,50 @@ describe("round trip", () => {
       ...scan,
       owner: OWNER,
     });
+  });
+});
+
+describe("the payload fixture the backend smoke test posts", () => {
+  /**
+   * `backend/test/smoke.test.mjs` hand-wrote its request bodies, so the one thing an integration
+   * test is for - that what this client *actually sends* is what the server accepts - was not
+   * covered. It now posts these records, and this test keeps them equal to `toRemote`'s output.
+   *
+   * Regenerate after a mapping change: `UPDATE_FIXTURES=1 npx jest mapping.test`.
+   */
+  const fixturePath = join(
+    __dirname,
+    "..",
+    "..",
+    "..",
+    "..",
+    "backend",
+    "test",
+    "fixtures",
+    "remote-records.json",
+  );
+
+  const payloads = {
+    rolls: toRemote("rolls", makeRoll({ id: "roll0smoketest2" }), OWNER),
+    frames: toRemote(
+      "frames",
+      makeFrame({ id: "fram0smoketest2", rollId: "roll0smoketest2" }),
+      OWNER,
+    ),
+    scans: toRemote(
+      "scans",
+      makeScan({ id: "scan0smoketest2", rollId: "roll0smoketest2", frameId: null, file: null }),
+      OWNER,
+    ),
+  };
+
+  it("matches the checked-in fixture", () => {
+    const serialised = `${JSON.stringify(payloads, null, 2)}\n`;
+    if (process.env.UPDATE_FIXTURES === "1") {
+      mkdirSync(dirname(fixturePath), { recursive: true });
+      writeFileSync(fixturePath, serialised);
+    }
+
+    expect(readFileSync(fixturePath, "utf8")).toBe(serialised);
   });
 });

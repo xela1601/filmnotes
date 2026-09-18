@@ -8,6 +8,8 @@ import type { FilmStock, Id, IsoSource, Roll } from "@filmnotes/domain";
 import { router } from "expo-router";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
+
+import { ROLLS_NAMESPACE } from "./i18n";
 import { StyleSheet, Text, View } from "react-native";
 
 import { useActive, useEntity } from "../../store/hooks";
@@ -24,7 +26,6 @@ import {
   useTheme,
   type SelectOption,
 } from "../../ui";
-import "./i18n";
 import {
   applyFilmStock,
   dateInputFromIso,
@@ -52,7 +53,7 @@ export interface RollFormProps {
 }
 
 export function RollForm({ mode, rollId }: RollFormProps) {
-  const { t } = useTranslation("rolls");
+  const { t } = useTranslation(ROLLS_NAMESPACE);
   const existing = useEntity("rolls", mode === "edit" ? (rollId ?? null) : null) ?? null;
 
   if (mode === "edit" && existing === null) {
@@ -72,7 +73,7 @@ function filmTypeOf(stock: FilmStock | undefined): FilmType {
 }
 
 function RollFormFields({ existing }: { existing: Roll | null }) {
-  const { t } = useTranslation("rolls");
+  const { t } = useTranslation(ROLLS_NAMESPACE);
   const { palette, fontSize } = useTheme();
   const cameras = useActive("cameras");
   const filmStocks = useActive("filmStocks");

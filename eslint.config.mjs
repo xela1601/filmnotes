@@ -15,6 +15,7 @@
  */
 import js from "@eslint/js";
 import tseslint from "typescript-eslint";
+import eslintReact from "@eslint-react/eslint-plugin";
 import expoConfig from "eslint-config-expo/flat.js";
 import prettierConfig from "eslint-config-prettier/flat";
 import globals from "globals";
@@ -81,9 +82,11 @@ export default tseslint.config(
       // `as` casts on JSON payloads are deliberate in a few places; a type assertion that
       // widens to `any` never is.
       "@typescript-eslint/no-explicit-any": "error",
-      // `fixStyle: 'inline-type-imports'` is tempting but its autofix merges a value import
-      // into an existing `import type` statement and produces code Babel rejects; the
-      // separate-statement fix is the safe one.
+      // `fixStyle: "inline-type-imports"` looks tidier and its autofix is broken in this
+      // combination: it merges a value import into an existing `import type` statement
+      // (`import type { A , createStore, type B } from "..."`), which Babel refuses to parse, so
+      // `eslint --fix` leaves the file unloadable. Separate statements produce the same imports
+      // without the rewrite.
       "@typescript-eslint/consistent-type-imports": [
         "error",
         { prefer: "type-imports", fixStyle: "separate-type-imports" },
@@ -94,11 +97,20 @@ export default tseslint.config(
   // ------------------------------------------------------------------- the Expo app
   {
     files: ["apps/mobile/**/*.{ts,tsx,js,jsx}"],
-    extends: [expoConfig],
+    // eslint-config-expo brings the React Native globals, the import resolution and Expo's own
+    // rules. Its React rules come from eslint-plugin-react 7.37, which has no ESLint 10 release
+    // (jsx-eslint/eslint-plugin-react#4018: it still calls the removed `context.getFilename()`
+    // and crashes on the first JSX file). @eslint-react replaces exactly that part - it is
+    // TypeScript-aware, maintained against ESLint 10, and ships the config that switches the
+    // legacy rules off, so the two cannot report the same thing twice.
+    extends: [
+      expoConfig,
+      eslintReact.configs["disable-conflict-eslint-plugin-react"],
+      eslintReact.configs["recommended-typescript"],
+    ],
     settings: {
-      // Pinned instead of "detect": eslint-config-expo still bundles eslint-plugin-react
-      // 7.37, whose version detection calls the pre-ESLint-10 context API and crashes with
-      // "contextOrFilename.getFilename is not a function". Naming the version skips it.
+      // Still pinned: the legacy plugin is registered (Expo's config plugs it in) and its
+      // version detection would crash even with every rule switched off.
       react: { version: "19.2" },
     },
     rules: {

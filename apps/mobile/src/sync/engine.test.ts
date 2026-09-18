@@ -371,3 +371,20 @@ function harnessWrite<K extends CollectionName>(
   store.getState().upsert(collection, record);
   spy.mockRestore();
 }
+
+describe("runSync – a delete that never reached the server", () => {
+  it("does not create a record just to mark it deleted", async () => {
+    const { store, client, deps } = harness();
+    deps.setLastSyncAt("2026-09-18T09:00:00.000Z");
+    harnessWrite(store, "rolls", makeRoll({ notes: "never synced" }), "2026-09-18T10:00:00.000Z");
+    store.getState().softDelete("rolls", "roll00000000001");
+
+    const result = await runSync(deps);
+
+    expect(result.errors).toEqual([]);
+    expect(client.createCalls).toEqual([]);
+    expect(client.count("rolls")).toBe(0);
+    // The outbox entry is done either way: there is nothing left to tell the server.
+    expect(store.getState().outbox).toEqual([]);
+  });
+});

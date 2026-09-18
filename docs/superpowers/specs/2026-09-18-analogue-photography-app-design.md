@@ -204,6 +204,28 @@ Multi-user UI, registration, lab APIs (none public), Instagram/Facebook Graph AP
   (`screenshots.mjs`, writes `docs/screenshots/{light,dark}/`). The development sandbox cannot start
   a browser (`socket(AF_UNIX)` is denied), so the jsdom run is what guards the tour in CI and the
   pictures are taken on the host.
+
+### 7.2 Added during the first review round (2026-09-18)
+
+- **Credentials live in a `.env` file** (`.env.example` documents every variable). The CLI reads it
+  with Node's own `process.loadEnvFile`; `FILMNOTES_ENV_FILE` points at a file outside the
+  repository, which is how the credentials stay out of the bind-mounted Docker Sandbox. The app's
+  own secrets stay in the device keychain - an Expo bundle ships to a device, so there is no
+  build-time environment that could hold them safely.
+- **All timestamps are shown and entered in local time** (`packages/domain/src/localTime.ts`).
+  Stored data stays ISO/UTC. The caption and the WordPress post date a frame by its _local_
+  calendar day, which is what the photographer means by "the 19th".
+- **The exposure is recorded in every mode**, with the label saying whether the camera or the
+  photographer chose the value. The alternative (hiding the field the camera controls) lost
+  exactly the information the Minolta displays.
+- **`scans.file` is protected** (migration 1758600000): the record was owner-only, the bytes were
+  not. Images now need a short-lived file token.
+- **The sync watermark comes from the data**, never from a device clock, because PocketBase
+  filters against its own `updated` column.
+- **@eslint-react replaces eslint-plugin-react** in the app: the latter has no ESLint 10 release
+  (jsx-eslint/eslint-plugin-react#4018). `eslint-config-expo` keeps providing the RN globals,
+  import resolution and `react-hooks`.
+
 - **Not built, worth knowing:** no settings UI for the caption template and hashtags (the store fields
   exist and the exporters read them), no dedicated "handed to lab" date (goes into the roll notes), no
   caption editing on the roll-level export screen, and export history only on the frame export screen.

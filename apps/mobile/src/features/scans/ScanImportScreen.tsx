@@ -21,7 +21,7 @@ import { useShallow } from "zustand/react/shallow";
 import { SCANS_NAMESPACE } from "./i18n";
 import { assignTo, buildAssignments, moveAssignment } from "./importModel";
 import { expandZip, isZip, pickScanFiles, type PickedFile } from "./pickScans";
-import { openServerSession } from "./session";
+import { openServerSession } from "../../sync/session";
 import { uploadScans, type FailedUpload, type UploadScansResult } from "./uploadScans";
 import { now } from "../../lib/clock";
 import { useEntity } from "../../store/hooks";

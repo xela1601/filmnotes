@@ -1,5 +1,5 @@
 import type { Frame } from "@filmnotes/domain";
-import { makeFrame } from "@filmnotes/domain";
+import { makeFrame } from "@filmnotes/domain/testing";
 
 import type { ImageFile } from "./files";
 import { planImport, renderPlan } from "./plan";

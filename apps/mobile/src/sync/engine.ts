@@ -117,11 +117,18 @@ function messageOf(error: unknown): string {
   return String(error);
 }
 
-/** Writes one record: `update` first, `create` when the server does not know the id yet. */
+/**
+ * Writes one record: `update` first, `create` when the server does not know the id yet.
+ *
+ * `op` is the outbox entry's operation. A record that was deleted before it ever reached the
+ * server needs no create - there is nothing to soft-delete there, and creating it only to mark
+ * it deleted is a round trip for a tombstone nobody reads.
+ */
 async function pushRecord<K extends CollectionName>(
   deps: SyncDeps,
   collection: K,
   record: EntityOf<K>,
+  op: OutboxEntry["op"] = "upsert",
 ): Promise<void> {
   const remoteName = PB_COLLECTION[collection];
   const payload = toRemote(collection, record, deps.ownerId);
@@ -129,6 +136,7 @@ async function pushRecord<K extends CollectionName>(
     await deps.client.update(remoteName, record.id, payload);
   } catch (error) {
     if (statusOf(error) !== 404) throw error;
+    if (op === "delete") return;
     await deps.client.create(remoteName, payload);
   }
 }
@@ -187,7 +195,7 @@ async function pushOutbox(
     }
 
     try {
-      await pushRecord(deps, entry.collection, local);
+      await pushRecord(deps, entry.collection, local, entry.op);
       result.pushed += 1;
       handled.push(entry);
       written.add(`${entry.collection}/${entry.id}`);

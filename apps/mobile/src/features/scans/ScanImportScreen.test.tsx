@@ -3,7 +3,7 @@ import { fireEvent, render, screen, waitFor } from "@testing-library/react-nativ
 import { router } from "expo-router";
 
 import { ScanImportScreen } from "./ScanImportScreen";
-import { openServerSession } from "./session";
+import { openServerSession } from "../../sync/session";
 import { i18n } from "../../i18n";
 import type { SyncClient } from "../../sync/client";
 import { FakeSyncClient } from "../../sync/fakeClient";
@@ -24,7 +24,7 @@ jest.mock("expo-file-system", () => ({
 }));
 
 // `session.ts` reaches the ESM-only `pocketbase` SDK through `src/sync/client.ts`.
-jest.mock("./session", () => ({ openServerSession: jest.fn() }));
+jest.mock("../../sync/session", () => ({ openServerSession: jest.fn() }));
 
 // The real component resolves `source` into its own shape; a bare host component keeps
 // the props the screen passed, which is what this test is about.

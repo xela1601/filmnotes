@@ -113,4 +113,14 @@ describe("shiftAssignments", () => {
     expect(assignments.map((assignment) => assignment.frameNo)).toEqual([1, 2, 3]);
     expect(shifted).not.toBe(assignments);
   });
+
+  it("drops the last assignment off the end of the roll, without inventing a frame", () => {
+    // Documented at scanMatching.ts:80 and never asserted: shifting forward past the last frame
+    // unassigns that file rather than failing - the user sees it as "unassigned" in the review.
+    const shifted = shiftAssignments(assignments, frames, 0, 1);
+
+    expect(shifted.map((assignment) => assignment.frameNo)).toEqual([2, 3, null]);
+    expect(shifted[2]?.frameId).toBeNull();
+    expect(shifted).toHaveLength(assignments.length);
+  });
 });

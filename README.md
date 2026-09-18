@@ -80,13 +80,10 @@ binary is fetched by a script, Docker is only needed on the server.
 ```bash
 npm install          # all workspaces
 npm test             # every Jest project (domain, presets, exporters, app, CLI)
-npm run typecheck    # tsc -b over packages/* and tools/scan-import
+npm run typecheck    # tsc -b over packages/*, tools/* and the Expo app
 npm run lint         # ESLint 10, flat config, type-aware outside the app
 npm run format       # Prettier over the repository (--check in CI: npm run format:check)
 ```
-
-`npm run typecheck` does not cover the Expo app (it has no composite build); check it with
-`npx tsc -p apps/mobile --noEmit`.
 
 Linting and formatting are split the usual way: **ESLint** (`eslint.config.mjs`) reports
 problems, **Prettier** (`.prettierrc.json`) owns the layout, and `eslint-config-prettier`
@@ -171,10 +168,12 @@ Worth knowing before you rely on something that is not there:
 - **Sync is manual and lives on one screen.** Nothing syncs at app start or in the background;
   open "Einstellungen" → "Server" and press "Jetzt synchronisieren". See
   [`docs/workflow.md`](docs/workflow.md) §6.
-- **Scans need the server.** The image files are only ever stored in PocketBase; the app keeps
-  thumbnails by URL. No server, no scan import and no export.
+- **Scans need the server.** The image files are only ever stored in PocketBase, and the file
+  field is protected, so a thumbnail also needs a valid session. No server (or no credentials),
+  no scan import, no image and no export.
 - **HEIC is rejected.** The `scans.file` field accepts `image/jpeg`, `image/png`, `image/tiff`
-  and `image/webp` only — ask the lab for JPEG or convert first.
+  and `image/webp` only, and the import says so per file before it uploads anything — ask the lab
+  for JPEG or convert first. (dm and Rossmann deliver JPEG.)
 - **WordPress posts are drafts, always.** Categories, tags and the published state are not
   settable from the app; publishing is a manual step in WordPress.
 - **Two export targets**: WordPress and a share package (clipboard + OS share sheet). No

@@ -104,6 +104,18 @@ describe("validateFrame", () => {
     });
   });
 
+  it("rule 7: treats an unrecorded support as hand-held", () => {
+    // The field starts empty on a frame the camera preset did not fill in, and a warning the
+    // photographer can dismiss with "tripod" is more useful than silence.
+    const frame = makeFrame({ shutterSpeed: "1/30", support: null });
+    expect(validateFrame(frame, context())).toContainEqual({
+      level: "warning",
+      code: "handheld_shake_risk",
+      field: "shutterSpeed",
+      params: { limit: "1/60" },
+    });
+  });
+
   it("rule 7: stays quiet on a tripod", () => {
     const frame = makeFrame({ shutterSpeed: "1/30", support: "tripod" });
     expect(validateFrame(frame, context())).toEqual([]);

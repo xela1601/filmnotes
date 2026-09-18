@@ -8,10 +8,11 @@
  */
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
+
+import { EQUIPMENT_NAMESPACE } from "./i18n";
 import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 
 import { Button, FieldLabel, useTheme } from "../../ui";
-import "./i18n";
 
 export interface ListFieldProps {
   label: string;
@@ -23,7 +24,7 @@ export interface ListFieldProps {
 }
 
 export function ListField({ label, values, onChange, numeric = false, testID }: ListFieldProps) {
-  const { t } = useTranslation("equipment");
+  const { t } = useTranslation(EQUIPMENT_NAMESPACE);
   const { palette, fontSize } = useTheme();
   const [draft, setDraft] = useState("");
 
@@ -57,7 +58,9 @@ export function ListField({ label, values, onChange, numeric = false, testID }: 
         <View style={styles.chips}>
           {values.map((value, index) => (
             <Pressable
-              // Values may repeat while the user is still typing, so the index is part of the key.
+              // Duplicates are legal here (two "1/60" entries while editing) and the chips hold
+              // no state of their own, so the index is part of the key on purpose.
+              // eslint-disable-next-line @eslint-react/no-array-index-key
               key={`${String(value)}-${index}`}
               testID={testID === undefined ? undefined : `${testID}-remove-${index}`}
               accessibilityRole="button"

@@ -4,6 +4,11 @@
  * Browsers that implement the Web Share API (mobile Safari, Chrome on Android) get the real share
  * sheet; everywhere else the caption goes to the clipboard and the image is offered as a download,
  * which is what a desktop user needs to post it by hand.
+ *
+ * A share the user *cancelled* is different from one the browser could not do: cancelling rejects
+ * with an `AbortError`, and that is passed on, so `runFrameExport` does not write an export log
+ * for something that never left the device. Every other failure falls back, because then the
+ * fallback is the only way the user gets his picture at all.
  */
 import type { SharePayload } from "@filmnotes/exporters";
 import * as Clipboard from "expo-clipboard";
@@ -27,6 +32,11 @@ function download(image: NonNullable<SharePayload["image"]>): void {
   globalThis.setTimeout(() => URL.revokeObjectURL(url), 10_000);
 }
 
+/** True for the rejection a dismissed share sheet produces. */
+function isAbort(error: unknown): boolean {
+  return error instanceof Error && error.name === "AbortError";
+}
+
 export async function shareOut(payload: SharePayload): Promise<void> {
   const files =
     payload.image === null
@@ -43,8 +53,9 @@ export async function shareOut(payload: SharePayload): Promise<void> {
     try {
       await navigator.share(data);
       return;
-    } catch {
-      // The user dismissed the sheet, or the browser refused the payload – fall through to
+    } catch (error) {
+      if (isAbort(error)) throw error;
+      // The browser refused the payload (an unsupported file type, a policy) - fall through to
       // clipboard plus download, which always works.
     }
   }

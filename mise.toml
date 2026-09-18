@@ -48,7 +48,7 @@ description = "Fail if anything is not Prettier-formatted"
 run = "npm run format:check"
 
 [tasks.typecheck]
-description = "TypeScript project references build (no emit of stale output)"
+description = "TypeScript: project references plus the Expo app (no emit of stale output)"
 run = "npm run typecheck"
 
 [tasks."check:tour"]

@@ -180,8 +180,8 @@ function FrameEditor({ initial, roll, camera }: FrameEditorProps) {
     confirmDestructive({
       title: t("delete"),
       message: t("deleteConfirm"),
-      confirmLabel: t("common:actions.delete"),
-      cancelLabel: t("common:actions.cancel"),
+      confirmLabel: t("actions.delete", { ns: "common" }),
+      cancelLabel: t("actions.cancel", { ns: "common" }),
       onConfirm: () => {
         softDelete("frames", frame.id);
         router.back();

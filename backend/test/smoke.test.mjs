@@ -7,6 +7,9 @@
  */
 import test from "node:test";
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
+import { dirname, join } from "node:path";
+import { fileURLToPath } from "node:url";
 
 import {
   ONE_PIXEL_PNG,
@@ -35,6 +38,18 @@ const EXPECTED_COLLECTIONS = [
 const ROLL_ID = "roll0smoketest1";
 const USER_A = { email: "owner-a@filmnotes.test", password: "smoke-user-pw-123" };
 const USER_B = { email: "owner-b@filmnotes.test", password: "smoke-user-pw-456" };
+
+/**
+ * Payloads produced by the app's own `toRemote` (see the fixture test in
+ * `apps/mobile/src/sync/mapping.test.ts`). Hand-written bodies would only prove that *this file*
+ * agrees with the schema; these prove that what the client sends does.
+ */
+const CLIENT_PAYLOADS = JSON.parse(
+  readFileSync(
+    join(dirname(fileURLToPath(import.meta.url)), "fixtures", "remote-records.json"),
+    "utf8",
+  ),
+);
 
 if (!hasPocketBase()) {
   test.skip(`PocketBase smoke test: ${MISSING_BINARY_HINT}`, () => {});
@@ -177,7 +192,66 @@ if (!hasPocketBase()) {
       );
     });
 
-    await t.test("5. scans accept an image upload and serve a thumbnail", async () => {
+    await t.test(
+      "5. the payloads the app's mapping produces are accepted as they are",
+      async () => {
+        for (const [collection, payload] of Object.entries(CLIENT_PAYLOADS)) {
+          const { status, body } = await api(pb.url, `/api/collections/${collection}/records`, {
+            token: sessionA.token,
+            method: "POST",
+            body: { ...payload, owner: sessionA.user.id },
+          });
+          assert.equal(status, 200, `${collection}: ${JSON.stringify(body)}`);
+          assert.equal(body.id, payload.id, `${collection} keeps the client id`);
+          assert.equal(
+            body.clientUpdated.replace(" ", "T"),
+            payload.clientUpdated,
+            `${collection} keeps clientUpdated`,
+          );
+        }
+      },
+    );
+
+    await t.test("6. the change feed needs PocketBase's own date format", async () => {
+      // Why `asPocketBaseDate` exists (apps/mobile/src/sync/client.ts): the filter is compared
+      // lexically against the stored string, and 'T' > ' ', so an ISO watermark sorts after every
+      // timestamp of the same day and the feed comes back empty - silently.
+      const record = await api(pb.url, `/api/collections/rolls/records/${ROLL_ID}`, {
+        token: sessionA.token,
+      });
+      assert.equal(record.status, 200);
+      const stored = record.body.updated;
+      const oneSecondEarlier = new Date(Date.parse(stored.replace(" ", "T")) - 1000)
+        .toISOString()
+        .replace("T", " ");
+
+      const withPocketBaseFormat = await api(
+        pb.url,
+        `/api/collections/rolls/records?filter=${encodeURIComponent(`updated > "${oneSecondEarlier}"`)}`,
+        { token: sessionA.token },
+      );
+      assert.equal(withPocketBaseFormat.status, 200);
+      assert.ok(
+        withPocketBaseFormat.body.totalItems >= 1,
+        "a watermark in PocketBase's format finds the record",
+      );
+
+      const withIsoFormat = await api(
+        pb.url,
+        `/api/collections/rolls/records?filter=${encodeURIComponent(
+          `updated > "${oneSecondEarlier.replace(" ", "T")}"`,
+        )}`,
+        { token: sessionA.token },
+      );
+      assert.equal(withIsoFormat.status, 200);
+      assert.equal(
+        withIsoFormat.body.totalItems,
+        0,
+        "an ISO watermark of the same instant finds nothing - this is the trap",
+      );
+    });
+
+    await t.test("7. scans accept an image upload and serve a thumbnail", async () => {
       const form = new FormData();
       form.set("rollId", ROLL_ID);
       form.set("fileName", "smoke-0001.png");
@@ -195,8 +269,19 @@ if (!hasPocketBase()) {
       assert.ok(created.body.file, "the response carries the stored file name");
 
       const fileUrl = `${pb.url}/api/files/scans/${created.body.id}/${created.body.file}?thumb=200x200`;
-      const thumb = await fetch(fileUrl);
-      assert.equal(thumb.status, 200, `thumbnail request failed for ${fileUrl}`);
+
+      // The file field is protected (migration 1758600000): the bytes need a token, or anyone
+      // who knows the URL could read someone else's scans.
+      const anonymous = await fetch(fileUrl);
+      assert.notEqual(anonymous.status, 200, "a protected file must not be served without a token");
+
+      const token = await api(pb.url, "/api/files/token", {
+        token: sessionA.token,
+        method: "POST",
+      });
+      assert.equal(token.status, 200, JSON.stringify(token.body));
+      const withToken = await fetch(`${fileUrl}&token=${token.body.token}`);
+      assert.equal(withToken.status, 200, `thumbnail request failed for ${fileUrl}`);
     });
   });
 }

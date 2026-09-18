@@ -23,7 +23,9 @@ export function IssueList({ issues, testID }: IssueListProps) {
     <View testID={testID} style={styles.list}>
       {issues.map((issue, index) => (
         <Text
-          // Codes can repeat per field (e.g. several mismatching filters), so include the index.
+          // Codes can repeat per field (several mismatching filters), and the list is recomputed
+          // as a whole on every keystroke, so the index is part of the key on purpose.
+          // eslint-disable-next-line @eslint-react/no-array-index-key
           key={`${issue.code}-${issue.field ?? "none"}-${index}`}
           testID={testID === undefined ? undefined : `${testID}-${issue.code}`}
           style={[styles.issue, { color: colorFor(issue.level), fontSize: fontSize.sm }]}

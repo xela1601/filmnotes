@@ -15,6 +15,8 @@ import {
 } from "@filmnotes/domain";
 import { router } from "expo-router";
 import { useTranslation } from "react-i18next";
+
+import { ROLLS_NAMESPACE } from "./i18n";
 import { StyleSheet, Text, View } from "react-native";
 import { useShallow } from "zustand/react/shallow";
 
@@ -33,7 +35,6 @@ import {
   useTheme,
   type SelectOption,
 } from "../../ui";
-import "./i18n";
 import { frameRowTitle, rollProgress, rollTitle } from "./rollLabel";
 
 /** The life of a roll, in the order it is worked through. */
@@ -44,7 +45,7 @@ export interface RollDetailScreenProps {
 }
 
 export function RollDetailScreen({ rollId }: RollDetailScreenProps) {
-  const { t } = useTranslation("rolls");
+  const { t } = useTranslation(ROLLS_NAMESPACE);
   const roll = useEntity("rolls", rollId);
 
   if (roll === undefined || roll.deleted !== null) {
@@ -59,7 +60,7 @@ export function RollDetailScreen({ rollId }: RollDetailScreenProps) {
 }
 
 function RollDetail({ roll }: { roll: Roll }) {
-  const { t } = useTranslation("rolls");
+  const { t } = useTranslation(ROLLS_NAMESPACE);
   const { palette, fontSize } = useTheme();
   // Shallow-compared: the selector builds a new array on every call.
   const frames = useStore(useShallow((state) => selectFramesForRoll(state, roll.id)));

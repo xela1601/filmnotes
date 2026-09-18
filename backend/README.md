@@ -48,9 +48,11 @@ answered with `200` and an empty page instead of `401`. No data leaks, but clien
 Indexes exist on `owner` for every collection and additionally on `frames.rollId`,
 `scans.rollId`, `scans.frameId` and `export_logs.frameId`.
 
-`scans.file` is a single-file field (max 50 MB, `image/jpeg|png|tiff|webp`) with the thumbnails
-`200x200` (grid) and `800x0` (review). Fetch them via
-`GET /api/files/scans/<recordId>/<fileName>?thumb=200x200`.
+`scans.file` is a single-file field (max 50 MB, `image/jpeg|png|tiff|webp`) and is
+**protected**: the bytes are only served with a short-lived token from `POST /api/files/token`,
+so knowing a file URL is not enough to read someone's scans. The app fetches that token with its
+own session (`useFileToken`). Thumbnails are rendered by PocketBase:
+`GET /api/files/scans/<recordId>/<fileName>?thumb=200x200&token=<token>`.
 
 ## Local development
 

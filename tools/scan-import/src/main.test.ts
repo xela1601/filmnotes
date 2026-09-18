@@ -3,7 +3,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 
 import type { Frame, Id } from "@filmnotes/domain";
-import { makeFrame } from "@filmnotes/domain";
+import { makeFrame } from "@filmnotes/domain/testing";
 
 import type { Deps, ImportClient, Io, PromptOptions } from "./main";
 import { main } from "./main";
