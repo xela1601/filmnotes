@@ -26,7 +26,17 @@
       "bundler": "metro",
       "output": "single"
     },
-    "plugins": ["expo-router", "expo-secure-store", "expo-localization"],
+    "plugins": [
+      "expo-router",
+      "expo-secure-store",
+      "expo-localization",
+      [
+        "expo-location",
+        {
+          "locationWhenInUsePermission": "filmnotes speichert auf Wunsch die Koordinaten des Aufnahmeorts zu einem Bild."
+        }
+      ]
+    ],
     "experiments": {
       "typedRoutes": true
     }
