@@ -73,8 +73,9 @@ npm run typecheck    # tsc -b over packages/* and tools/scan-import
 ```
 
 `npm run typecheck` does not cover the Expo app (it has no composite build); check it with
-`npx tsc -p apps/mobile --noEmit`. A `npm run lint` script exists, but **ESLint is not set up
-yet**: the repository has no ESLint config and no `eslint` dependency, so the script fails.
+`npx tsc -p apps/mobile --noEmit`. **ESLint is not set up yet** – no config, no dependency, and
+no `lint` script, so nothing pretends to work. `npx expo lint` inside `apps/mobile` is the
+shortest way to add it when you want it.
 
 Run the app in a browser:
 
@@ -110,8 +111,7 @@ Node and wraps the commands above:
 
 ```bash
 mise install         # provision the pinned toolchain
-mise tasks           # install, test, test:backend, test:all, typecheck, lint, import, web, backend
-                     #   (`lint` fails for the reason above)
+mise tasks           # install, test, test:backend, test:all, typecheck, check:web, import, web, backend
 mise run test
 mise run web         # Expo for the web on port 8081
 mise run backend     # local PocketBase on port 8090

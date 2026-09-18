@@ -39,10 +39,6 @@ dir = "apps/mobile"
 description = "TypeScript project references build (no emit of stale output)"
 run = "npm run typecheck"
 
-[tasks.lint]
-description = "ESLint over all TypeScript sources"
-run = "npm run lint"
-
 [tasks.import]
 description = "Import scans for a roll from the desktop (see tools/scan-import/README.md)"
 run = "npm run import -w @filmnotes/scan-import --"

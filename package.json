@@ -2,13 +2,17 @@
   "name": "filmnotes",
   "private": true,
   "version": "0.1.0",
-  "description": "Per-frame notes for analogue film rolls – Expo app + PocketBase backend",
+  "description": "Per-frame notes for analogue film rolls \u2013 Expo app + PocketBase backend",
   "license": "MIT",
-  "workspaces": ["packages/*", "apps/*", "tools/*", "backend"],
+  "workspaces": [
+    "packages/*",
+    "apps/*",
+    "tools/*",
+    "backend"
+  ],
   "scripts": {
     "test": "jest",
-    "typecheck": "tsc -b packages/domain packages/presets packages/exporters tools/scan-import",
-    "lint": "eslint . --ext .ts,.tsx"
+    "typecheck": "tsc -b packages/domain packages/presets packages/exporters tools/scan-import"
   },
   "devDependencies": {
     "@types/jest": "^30.0.0",
