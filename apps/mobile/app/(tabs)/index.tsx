@@ -1,4 +1,6 @@
-// Placeholder route – this screen is owned by T-006 (roll management UI).
-export default function Placeholder() {
-  return null;
+import { RollsListScreen } from '../../src/features/rolls/RollsListScreen';
+
+/** `/` – the rolls tab. */
+export default function RollsRoute() {
+  return <RollsListScreen />;
 }
