@@ -10,13 +10,16 @@ import { makeCamera, makeFilmStock, makeFilter, makeFlash, makeLens } from '../.
 import {
   DESCRIPTORS,
   EQUIPMENT_TYPES,
+  decodeOption,
   displayName,
+  encodeOption,
   emptyRecord,
   isEquipmentType,
   readField,
   validateRecord,
   writeField,
   type EquipmentType,
+  type FieldDescriptor,
 } from './descriptors';
 
 const NOW = '2026-09-18T10:00:00.000Z';
@@ -212,6 +215,42 @@ describe('readField / writeField', () => {
   it('returns undefined for a key the record does not have', () => {
     expect(readField(makeLens(), 'nope')).toBeUndefined();
     expect(readField(makeLens(), 'hasHood.nope')).toBeUndefined();
+  });
+});
+
+describe('encodeOption / decodeOption', () => {
+  const field = (key: string, type: EquipmentType): FieldDescriptor => {
+    const found = DESCRIPTORS[type].find((candidate) => candidate.key === key);
+    if (found === undefined) throw new Error(`no descriptor for ${type}.${key}`);
+    return found;
+  };
+
+  it('round-trips a plain string option', () => {
+    const afCompatible = field('afCompatible', 'filters');
+
+    expect(encodeOption(afCompatible, 'limited')).toBe('limited');
+    expect(decodeOption(afCompatible, 'limited')).toBe('limited');
+    expect(encodeOption(afCompatible, null)).toBeNull();
+  });
+
+  it('round-trips the number of exposures', () => {
+    const exposures = field('exposures', 'filmStocks');
+
+    expect(encodeOption(exposures, 36)).toBe('36');
+    expect(decodeOption(exposures, '24')).toBe(24);
+    // Nullable: a film stock does not have to state its length.
+    expect(decodeOption(exposures, null)).toBeNull();
+  });
+
+  it('maps the DX coding onto yes / no / unknown', () => {
+    const dxCoded = field('dxCoded', 'filmStocks');
+
+    expect(encodeOption(dxCoded, true)).toBe('yes');
+    expect(encodeOption(dxCoded, false)).toBe('no');
+    expect(encodeOption(dxCoded, null)).toBe('unknown');
+    expect(decodeOption(dxCoded, 'yes')).toBe(true);
+    expect(decodeOption(dxCoded, 'no')).toBe(false);
+    expect(decodeOption(dxCoded, 'unknown')).toBeNull();
   });
 });
 

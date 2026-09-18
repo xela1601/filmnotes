@@ -517,6 +517,43 @@ export function emptyRecord<T extends EquipmentType>(type: T, now: ISODateTime):
   }
 }
 
+/**
+ * The option value that stands for the record's current value, or null when nothing
+ * is selected. Selects always work on strings; `valueType` says what is stored.
+ */
+export function encodeOption(field: FieldDescriptor, value: unknown): string | null {
+  switch (field.valueType ?? 'string') {
+    case 'number':
+      return typeof value === 'number' ? String(value) : null;
+    case 'boolean':
+      return value === true ? 'yes' : value === false ? 'no' : null;
+    case 'tristate':
+      return value === true ? 'yes' : value === false ? 'no' : 'unknown';
+    default:
+      return typeof value === 'string' && value !== '' ? value : null;
+  }
+}
+
+/** The value to store for a chosen option; the inverse of `encodeOption`. */
+export function decodeOption(field: FieldDescriptor, selected: string | null): unknown {
+  const valueType = field.valueType ?? 'string';
+
+  if (selected === null) return valueType === 'string' && field.nullable !== true ? '' : null;
+
+  switch (valueType) {
+    case 'number': {
+      const parsed = Number(selected);
+      return Number.isFinite(parsed) ? parsed : null;
+    }
+    case 'boolean':
+      return selected === 'yes';
+    case 'tristate':
+      return selected === 'yes' ? true : selected === 'no' ? false : null;
+    default:
+      return selected;
+  }
+}
+
 /** Error code per descriptor key; doubles as the i18n key suffix `errors.<code>`. */
 export type RecordErrors = Record<string, 'required' | 'invalid'>;
 
