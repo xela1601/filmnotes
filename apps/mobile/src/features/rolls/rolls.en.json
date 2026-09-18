@@ -1,0 +1,58 @@
+{
+  "title": "Rolls",
+  "new": "New roll",
+  "edit": "Edit roll",
+  "notFound": "Roll not found",
+  "notFoundHint": "This roll was deleted or belongs to another device.",
+  "empty": "No roll yet",
+  "emptyHint": "Create a roll as soon as you have loaded a cartridge into the camera.",
+  "unknownFilm": "Unknown film",
+  "unknownCamera": "Unknown camera",
+  "progress": "{{shot}} / {{total}} frames",
+  "iso": "ISO {{iso}}",
+  "pushPull": "Push/pull {{ev}} EV",
+  "frames": "Frames",
+  "noFrames": "No frame recorded yet",
+  "addFrame": "Add frame",
+  "importScans": "Import scans",
+  "exportRoll": "Export roll",
+  "deleteRoll": "Delete roll",
+  "deleteConfirm": "The roll and all of its frames will be deleted. Continue?",
+  "sections": {
+    "film": "Film",
+    "development": "Development",
+    "actions": "Actions"
+  },
+  "fields": {
+    "camera": "Camera",
+    "filmType": "Film type",
+    "filmStock": "Film stock",
+    "iso": "ISO",
+    "isoSource": "ISO source",
+    "exposures": "Exposures",
+    "pushPull": "Push/pull (EV)",
+    "loadedAt": "Loaded on",
+    "lab": "Lab",
+    "notes": "Notes"
+  },
+  "filmTypes": {
+    "color": "Colour",
+    "bw": "Black and white"
+  },
+  "isoSources": {
+    "DX": "DX",
+    "manual": "manual"
+  },
+  "status": {
+    "label": "Status",
+    "loaded": "loaded",
+    "shot": "shot",
+    "at_lab": "at the lab",
+    "developed": "developed",
+    "archived": "archived"
+  },
+  "errors": {
+    "required": "Required",
+    "iso_range": "ISO has to be between 6 and 12800."
+  }
+}
