@@ -36,9 +36,6 @@ const MIME_BY_EXTENSION: Record<string, string> = {
   '.webp': 'image/webp',
 };
 
-/** Extensions listed in the usage text, lower case and with the leading dot. */
-export const IMAGE_EXTENSIONS: readonly string[] = Object.keys(MIME_BY_EXTENSION);
-
 /** The mime type for a file name, or `null` when the file is not a scan we handle. */
 function mimeTypeOf(name: string): string | null {
   return MIME_BY_EXTENSION[extname(name).toLowerCase()] ?? null;
