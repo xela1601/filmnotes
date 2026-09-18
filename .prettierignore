@@ -4,7 +4,7 @@ dist/
 .expo/
 coverage/
 .npm-cache/
-.claude/worktrees/
+.claude/
 
 # Runtime data and binaries
 backend/bin/
@@ -13,6 +13,18 @@ backend/pb_data/
 # Generated
 package-lock.json
 
-# Owned by the host and mounted read-only (or unreadable) inside the sandbox
+# Owned by the host, not by this repository: mounted read-only or unreadable inside the
+# sandbox, and excluded from git via .git/info/exclude. Prettier can only fail on them.
 sbxenv.yaml
+.bashrc
+.bash_profile
+.profile
 .zshrc
+.zprofile
+.gitconfig
+.ripgreprc
+.mcp.json
+.gitmodules
+.DS_Store
+.idea
+.vscode
