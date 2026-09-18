@@ -1,28 +1,31 @@
-import { Stack } from 'expo-router';
-import { StatusBar } from 'expo-status-bar';
-import { useEffect, useState } from 'react';
-import { ActivityIndicator, StyleSheet, View } from 'react-native';
-import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { Stack } from "expo-router";
+import { StatusBar } from "expo-status-bar";
+import { useEffect, useSyncExternalStore } from "react";
+import { ActivityIndicator, StyleSheet, View } from "react-native";
+import { SafeAreaProvider } from "react-native-safe-area-context";
 
 // Importing the module initialises i18next before the first screen renders.
-import { setAppLanguage } from '../src/i18n';
-import { now } from '../src/lib/clock';
-import { useStore } from '../src/store/store';
-import { useSync } from '../src/sync/useSync';
-import { useTheme } from '../src/ui/theme';
+import { setAppLanguage } from "../src/i18n";
+import { now } from "../src/lib/clock";
+import { useStore } from "../src/store/store";
+import { useSync } from "../src/sync/useSync";
+import { useTheme } from "../src/ui/theme";
 
-/** True once the persisted state has been read back from storage. */
+/**
+ * True once the persisted state has been read back from storage.
+ *
+ * Hydration is external state, so it is read through `useSyncExternalStore` rather than
+ * mirrored into a `useState`: the snapshot is taken on every render, which closes the race
+ * where hydration finishes between the first render and the subscribing effect - the bug
+ * that used to leave a first launch stuck on the gate.
+ */
+const subscribeToHydration = (onStoreChange: () => void): (() => void) =>
+  useStore.persist.onFinishHydration(onStoreChange);
+
+const getHydrated = (): boolean => useStore.persist.hasHydrated();
+
 function useStoreHydrated(): boolean {
-  const [hydrated, setHydrated] = useState(() => useStore.persist.hasHydrated());
-
-  useEffect(() => {
-    const unsubscribe = useStore.persist.onFinishHydration(() => setHydrated(true));
-    // Hydration can already have finished before this effect ran.
-    if (useStore.persist.hasHydrated()) setHydrated(true);
-    return unsubscribe;
-  }, []);
-
-  return hydrated;
+  return useSyncExternalStore(subscribeToHydration, getHydrated, getHydrated);
 }
 
 export default function RootLayout() {
@@ -45,13 +48,13 @@ export default function RootLayout() {
 
   return (
     <SafeAreaProvider>
-      <StatusBar style={scheme === 'dark' ? 'light' : 'dark'} />
+      <StatusBar style={scheme === "dark" ? "light" : "dark"} />
       {hydrated ? (
         <Stack
           screenOptions={{
             headerStyle: { backgroundColor: palette.background },
             headerTintColor: palette.text,
-            headerTitleStyle: { fontWeight: '700' },
+            headerTitleStyle: { fontWeight: "700" },
             contentStyle: { backgroundColor: palette.background },
           }}
         >
@@ -70,5 +73,5 @@ export default function RootLayout() {
 }
 
 const styles = StyleSheet.create({
-  gate: { flex: 1, alignItems: 'center', justifyContent: 'center' },
+  gate: { flex: 1, alignItems: "center", justifyContent: "center" },
 });
