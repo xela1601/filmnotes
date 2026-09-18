@@ -1,4 +1,5 @@
 import type { Id } from '@filmnotes/domain';
+import PocketBase from 'pocketbase';
 
 /**
  * A record exactly as PocketBase stores it: our camelCase entity fields plus the
@@ -43,4 +44,81 @@ export interface SyncClient {
     file: UploadFile,
   ): Promise<RemoteRecord>;
   fileUrl(collection: string, id: Id, fileName: string, thumb?: string): string;
+}
+
+/** The auth collection the single app user lives in (see `backend/README.md`). */
+const USERS_COLLECTION = 'users';
+
+/**
+ * `SyncClient` on top of the `pocketbase` JS SDK.
+ *
+ * Auto-cancellation is switched off: the engine lists every collection one after the
+ * other, and the SDK would otherwise cancel same-endpoint requests of a previous run.
+ *
+ * The SDK is ESM-only and not on the Jest transform allow-list, so a test that reaches
+ * this module has to replace it – either `jest.mock('pocketbase', …)` or, more usually,
+ * `jest.mock('./client', …)`.
+ */
+export function createPocketBaseClient(baseUrl: string): SyncClient {
+  const pb = new PocketBase(baseUrl);
+  pb.autoCancellation(false);
+
+  return {
+    async authWithPassword(email, password) {
+      const auth = await pb.collection(USERS_COLLECTION).authWithPassword(email, password);
+      return { token: auth.token, userId: auth.record.id };
+    },
+
+    async authWithToken(token) {
+      // A non-null list rule turns an unauthenticated list into an empty result instead
+      // of a 401, so the token has to be validated against an endpoint that really
+      // requires auth: authRefresh.
+      pb.authStore.save(token, null);
+      try {
+        const auth = await pb.collection(USERS_COLLECTION).authRefresh();
+        pb.authStore.save(auth.token, auth.record);
+        return { userId: auth.record.id };
+      } catch {
+        pb.authStore.clear();
+        return null;
+      }
+    },
+
+    async list(collection, sinceIso) {
+      const filter =
+        sinceIso === null ? '' : pb.filter('updated > {:since}', { since: sinceIso });
+      return pb.collection(collection).getFullList<RemoteRecord>({ filter, sort: 'updated' });
+    },
+
+    async create(collection, record) {
+      return pb.collection(collection).create<RemoteRecord>(record);
+    },
+
+    async update(collection, id, record) {
+      return pb.collection(collection).update<RemoteRecord>(id, record);
+    },
+
+    async uploadFile(collection, id, field, file) {
+      const form = new FormData();
+      if (file.blob !== undefined) {
+        form.append(field, file.blob, file.name);
+      } else if (file.uri !== undefined) {
+        // React Native's FormData takes `{ uri, name, type }` where the DOM signature
+        // demands a Blob; this is how a local file is uploaded from Expo.
+        const native = { uri: file.uri, name: file.name, type: file.type };
+        form.append(field, native as unknown as Blob);
+      } else {
+        throw new Error('uploadFile needs either a blob or a uri');
+      }
+      return pb.collection(collection).update<RemoteRecord>(id, form);
+    },
+
+    fileUrl(collection, id, fileName, thumb) {
+      return pb.files.getURL(
+        { id, collectionId: collection, collectionName: collection },
+        fileName,
+        thumb === undefined ? {} : { thumb },
+      );
+    },
+  };
 }
