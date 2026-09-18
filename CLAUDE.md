@@ -31,6 +31,12 @@ sandbox/proxy/with-proxy.sh npm install
 sandbox/proxy/with-proxy.sh npx expo install expo-router
 ```
 
+If an Expo command fails with `ENOENT: … mkdir '/home/agent/.expo'`, give it a writable home:
+
+```bash
+HOME="$TMPDIR/expo-home" sandbox/proxy/with-proxy.sh npx expo export --platform web
+```
+
 `git`, `curl` and Node's `fetch` work without the wrapper. The wrapper starts a short-lived local
 relay that injects the proxy credentials; every Bash invocation has its own network namespace, so
 the relay only lives for the duration of that one command – never start it "once in the background".
