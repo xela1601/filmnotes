@@ -1,9 +1,10 @@
 /**
- * Minimal record builders for the app's own tests.
+ * Record builders for the app's own tests.
  *
- * TODO(T-002): `@filmnotes/domain` will export richer fixtures (`makeCamera`,
- * `makeLens`, `makeRoll`, `makeFrame`, …). Once that package is merged, replace the
- * bodies below with re-exports so there is a single source of test data.
+ * `@filmnotes/domain` exports equivalent builders, but with neutral ids. These use the
+ * ids of the shipped presets (`cam0minolta7000`, `lens0min3570f40`, …), so a fixture
+ * record and a seeded record are interchangeable in store and selector tests. Use the
+ * domain fixtures for anything that tests domain behaviour.
  */
 import type {
   Camera,
