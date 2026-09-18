@@ -159,6 +159,16 @@ describe('main', () => {
     expect(io.out.join('\n')).toMatch(/aborted/i);
   });
 
+  it('treats an empty answer as no – stdin at its end must never upload', async () => {
+    const io = recordIo([]);
+    const fake = fakeDeps();
+
+    const code = await main(argv(['--password', 'secret']), io.io, fake.deps);
+
+    expect(code).toBe(1);
+    expect(fake.created).toEqual([]);
+  });
+
   it('does not ask with --yes', async () => {
     const io = recordIo();
     const fake = fakeDeps();

@@ -36,23 +36,14 @@ export interface ImportClient extends PocketBaseLike {
   listFrames(rollId: Id): Promise<Frame[]>;
 }
 
+/**
+ * The server side of the CLI, injected: the tests pass a fake, `cli.ts` passes the real
+ * PocketBase client from `./pb`. Keeping the wiring in `cli.ts` is what keeps the ESM-only
+ * PocketBase SDK out of the unit tests.
+ */
 export interface Deps {
   createClient(server: string): Promise<ImportClient>;
 }
-
-/**
- * The real dependencies. `./pb` is imported lazily because it pulls in the ESM-only PocketBase
- * SDK, which nothing but a real run needs – the unit tests always pass their own `deps`.
- *
- * The `.js` extension is the compiled file: a dynamic `import()` is resolved with the ESM
- * algorithm even from CommonJS output, and that one needs the extension.
- */
-const REAL_DEPS: Deps = {
-  async createClient(server) {
-    const { createPocketBaseClient } = await import('./pb.js');
-    return createPocketBaseClient(server);
-  },
-};
 
 const EXIT_OK = 0;
 const EXIT_FAILED = 1;
@@ -68,7 +59,7 @@ function isYes(answer: string): boolean {
   return normalized === 'y' || normalized === 'yes';
 }
 
-export async function main(argv: string[], io: Io, deps: Deps = REAL_DEPS): Promise<number> {
+export async function main(argv: string[], io: Io, deps: Deps): Promise<number> {
   if (wantsHelp(argv)) {
     io.stdout(USAGE);
     return EXIT_OK;
