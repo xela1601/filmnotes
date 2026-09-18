@@ -95,6 +95,7 @@
   },
   "save": "Speichern",
   "saveNext": "Speichern & nächstes",
+  "export": "Exportieren",
   "delete": "Bild löschen",
   "deleteConfirm": "Dieses Bild wirklich löschen?"
 }

@@ -522,6 +522,12 @@ function FrameEditor({ initial, roll, camera }: FrameEditorProps) {
           />
         )}
         <Button
+          title={t('export')}
+          variant="secondary"
+          onPress={() => router.push(`/export/frame/${frame.id}`)}
+          testID="frame-export"
+        />
+        <Button
           title={t('delete')}
           variant="danger"
           onPress={onDelete}

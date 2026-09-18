@@ -36,7 +36,8 @@
           "locationWhenInUsePermission": "filmnotes speichert auf Wunsch die Koordinaten des Aufnahmeorts zu einem Bild."
         }
       ],
-      "expo-image"
+      "expo-image",
+      "expo-sharing"
     ],
     "experiments": {
       "typedRoutes": true

@@ -95,6 +95,7 @@
   },
   "save": "Save",
   "saveNext": "Save & next",
+  "export": "Export",
   "delete": "Delete frame",
   "deleteConfirm": "Really delete this frame?"
 }
