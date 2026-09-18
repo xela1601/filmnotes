@@ -1,0 +1,100 @@
+{
+  "title": "Frame {{no}} / {{total}}",
+  "notFound": "This frame does not exist.",
+  "notFoundHint": "It may have been deleted.",
+  "sections": {
+    "exposure": "Exposure",
+    "optics": "Optics",
+    "focus": "Focus & drive",
+    "flash": "Flash",
+    "context": "Context",
+    "issues": "Notes"
+  },
+  "fields": {
+    "mode": "Mode",
+    "shutter": "Shutter",
+    "aperture": "Aperture",
+    "compensation": "Compensation (EV)",
+    "programShift": "Program shift",
+    "aeLock": "AE lock",
+    "lens": "Lens",
+    "focalLength": "Focal length",
+    "filters": "Filters",
+    "lensHood": "Lens hood",
+    "focusMode": "Focus",
+    "afResult": "AF result",
+    "driveMode": "Drive",
+    "beepWarning": "Camera beeped",
+    "flash": "Flash unit",
+    "flashHead": "Head",
+    "flashPower": "Power",
+    "flashOk": "Flash exposure ok",
+    "support": "Support",
+    "light": "Light",
+    "subject": "Subject",
+    "locationName": "Place",
+    "date": "Date",
+    "time": "Time",
+    "notes": "Notes"
+  },
+  "placeholders": {
+    "date": "YYYY-MM-DD",
+    "time": "HH:MM",
+    "locationName": "e.g. Isarauen, Munich",
+    "notes": "What was in the frame, what stood out?"
+  },
+  "focusModes": {
+    "AF": "AF",
+    "M": "Manual"
+  },
+  "afResults": {
+    "green": "Green (in focus)",
+    "red_blink": "Red (blinking)",
+    "manual": "Focused manually"
+  },
+  "driveModes": {
+    "S": "Single frame",
+    "C": "Continuous",
+    "ST": "Self-timer"
+  },
+  "flashHeads": {
+    "direct": "Direct",
+    "bounce": "Bounce"
+  },
+  "support": {
+    "handheld": "Hand-held",
+    "braced": "Braced",
+    "tripod": "Tripod",
+    "beanbag": "Beanbag"
+  },
+  "light": {
+    "sun": "Sun",
+    "cloudy": "Cloudy",
+    "shade": "Shade",
+    "indoor_window": "Indoor, window light",
+    "indoor_artificial": "Indoor, artificial light",
+    "night": "Night",
+    "backlight": "Backlight",
+    "snow_beach": "Snow or beach"
+  },
+  "subject": {
+    "portrait": "Portrait",
+    "landscape": "Landscape",
+    "street": "Street",
+    "sport": "Sport",
+    "macro": "Macro",
+    "group": "Group",
+    "night": "Night",
+    "other": "Other"
+  },
+  "location": {
+    "useCurrent": "Use current position",
+    "locating": "Locating …",
+    "denied": "Access to the location was denied.",
+    "unavailable": "The position is not available right now."
+  },
+  "save": "Save",
+  "saveNext": "Save & next",
+  "delete": "Delete frame",
+  "deleteConfirm": "Really delete this frame?"
+}

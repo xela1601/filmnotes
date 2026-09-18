@@ -6,7 +6,7 @@
  */
 import type { Camera, Frame } from '@filmnotes/domain';
 import { newFrame } from '@filmnotes/domain';
-import { fireEvent, render, screen } from '@testing-library/react-native';
+import { act, fireEvent, render, screen } from '@testing-library/react-native';
 import { router, useLocalSearchParams } from 'expo-router';
 import { Alert } from 'react-native';
 
@@ -212,7 +212,8 @@ describe('FrameEditScreen', () => {
     const buttons = alert.mock.calls[0]?.[2];
     const confirm = buttons?.find((button) => button.style === 'destructive');
     expect(confirm).toBeDefined();
-    confirm?.onPress?.();
+    // The alert's callback runs outside React, so the resulting store write needs act().
+    act(() => confirm?.onPress?.());
 
     expect(stored(frame.id).deleted).not.toBeNull();
     expect(router.back).toHaveBeenCalledTimes(1);
