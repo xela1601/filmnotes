@@ -35,9 +35,37 @@ run = [
 ]
 dir = "apps/mobile"
 
+[tasks.lint]
+description = "ESLint over every workspace"
+run = "npm run lint"
+
+[tasks.format]
+description = "Format the repository with Prettier"
+run = "npm run format"
+
+[tasks."format:check"]
+description = "Fail if anything is not Prettier-formatted"
+run = "npm run format:check"
+
 [tasks.typecheck]
 description = "TypeScript project references build (no emit of stale output)"
 run = "npm run typecheck"
+
+[tasks."check:tour"]
+description = "Dry-run the screenshot tour in jsdom (no browser needed)"
+run = [
+  "npx expo export --platform web",
+  "node e2e/tour-jsdom.mjs",
+]
+dir = "apps/mobile"
+
+[tasks.screenshots]
+description = "Screenshots of the guided tour (needs a real browser, see e2e/screenshots.mjs)"
+run = [
+  "npx expo export --platform web",
+  "node e2e/screenshots.mjs",
+]
+dir = "apps/mobile"
 
 [tasks.import]
 description = "Import scans for a roll from the desktop (see tools/scan-import/README.md)"

@@ -10,7 +10,7 @@ speed below the lens's handheld limit, bulb outside mode M, an aperture the lens
 
 Weeks later the lab returns the developed roll as scans. You import the folder or ZIP, the files
 are matched onto the frames by natural filename order, you correct the mapping where the lab
-dropped a frame, and the images are uploaded. Each frame then carries its notes *and* its scan,
+dropped a frame, and the images are uploaded. Each frame then carries its notes _and_ its scan,
 and can be exported: as a WordPress draft post (image + metadata + notes, published by hand in
 WordPress) or as a share package (the scan as it is plus a caption built from a template) for
 Instagram, Mastodon or anywhere else the OS share sheet reaches. The app is offline-first — it is
@@ -23,19 +23,30 @@ schema already carries an `owner` relation.
 
 ## Screenshots
 
-Not captured yet. When the first roll is shot, take one screenshot per screen (German UI, dark
-and light) and add them here:
+Not committed yet. They are generated, not taken by hand: `apps/mobile/e2e/tour.mjs` defines
+a guided tour – the standard routine plus the interesting edge cases – and
 
-| Screen | Route | Why |
-|---|---|---|
-| Roll list | `/` (tab "Filme") | the entry point, progress per roll |
-| New roll | `/rolls/new` | film stock and camera presets |
-| Roll detail | `/rolls/[rollId]` | frame list, status, roll actions |
-| Frame edit | `/frames/[frameId]` | the core screen, with inline warnings |
-| Scan import | `/scans/[rollId]` | matched pairs, thumbnail next to the notes |
-| Frame export | `/export/frame/[frameId]` | caption preview and target choice |
-| Equipment | `/equipment` (tab "Ausrüstung") | the seeded Minolta kit |
-| Settings | `/settings` (tab "Einstellungen") | language, server, WordPress |
+```bash
+cd apps/mobile
+npx playwright install chromium     # once, ~150 MB
+mise run screenshots                # or: npx expo export --platform web && node e2e/screenshots.mjs
+```
+
+drives the exported web bundle in a real Chromium and writes `docs/screenshots/{light,dark}/`
+plus an index. A real browser is needed, so this does not run inside the development sandbox
+(see `sandbox/README.md`); `mise run check:tour` walks the identical scenes in jsdom and is
+what keeps the tour from rotting.
+
+| Scene                       | Screen                          | Why                                  |
+| --------------------------- | ------------------------------- | ------------------------------------ |
+| Roll list, empty            | `/`                             | the entry point                      |
+| New roll                    | `/rolls/new`                    | film stock and camera presets        |
+| Roll detail                 | `/rolls/[rollId]`               | frame list, status, roll actions     |
+| Frame defaults and exposure | `/frames/[frameId]`             | the core screen                      |
+| Shake risk, polarizer, bulb | `/frames/[frameId]`             | the plausibility rules, inline       |
+| Scan import without server  | `/scans/[rollId]`               | what the app says instead of failing |
+| Equipment                   | `/equipment`                    | the seeded Minolta kit               |
+| Settings and server         | `/settings`, `/settings/server` | language, sync, WordPress            |
 
 ## Repository layout
 
@@ -70,12 +81,20 @@ binary is fetched by a script, Docker is only needed on the server.
 npm install          # all workspaces
 npm test             # every Jest project (domain, presets, exporters, app, CLI)
 npm run typecheck    # tsc -b over packages/* and tools/scan-import
+npm run lint         # ESLint 10, flat config, type-aware outside the app
+npm run format       # Prettier over the repository (--check in CI: npm run format:check)
 ```
 
 `npm run typecheck` does not cover the Expo app (it has no composite build); check it with
-`npx tsc -p apps/mobile --noEmit`. **ESLint is not set up yet** – no config, no dependency, and
-no `lint` script, so nothing pretends to work. `npx expo lint` inside `apps/mobile` is the
-shortest way to add it when you want it.
+`npx tsc -p apps/mobile --noEmit`.
+
+Linting and formatting are split the usual way: **ESLint** (`eslint.config.mjs`) reports
+problems, **Prettier** (`.prettierrc.json`) owns the layout, and `eslint-config-prettier`
+keeps them out of each other's way. The app additionally uses `eslint-config-expo`, the
+config Expo maintains for React Native (react, react-hooks, import resolution, RN globals);
+`packages/*` and `tools/*` are linted type-aware, which is what catches a floating promise or
+an `any` leaking out of JSON. Style: double quotes, semicolons, two spaces, 100 columns —
+`.editorconfig` mirrors it for editors without a Prettier plugin.
 
 Run the app in a browser:
 
@@ -132,7 +151,7 @@ npx expo run:android    # prebuild + build + launch on a device/emulator (needs 
 ```
 
 Both require a full native toolchain on the host — neither works inside the development sandbox.
-Cloud builds with **EAS** are *not* configured yet: there is no `eas.json` and no Expo account is
+Cloud builds with **EAS** are _not_ configured yet: there is no `eas.json` and no Expo account is
 referenced anywhere. Setting it up means `npx eas-cli@latest login` and `eas build:configure` in
 `apps/mobile` (which writes `eas.json`), then `eas build -p ios` / `-p android`. The bundle
 identifier and Android package are already fixed as `de.filmnotes.app`.
@@ -163,23 +182,23 @@ Worth knowing before you rely on something that is not there:
 - **The caption template and the hashtags have no settings screen yet**, although the export
   screen's hint says they come from the settings. The built-in template is used; the text is
   editable per export.
-- **No ESLint setup**, no EAS build configuration, no screenshots.
+- **No EAS build configuration** and no App Store / Play Store presence.
 - **Docker is not available in the development sandbox** — the backend image is built on the
   server; local development runs the PocketBase binary directly.
 
 ## Documentation
 
-| Document | Content |
-|---|---|
-| [`docs/workflow.md`](docs/workflow.md) | the routine: loading a roll → shooting → lab → scan import → export → sync/backup |
-| [`docs/deployment.md`](docs/deployment.md) | PocketBase on the home server, users, updates, backups, hosting the web build |
-| [`docs/superpowers/specs/2026-09-18-analogue-photography-app-design.md`](docs/superpowers/specs/2026-09-18-analogue-photography-app-design.md) | the approved design spec |
-| [`docs/tickets/`](docs/tickets/) | the implementation plan, one file per ticket |
-| [`apps/mobile/README.md`](apps/mobile/README.md) | app internals: routes, store, i18n, tests |
-| [`backend/README.md`](backend/README.md) | collections, API rules, migrations, local PocketBase |
-| [`tools/scan-import/README.md`](tools/scan-import/README.md) | the `filmnotes-import` CLI in detail |
-| [`sandbox/README.md`](sandbox/README.md) | the Docker Sandbox used for development |
-| [`CLAUDE.md`](CLAUDE.md) | conventions for agents working in this repo |
+| Document                                                                                                                                       | Content                                                                           |
+| ---------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------- |
+| [`docs/workflow.md`](docs/workflow.md)                                                                                                         | the routine: loading a roll → shooting → lab → scan import → export → sync/backup |
+| [`docs/deployment.md`](docs/deployment.md)                                                                                                     | PocketBase on the home server, users, updates, backups, hosting the web build     |
+| [`docs/superpowers/specs/2026-09-18-analogue-photography-app-design.md`](docs/superpowers/specs/2026-09-18-analogue-photography-app-design.md) | the approved design spec                                                          |
+| [`docs/tickets/`](docs/tickets/)                                                                                                               | the implementation plan, one file per ticket                                      |
+| [`apps/mobile/README.md`](apps/mobile/README.md)                                                                                               | app internals: routes, store, i18n, tests                                         |
+| [`backend/README.md`](backend/README.md)                                                                                                       | collections, API rules, migrations, local PocketBase                              |
+| [`tools/scan-import/README.md`](tools/scan-import/README.md)                                                                                   | the `filmnotes-import` CLI in detail                                              |
+| [`sandbox/README.md`](sandbox/README.md)                                                                                                       | the Docker Sandbox used for development                                           |
+| [`CLAUDE.md`](CLAUDE.md)                                                                                                                       | conventions for agents working in this repo                                       |
 
 ## Licence
 

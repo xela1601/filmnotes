@@ -1,0 +1,14 @@
+# Build output and dependencies
+node_modules/
+dist/
+.expo/
+coverage/
+.npm-cache/
+.claude/worktrees/
+
+# Runtime data and binaries
+backend/bin/
+backend/pb_data/
+
+# Generated
+package-lock.json

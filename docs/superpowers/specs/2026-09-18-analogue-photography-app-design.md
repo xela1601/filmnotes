@@ -12,19 +12,19 @@ Primary user: the owner (single user, several devices). The design must not prec
 
 ## 2. Requirements (from the owner's answers)
 
-| Topic | Decision |
-|---|---|
-| Platforms | Android, iOS, web from one code base |
-| Stack | Expo (React Native) + TypeScript |
-| Data | Offline-first on device, sync through a self-hosted backend |
-| Backend | PocketBase (single binary, SQLite, file storage, REST API, runs in Docker) |
-| Users | One user for now; schema keeps an `owner` relation so multi-user can be added |
-| Scan source | Unknown yet (roll not developed). Support folder/ZIP import from local files; lab APIs can be added later behind the same import interface |
-| Scan → frame matching | Automatic by sorted filename onto frames 1..n, then manual correction screen |
-| Export targets | 1) WordPress via REST API (draft post + media upload), 2) share package (resized image + caption text) via OS share sheet / clipboard. Exporter interface must allow further targets |
-| Language | Code, docs, commits, tickets in English. UI i18n with German (default) and English |
-| Development | TDD, semantic commits, several AI agents in parallel (one ticket each), all commands inside the Claude Code sandbox |
-| Initial data | Owner's Minolta 7000 AF kit from `Minolta_7000_AF_Preset.md`, extensible with own equipment |
+| Topic                 | Decision                                                                                                                                                                             |
+| --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Platforms             | Android, iOS, web from one code base                                                                                                                                                 |
+| Stack                 | Expo (React Native) + TypeScript                                                                                                                                                     |
+| Data                  | Offline-first on device, sync through a self-hosted backend                                                                                                                          |
+| Backend               | PocketBase (single binary, SQLite, file storage, REST API, runs in Docker)                                                                                                           |
+| Users                 | One user for now; schema keeps an `owner` relation so multi-user can be added                                                                                                        |
+| Scan source           | Unknown yet (roll not developed). Support folder/ZIP import from local files; lab APIs can be added later behind the same import interface                                           |
+| Scan → frame matching | Automatic by sorted filename onto frames 1..n, then manual correction screen                                                                                                         |
+| Export targets        | 1) WordPress via REST API (draft post + media upload), 2) share package (resized image + caption text) via OS share sheet / clipboard. Exporter interface must allow further targets |
+| Language              | Code, docs, commits, tickets in English. UI i18n with German (default) and English                                                                                                   |
+| Development           | TDD, semantic commits, several AI agents in parallel (one ticket each), all commands inside the Claude Code sandbox                                                                  |
+| Initial data          | Owner's Minolta 7000 AF kit from `Minolta_7000_AF_Preset.md`, extensible with own equipment                                                                                          |
 
 ### 2.1 Core scenario (must work end to end)
 
@@ -192,8 +192,18 @@ Multi-user UI, registration, lab APIs (none public), Instagram/Facebook Graph AP
   lens barrel is engraved 70/100/150/210 – on a zoom every intermediate setting is real.
 - **HEIC:** the in-app import accepts `.heic/.heif` from a ZIP, but the server's `scans.file` field
   allows only jpeg/png/tiff/webp, so such a file fails loudly on upload instead of being skipped.
-- **No ESLint yet.** The scaffold declared a `lint` script that no ticket ever configured; it was
-  removed rather than left failing. `npx expo lint` in `apps/mobile` is the shortest way in.
+- **ESLint + Prettier** (owner's decision after the first review round): ESLint 10 flat config at
+  the repo root, type-aware `typescript-eslint` for `packages/*`/`tools/*`, `eslint-config-expo` for
+  the app, Prettier for the layout with `eslint-config-prettier` between them. Style: double quotes,
+  semicolons, two spaces, 100 columns. `unbound-method` is off inside the app because selecting a
+  zustand action (`useStore((s) => s.upsert)`) trips it in every screen. The adoption commit
+  reformats the whole repository once; `git log --first-parent` stays readable, `git blame -w` skips
+  it.
+- **Screenshot tour** (`apps/mobile/e2e/tour.mjs`): the scenes are defined once and run through two
+  drivers – jsdom (`tour-jsdom.mjs`, no pictures, works everywhere) and Playwright/Chromium
+  (`screenshots.mjs`, writes `docs/screenshots/{light,dark}/`). The development sandbox cannot start
+  a browser (`socket(AF_UNIX)` is denied), so the jsdom run is what guards the tour in CI and the
+  pictures are taken on the host.
 - **Not built, worth knowing:** no settings UI for the caption template and hashtags (the store fields
   exist and the exporters read them), no dedicated "handed to lab" date (goes into the roll notes), no
   caption editing on the roll-level export screen, and export history only on the frame export screen.

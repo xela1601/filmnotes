@@ -2,6 +2,7 @@
 
 - Read `docs/superpowers/specs/2026-09-18-analogue-photography-app-design.md` and your ticket in `docs/tickets/` before touching code.
 - TDD: failing test → run → implement → run → commit. Root `npm test` must pass before you report done.
+- Before reporting done also run `npm run lint` and `npm run format` (ESLint 10 + Prettier; double quotes, semicolons, two spaces, 100 columns).
 - English everywhere in code/docs/commits; UI text only via i18n keys (`de` default, `en`).
 - Conventional commits, scoped by workspace: feat|fix|test|chore|docs(domain|presets|exporters|app|backend|cli).
 - Stay inside the paths your ticket owns. Do not edit root config files; add dependencies to your workspace's package.json and run `npm install` at the repo root.
@@ -10,7 +11,7 @@
 
 ## The workspace is on a case-insensitive filesystem
 
-The repository is bind-mounted from macOS, so `rollForm.ts` and `RollForm.tsx` are the *same*
+The repository is bind-mounted from macOS, so `rollForm.ts` and `RollForm.tsx` are the _same_
 path for module resolution: imports resolve to the wrong file and `tsc` reports TS1149. Never let
 two files in one directory differ only in case – suffix the component (`RollFormScreen.tsx`).
 
