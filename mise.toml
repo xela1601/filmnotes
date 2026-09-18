@@ -19,6 +19,14 @@ run = "npm install"
 description = "Run the Jest suites of every workspace"
 run = "npm test"
 
+[tasks."test:backend"]
+description = "PocketBase integration smoke test (needs backend/bin/pocketbase)"
+run = "npm run fetch-pb -w @filmnotes/backend && npm test -w @filmnotes/backend"
+
+[tasks."test:all"]
+description = "Every suite: workspaces (jest) plus the backend smoke test"
+depends = ["test", "test:backend"]
+
 [tasks.typecheck]
 description = "TypeScript project references build (no emit of stale output)"
 run = "npm run typecheck"
