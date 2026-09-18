@@ -32,7 +32,7 @@ const FILES = ['scan_1.jpg', 'scan_2.jpg', 'scan_3.jpg'].map(pick);
  * the uploads. A successful upload answers with the name PocketBase stored the file
  * under, which is never exactly the name that was sent.
  */
-function recordingClient(failing: string[] = []) {
+function recordingClient(failing: string[] = [], failCleanup = false) {
   const server = new FakeSyncClient();
   const uploads: UploadFile[] = [];
 
@@ -41,7 +41,11 @@ function recordingClient(failing: string[] = []) {
     authWithToken: (token) => server.authWithToken(token),
     list: (collection, since) => server.list(collection, since),
     create: (collection, record) => server.create(collection, record),
-    update: (collection, id, record) => server.update(collection, id, record),
+    update: async (collection, id, record) => {
+      // `update` is only ever the cleanup of a failed upload.
+      if (failCleanup) throw new Error('cleanup failed');
+      return server.update(collection, id, record);
+    },
     uploadFile: async (collection, id, field, file) => {
       uploads.push(file);
       if (failing.includes(file.name)) throw new Error(`upload of ${file.name} failed`);
@@ -145,6 +149,27 @@ describe('uploadScans', () => {
     expect(result).toEqual({ uploaded: 2, failed: ['scan_2.jpg'] });
     expect(storedScans().map((scan) => scan.fileName)).toEqual(['scan_1.jpg', 'scan_3.jpg']);
     expect(storedScans().every((scan) => scan.file !== null)).toBe(true);
+  });
+
+  it('soft-deletes the server record of a failed upload', async () => {
+    const { client, server } = recordingClient(['scan_2.jpg']);
+
+    await run(FILES, threeFrames(), client);
+
+    const orphans = server
+      .records('scans')
+      .filter((record) => record.fileName === 'scan_2.jpg');
+    expect(orphans).toHaveLength(1);
+    expect(orphans[0]?.deleted).toBe(NOW);
+  });
+
+  it('keeps going when even the cleanup of a failed upload fails', async () => {
+    const { client } = recordingClient(['scan_2.jpg'], true);
+
+    const result = await run(FILES, threeFrames(), client);
+
+    expect(result).toEqual({ uploaded: 2, failed: ['scan_2.jpg'] });
+    expect(storedScans().map((scan) => scan.fileName)).toEqual(['scan_1.jpg', 'scan_3.jpg']);
   });
 
   it('stores an unassigned scan without a frame', async () => {

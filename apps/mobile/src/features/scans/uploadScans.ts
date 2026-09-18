@@ -99,6 +99,19 @@ export async function uploadScans(deps: UploadScansDeps): Promise<UploadScansRes
       uploaded += 1;
     } catch {
       failed.push(file.name);
+      // The record may already be on the server while its file never arrived. Left alone
+      // it would be pulled back by the next sync as a scan without an image, so it is
+      // marked deleted here – best effort, because the same connection just failed.
+      try {
+        await deps.client.update(collection, scan.id, {
+          id: scan.id,
+          deleted: at,
+          updated: at,
+          clientUpdated: at,
+        });
+      } catch {
+        // Nothing left to do: either the record was never created, or the server is gone.
+      }
     }
   }
 
