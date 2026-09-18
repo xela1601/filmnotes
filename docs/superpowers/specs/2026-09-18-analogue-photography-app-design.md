@@ -172,3 +172,28 @@ Multi-user UI, registration, lab APIs (none public), Instagram/Facebook Graph AP
 - Server is optional: the app is fully usable locally; sync, scan storage and export need the server/network.
 - WordPress posts are created as drafts; publishing stays a manual step in WordPress.
 - Film stock catalogue seeded with common 135 films available in German drugstores/online labs (Kodak Gold 200, ColorPlus 200, Ultramax 400, Portra 400, Fujifilm 200/400, Ilford HP5 Plus 400, FP4 Plus 125, Kentmere 400, AgfaPhoto APX 100/400, Fomapan 200/400, Wolfen NC200/NC500, CineStill 400D/800T). All editable.
+
+### 7.1 Added during implementation (2026-09-18)
+
+- **mise-en-place for CLI tooling** (owner's request during the run): `mise.toml` pins Node and holds
+  the tasks (`install`, `test`, `test:backend`, `test:all`, `typecheck`, `check:web`, `import`, `web`,
+  `backend`). Inside the Docker sandbox they run through `sandbox/mise` – `$HOME` is read-only there
+  and tool extraction fails on the virtiofs bind mount, so mise's data dirs go to `$TMPDIR`.
+- **Sandbox proxy relay** (`sandbox/proxy/`): the sandbox proxy demands Basic auth on `CONNECT`, which
+  npm cannot send. Every network command is prefixed with `sandbox/proxy/with-proxy.sh`.
+- **Web persistence uses `localStorage` directly** (`src/store/persistStorage.web.ts`) instead of
+  AsyncStorage's web shim: one indirection less on the platform whose storage API is synchronous.
+- **The server password is kept in secure storage**, not only the token, so an expired token is renewed
+  without asking again. If that is not wanted, `useSync` needs a "log in again" state instead.
+- **WordPress metadata labels stay English.** The post is public blog content, so its language should
+  follow the blog, not the phone's UI language. Configurable labels would be an optional
+  `labels` map on `WordPressConfig`.
+- **Frame numbers, focal lengths:** the quick-select marks for the 70-210 include 135 mm although the
+  lens barrel is engraved 70/100/150/210 – on a zoom every intermediate setting is real.
+- **HEIC:** the in-app import accepts `.heic/.heif` from a ZIP, but the server's `scans.file` field
+  allows only jpeg/png/tiff/webp, so such a file fails loudly on upload instead of being skipped.
+- **No ESLint yet.** The scaffold declared a `lint` script that no ticket ever configured; it was
+  removed rather than left failing. `npx expo lint` in `apps/mobile` is the shortest way in.
+- **Not built, worth knowing:** no settings UI for the caption template and hashtags (the store fields
+  exist and the exporters read them), no dedicated "handed to lab" date (goes into the roll notes), no
+  caption editing on the roll-level export screen, and export history only on the frame export screen.
