@@ -13,10 +13,10 @@
   "image": "Image",
   "noImage": "No uploaded scan – only the text is exported.",
   "withImage": "Scan {{fileName}}",
-  "loadingImage": "Loading the scan …",
   "run": "Export",
   "running": "Exporting …",
   "shared": "Caption and image have been handed over.",
+  "exported": "Export finished.",
   "openPost": "Open post",
   "previous": "Previous exports",
   "noPrevious": "This frame has not been exported yet.",
@@ -28,8 +28,7 @@
     "incompleteFrame": "Film stock, camera or lens are missing for this frame.",
     "imageRequired": "This target needs an uploaded scan.",
     "invalidConfig": "The settings of this target are incomplete.",
-    "failed": "Export failed: {{message}}",
-    "imageFailed": "The scan could not be loaded: {{message}}"
+    "failed": "Export failed: {{message}}"
   },
   "roll": {
     "frames": "Frames with a scan",

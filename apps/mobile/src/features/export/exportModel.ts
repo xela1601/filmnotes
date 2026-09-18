@@ -5,7 +5,7 @@
  * interesting part – which caption a frame produces, which WordPress config the settings add up
  * to – is unit-tested without rendering anything.
  */
-import { buildCaption, type Frame } from '@filmnotes/domain';
+import { buildCaption, type ExportLog, type Frame, type Id, type Scan } from '@filmnotes/domain';
 import {
   wordPressConfigSchema,
   type ExportImage,
@@ -14,7 +14,12 @@ import {
 } from '@filmnotes/exporters';
 
 import { resolveLanguage } from '../../i18n';
-import { selectEquipmentForCaption, type CaptionEquipment } from '../../store/selectors';
+import {
+  selectActive,
+  selectEquipmentForCaption,
+  selectScansForRoll,
+  type CaptionEquipment,
+} from '../../store/selectors';
 import type { AppState, Settings } from '../../store/store';
 
 /** The caption of a frame, built with the template, hashtags and locale from the settings. */
@@ -103,4 +108,19 @@ export function wordPressConfigFor(
 
   const parsed = wordPressConfigSchema.safeParse(candidate);
   return parsed.success ? parsed.data : null;
+}
+
+/**
+ * The scan assigned to a frame, or null when none is. A frame has at most one scan; if an import
+ * ever left two, the first by sort index wins, which is the one the review screen shows.
+ */
+export function selectScanForFrame(state: AppState, frame: Frame): Scan | null {
+  return selectScansForRoll(state, frame.rollId).find((scan) => scan.frameId === frame.id) ?? null;
+}
+
+/** Past exports of a frame, most recent first. */
+export function selectExportLogsForFrame(state: AppState, frameId: Id): ExportLog[] {
+  return selectActive(state, 'exportLogs')
+    .filter((log) => log.frameId === frameId)
+    .sort((a, b) => b.exportedAt.localeCompare(a.exportedAt));
 }

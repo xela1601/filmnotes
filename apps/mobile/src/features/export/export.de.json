@@ -13,10 +13,10 @@
   "image": "Bild",
   "noImage": "Kein hochgeladener Scan – es wird nur der Text exportiert.",
   "withImage": "Scan {{fileName}}",
-  "loadingImage": "Scan wird geladen …",
   "run": "Exportieren",
   "running": "Wird exportiert …",
   "shared": "Bildtext und Bild wurden weitergegeben.",
+  "exported": "Export abgeschlossen.",
   "openPost": "Beitrag öffnen",
   "previous": "Frühere Exporte",
   "noPrevious": "Dieses Bild wurde noch nicht exportiert.",
@@ -28,8 +28,7 @@
     "incompleteFrame": "Zu diesem Bild fehlen Film, Kamera oder Objektiv.",
     "imageRequired": "Dieses Ziel braucht einen hochgeladenen Scan.",
     "invalidConfig": "Die Einstellungen dieses Ziels sind unvollständig.",
-    "failed": "Export fehlgeschlagen: {{message}}",
-    "imageFailed": "Der Scan konnte nicht geladen werden: {{message}}"
+    "failed": "Export fehlgeschlagen: {{message}}"
   },
   "roll": {
     "frames": "Bilder mit Scan",
