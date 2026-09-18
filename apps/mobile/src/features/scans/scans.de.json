@@ -1,0 +1,36 @@
+{
+  "title": "Scans importieren",
+  "notFound": "Film nicht gefunden",
+  "notFoundHint": "Dieser Film wurde gelöscht oder gehört zu einem anderen Gerät.",
+  "needServer": "Für Scans wird ein konfigurierter Server benötigt.",
+  "needServerHint": "Die Bilddateien liegen auf dem Server, nicht auf dem Gerät.",
+  "openServerSettings": "Server einrichten",
+  "needCredentials": "Keine gültigen Zugangsdaten für den Server.",
+  "noFrames": "Für diesen Film sind noch keine Bilder notiert.",
+  "noFramesHint": "Scans lassen sich nur Bildern zuordnen, die es schon gibt.",
+  "empty": "Noch keine Dateien gewählt",
+  "emptyHint": "Wähle die Scans des Labors: einzelne Bilder oder ein ZIP-Archiv.",
+  "pick": "Dateien wählen",
+  "pickAgain": "Andere Dateien wählen",
+  "pickFailed": "Die gewählten Dateien konnten nicht gelesen werden.",
+  "upload": "Hochladen",
+  "uploading": "Lade hoch …",
+  "uploadFailed": "Hochladen fehlgeschlagen.",
+  "fileCount": "{{count}} Dateien",
+  "unassigned": "keinem Bild zugeordnet",
+  "assignedTo": "→ #{{frameNo}}",
+  "frameOption": "#{{frameNo}}",
+  "frameField": "Bild",
+  "result": "{{uploaded}} von {{total}} Scans hochgeladen.",
+  "resultFailed": "Fehlgeschlagen: {{files}}",
+  "statusAdvanced": "Der Film ist jetzt als entwickelt markiert.",
+  "sections": {
+    "files": "Dateien",
+    "upload": "Hochladen"
+  },
+  "controls": {
+    "up": "▲",
+    "down": "▼",
+    "unassign": "✕"
+  }
+}

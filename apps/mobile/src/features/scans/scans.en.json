@@ -1,0 +1,36 @@
+{
+  "title": "Import scans",
+  "notFound": "Roll not found",
+  "notFoundHint": "This roll was deleted or belongs to another device.",
+  "needServer": "Scans need a configured server.",
+  "needServerHint": "The image files live on the server, not on the device.",
+  "openServerSettings": "Set up the server",
+  "needCredentials": "No valid credentials for the server.",
+  "noFrames": "No frames are recorded for this roll yet.",
+  "noFramesHint": "Scans can only be assigned to frames that already exist.",
+  "empty": "No files picked yet",
+  "emptyHint": "Pick the lab's scans: single images or a ZIP archive.",
+  "pick": "Pick files",
+  "pickAgain": "Pick other files",
+  "pickFailed": "The picked files could not be read.",
+  "upload": "Upload",
+  "uploading": "Uploading …",
+  "uploadFailed": "The upload failed.",
+  "fileCount": "{{count}} files",
+  "unassigned": "not assigned to a frame",
+  "assignedTo": "→ #{{frameNo}}",
+  "frameOption": "#{{frameNo}}",
+  "frameField": "Frame",
+  "result": "{{uploaded}} of {{total}} scans uploaded.",
+  "resultFailed": "Failed: {{files}}",
+  "statusAdvanced": "The roll is now marked as developed.",
+  "sections": {
+    "files": "Files",
+    "upload": "Upload"
+  },
+  "controls": {
+    "up": "▲",
+    "down": "▼",
+    "unassign": "✕"
+  }
+}
