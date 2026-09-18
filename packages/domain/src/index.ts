@@ -5,6 +5,7 @@ export * from "./aperture";
 export * from "./frameDefaults";
 export * from "./validation";
 export * from "./scanMatching";
+export * from "./scanFormats";
 export * from "./caption";
 export * from "./localTime";
 export * from "./fixtures";

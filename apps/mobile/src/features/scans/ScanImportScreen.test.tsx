@@ -75,8 +75,15 @@ function pickerReturnsThreeFiles(): void {
   });
 }
 
-/** A session whose upload of one named file always fails. */
-function sessionWithFailingUpload(failing: string): void {
+/** The picker answers with exactly these assets. */
+function pickerReturns(
+  assets: { name: string; uri: string; mimeType: string; size: number }[],
+): void {
+  getDocumentAsync.mockResolvedValue({ canceled: false, assets });
+}
+
+/** A session whose upload of one named file always fails; `null` fails nothing. */
+function sessionWithFailingUpload(failing: string | null): void {
   const base = new FakeSyncClient();
   const client: SyncClient = {
     authWithPassword: (email, password) => base.authWithPassword(email, password),
@@ -88,7 +95,9 @@ function sessionWithFailingUpload(failing: string): void {
       if (file.name === failing) throw new Error(`upload of ${file.name} failed`);
       return base.uploadFile(collection, id, field, file);
     },
-    fileUrl: (collection, id, name, thumb) => base.fileUrl(collection, id, name, thumb),
+    fileToken: () => base.fileToken(),
+    fileUrl: (collection, id, name, thumb, token) =>
+      base.fileUrl(collection, id, name, thumb, token),
   };
   serverSession.mockResolvedValue({ client, ownerId: OWNER_ID });
 }
@@ -287,12 +296,31 @@ describe("ScanImportScreen with a server", () => {
     fireEvent.press(screen.getByTestId("scan-import-upload"));
 
     await waitFor(() => expect(screen.getByTestId("scan-import-failed")).toBeOnTheScreen());
-    expect(screen.getByTestId("scan-import-failed")).toHaveTextContent(
-      i18n.t("scans:resultFailed", { files: "scan_2.jpg" }),
-    );
+    // Not just the name: the reason the server or the connection gave.
+    expect(screen.getByTestId("scan-import-failed-scan_2.jpg")).toHaveTextContent(/scan_2\.jpg/);
     expect(screen.getByTestId("scan-import-result")).toHaveTextContent(
       i18n.t("scans:result", { uploaded: 2, total: 3 }),
     );
+  });
+
+  it("explains a format the server refuses instead of only naming the file", async () => {
+    threeFrameRoll();
+    pickerReturns([
+      {
+        name: "IMG_0042.heic",
+        uri: "file:///cache/IMG_0042.heic",
+        mimeType: "image/heic",
+        size: 4,
+      },
+    ]);
+    sessionWithFailingUpload(null);
+
+    render(<ScanImportScreen rollId={ROLL_ID} />);
+    await pickFiles();
+    fireEvent.press(screen.getByTestId("scan-import-upload"));
+
+    await waitFor(() => expect(screen.getByTestId("scan-import-failed")).toBeOnTheScreen());
+    expect(screen.getByTestId("scan-import-failed-IMG_0042.heic")).toHaveTextContent(/image\/heic/);
   });
 
   it("reports missing credentials instead of uploading", async () => {

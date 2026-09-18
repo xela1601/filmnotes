@@ -4,7 +4,7 @@ import { Alert } from "react-native";
 
 import { i18n } from "../../i18n";
 import { useStore } from "../../store/store";
-import { FIXTURE_NOW, makeFrame, makeRoll } from "../../testing/fixtures";
+import { FIXTURE_NOW, makeFrame, makeRoll, makeScan } from "../../testing/fixtures";
 import { RollDetailScreen } from "./RollDetailScreen";
 
 jest.mock("expo-router", () => ({
@@ -146,9 +146,12 @@ describe("RollDetailScreen", () => {
     expect(router.push).toHaveBeenCalledWith(`/rolls/${ROLL_ID}/edit`);
   });
 
-  it("soft-deletes the roll and its frames after confirmation", () => {
+  it("soft-deletes the roll with its frames, scans and export logs", () => {
     const alert = jest.spyOn(Alert, "alert").mockImplementation(() => undefined);
     fillRoll(2);
+    useStore
+      .getState()
+      .upsert("scans", makeScan({ id: "scan00000000001", rollId: ROLL_ID, frameId: frameId(1) }));
 
     render(<RollDetailScreen rollId={ROLL_ID} />);
     fireEvent.press(screen.getByTestId("roll-detail-delete"));
@@ -162,6 +165,8 @@ describe("RollDetailScreen", () => {
     expect(state.entities.rolls[ROLL_ID]?.deleted).not.toBeNull();
     expect(state.entities.frames[frameId(1)]?.deleted).not.toBeNull();
     expect(state.entities.frames[frameId(2)]?.deleted).not.toBeNull();
+    // Left alive, the scan kept syncing and kept its file on the server for a roll that is gone.
+    expect(state.entities.scans["scan00000000001"]?.deleted).not.toBeNull();
     alert.mockRestore();
   });
 

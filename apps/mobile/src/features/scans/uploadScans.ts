@@ -8,10 +8,11 @@
  *
  * One failure does not abort the import: the photographer has just spent minutes on the
  * review and a single broken file (or a dropped connection halfway through) must not cost
- * the rest of the roll. The names that did not make it come back in `failed`, and running
- * the import again for those is a plain repeat.
+ * the rest of the roll. Every file that did not make it comes back in `failed` *with the
+ * reason*, and pressing "upload" again really is a plain repeat - the files that already have
+ * an uploaded scan on this roll are skipped instead of being uploaded a second time.
  */
-import { newId, PB_COLLECTION, naturalCompare } from "@filmnotes/domain";
+import { isServerScanMimeType, newId, PB_COLLECTION, naturalCompare } from "@filmnotes/domain";
 import type { Id, ISODateTime, Scan, ScanAssignment } from "@filmnotes/domain";
 
 import type { PickedFile } from "./pickScans";
@@ -29,12 +30,27 @@ export interface UploadScansDeps {
   /** The store's `upsert`, narrowed to what this module writes. */
   upsert: (collection: "scans", record: Scan) => void;
   now: () => ISODateTime;
+  /**
+   * The roll's scans as the store has them. A file that already has an uploaded scan here is
+   * skipped, which is what makes a second run after a partial failure a retry of the failures
+   * instead of a duplicate of everything that worked.
+   */
+  existingScans?: Scan[];
+}
+
+/** Why one file did not make it. `detail` carries the server's own message where there is one. */
+export interface FailedUpload {
+  name: string;
+  reason: "unsupported_format" | "upload_failed";
+  detail: string | null;
 }
 
 export interface UploadScansResult {
   uploaded: number;
-  /** File names whose record or upload failed, in the order they were tried. */
-  failed: string[];
+  /** Files that already had an uploaded scan on this roll and were left alone. */
+  skipped: number;
+  /** Files whose record or upload failed, in the order they were tried. */
+  failed: FailedUpload[];
 }
 
 /** The file field of the `scans` collection. */
@@ -54,13 +70,35 @@ function inAssignmentOrder(files: PickedFile[]): PickedFile[] {
   return [...files].sort((a, b) => naturalCompare(a.name, b.name));
 }
 
+function messageOf(error: unknown): string | null {
+  if (error instanceof Error && error.message !== "") return error.message;
+  return null;
+}
+
 export async function uploadScans(deps: UploadScansDeps): Promise<UploadScansResult> {
   const collection = PB_COLLECTION.scans;
   const bySortIndex = new Map(deps.assignments.map((a) => [a.sortIndex, a]));
-  const failed: string[] = [];
+  const alreadyUploaded = new Set(
+    (deps.existingScans ?? [])
+      .filter((scan) => scan.deleted === null && scan.file !== null && scan.rollId === deps.rollId)
+      .map((scan) => scan.fileName),
+  );
+  const failed: FailedUpload[] = [];
   let uploaded = 0;
+  let skipped = 0;
 
   for (const [sortIndex, file] of inAssignmentOrder(deps.files).entries()) {
+    if (alreadyUploaded.has(file.name)) {
+      skipped += 1;
+      continue;
+    }
+    // The server's `scans.file` field refuses anything that is not JPEG/PNG/TIFF/WebP, so a
+    // HEIC from a phone is reported as what it is instead of as a nameless failure two
+    // requests later.
+    if (!isServerScanMimeType(file.mimeType)) {
+      failed.push({ name: file.name, reason: "unsupported_format", detail: file.mimeType });
+      continue;
+    }
     const at = deps.now();
     const scan: Scan = {
       id: newId(),
@@ -92,8 +130,8 @@ export async function uploadScans(deps: UploadScansDeps): Promise<UploadScansRes
         file: typeof stored === "string" && stored !== "" ? stored : file.name,
       });
       uploaded += 1;
-    } catch {
-      failed.push(file.name);
+    } catch (error) {
+      failed.push({ name: file.name, reason: "upload_failed", detail: messageOf(error) });
       // The record may already be on the server while its file never arrived. Left alone
       // it would be pulled back by the next sync as a scan without an image, so it is
       // marked deleted here – best effort, because the same connection just failed.
@@ -110,5 +148,5 @@ export async function uploadScans(deps: UploadScansDeps): Promise<UploadScansRes
     }
   }
 
-  return { uploaded, failed };
+  return { uploaded, skipped, failed };
 }

@@ -32,7 +32,17 @@ jest.mock("expo-location", () => ({
 
 const KODAK_GOLD = "film0kodakgold2";
 
-/** Creates a record through the equipment editor, exactly as the user would. */
+/** Adds one entry to a list field (shutter speeds, aperture values). */
+function addToList(key: string, entry: string): void {
+  fireEvent.changeText(screen.getByTestId(`equipment-field-${key}-input`), entry);
+  fireEvent.press(screen.getByTestId(`equipment-field-${key}-add`));
+}
+
+/**
+ * Creates a record through the equipment editor, exactly as the user would - including the
+ * lists without which the frame editor would offer empty pickers (exposure modes and shutter
+ * speeds for a camera, apertures for a lens).
+ */
 function createThroughEditor(
   type: "cameras" | "lenses",
   fields: { key: string; value: string }[],
@@ -40,6 +50,14 @@ function createThroughEditor(
   const editor = render(<EquipmentEditScreen type={type} id={null} />);
   for (const field of fields) {
     fireEvent.changeText(screen.getByTestId(`equipment-field-${field.key}`), field.value);
+  }
+  if (type === "cameras") {
+    for (const mode of ["P", "M"]) {
+      fireEvent.press(screen.getByTestId(`equipment-field-exposureModes-option-${mode}`));
+    }
+    for (const speed of ["1/60", "1/125"]) addToList("shutterSpeedsManual", speed);
+  } else {
+    for (const aperture of ["2.8", "5.6", "16"]) addToList("apertureValues", aperture);
   }
   fireEvent.press(screen.getByTestId("equipment-save"));
   editor.unmount();

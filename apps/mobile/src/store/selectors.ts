@@ -51,6 +51,54 @@ export function selectScansForRoll(state: AppState, rollId: Id): Scan[] {
     .sort((a, b) => a.sortIndex - b.sortIndex);
 }
 
+/**
+ * The scan a frame's image comes from: the newest *uploaded* one.
+ *
+ * There used to be two answers to this question - the export screen took the first by sort index
+ * and did not care whether the file had been uploaded, the thumbnail took the newest import and
+ * did. A frame scanned twice therefore showed one image and exported another, and when the
+ * export's pick had no file the WordPress draft was created without any image at all and logged
+ * as a success. One selector, used by the thumbnail, the export screen and the exporter.
+ *
+ * Returns the record itself (not a derived array), so the store's identity check keeps a hook
+ * using it from re-rendering on every unrelated change.
+ */
+export function selectScanForFrame(state: AppState, frameId: Id): Scan | null {
+  let newest: Scan | null = null;
+  for (const scan of Object.values(state.entities.scans)) {
+    if (scan.deleted !== null || scan.frameId !== frameId || scan.file === null) continue;
+    if (newest === null || scan.importedAt > newest.importedAt) newest = scan;
+  }
+  return newest;
+}
+
+/**
+ * Everything a deleted roll takes with it, in the order it should be written.
+ *
+ * Deleting a roll used to soft-delete the roll and its frames only, leaving the roll's scans and
+ * the frames' export logs alive: they kept syncing, kept their (up to 50 MB) files on the server
+ * and pointed at a `rollId` that no longer resolves.
+ */
+export function selectRollCascade(
+  state: AppState,
+  rollId: Id,
+): { collection: "frames" | "scans" | "exportLogs" | "rolls"; id: Id }[] {
+  const frames = selectFramesForRoll(state, rollId);
+  const frameIds = new Set(frames.map((frame) => frame.id));
+
+  return [
+    ...selectActive(state, "exportLogs")
+      .filter((log) => frameIds.has(log.frameId))
+      .map((log) => ({ collection: "exportLogs" as const, id: log.id })),
+    ...selectScansForRoll(state, rollId).map((scan) => ({
+      collection: "scans" as const,
+      id: scan.id,
+    })),
+    ...frames.map((frame) => ({ collection: "frames" as const, id: frame.id })),
+    { collection: "rolls" as const, id: rollId },
+  ];
+}
+
 /** Everything `validateFrame` (T-002) needs; null when roll or camera are unknown. */
 export function selectFrameContext(state: AppState, frame: Frame): FrameContext | null {
   const roll = byId(state, "rolls", frame.rollId);

@@ -8,10 +8,15 @@ import { makeScan } from "../../testing/fixtures";
 // transform; only the URL builder matters here.
 jest.mock("../../sync/client", () => ({
   createPocketBaseClient: (baseUrl: string) => ({
-    fileUrl: (collection: string, id: string, fileName: string, thumb?: string) =>
-      `${baseUrl}/api/files/${collection}/${id}/${fileName}?thumb=${String(thumb)}`,
+    fileUrl: (collection: string, id: string, fileName: string, thumb?: string, token?: string) =>
+      `${baseUrl}/api/files/${collection}/${id}/${fileName}?thumb=${String(thumb)}` +
+      (token === undefined ? "" : `&token=${token}`),
   }),
 }));
+
+// The file field is protected; the token comes from a logged-in session, which has its own test.
+const mockFileToken = jest.fn<string | null, []>(() => "file-token");
+jest.mock("../../sync/useFileToken", () => ({ useFileToken: () => mockFileToken() }));
 
 const FRAME_ID = "frame0000000001";
 const SERVER = "https://pb.test";
@@ -30,6 +35,17 @@ function thumb(frameId = FRAME_ID): string | null {
 describe("useScanThumb", () => {
   beforeEach(() => {
     useStore.getState().resetAll();
+    mockFileToken.mockReturnValue("file-token");
+  });
+
+  it("has no thumbnail until the file token has arrived", () => {
+    configureServer();
+    useStore
+      .getState()
+      .upsert("scans", makeScan({ id: scanId(1), frameId: FRAME_ID, file: "a_1.jpg" }));
+    mockFileToken.mockReturnValue(null);
+
+    expect(thumb()).toBeNull();
   });
 
   it("has no thumbnail without a configured server", () => {
@@ -62,7 +78,9 @@ describe("useScanThumb", () => {
       .getState()
       .upsert("scans", makeScan({ id: scanId(1), frameId: FRAME_ID, file: "a_1.jpg" }));
 
-    expect(thumb()).toBe(`${SERVER}/api/files/scans/${scanId(1)}/a_1.jpg?thumb=${SCAN_THUMB_SIZE}`);
+    expect(thumb()).toBe(
+      `${SERVER}/api/files/scans/${scanId(1)}/a_1.jpg?thumb=${SCAN_THUMB_SIZE}&token=file-token`,
+    );
   });
 
   it("ignores a deleted scan", () => {
@@ -97,6 +115,8 @@ describe("useScanThumb", () => {
       }),
     );
 
-    expect(thumb()).toBe(`${SERVER}/api/files/scans/${scanId(2)}/new.jpg?thumb=${SCAN_THUMB_SIZE}`);
+    expect(thumb()).toBe(
+      `${SERVER}/api/files/scans/${scanId(2)}/new.jpg?thumb=${SCAN_THUMB_SIZE}&token=file-token`,
+    );
   });
 });

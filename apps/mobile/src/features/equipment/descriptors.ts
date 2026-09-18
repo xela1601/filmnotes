@@ -124,11 +124,17 @@ const CAMERA_FIELDS: FieldDescriptor[] = [
   { key: "mount", kind: "text", labelKey: "fields.mount", nullable: true },
   {
     key: "exposureModes",
+    required: true,
     kind: "multiselect",
     labelKey: "fields.exposureModes",
     options: EXPOSURE_MODE_OPTIONS,
   },
-  { key: "shutterSpeedsManual", kind: "shutterList", labelKey: "fields.shutterSpeedsManual" },
+  {
+    key: "shutterSpeedsManual",
+    kind: "shutterList",
+    labelKey: "fields.shutterSpeedsManual",
+    required: true,
+  },
   { key: "shutterSpeedsAutoExtra", kind: "shutterList", labelKey: "fields.shutterSpeedsAutoExtra" },
   {
     key: "bulbOnlyInModes",
@@ -242,7 +248,7 @@ const LENS_FIELDS: FieldDescriptor[] = [
   { key: "focalMaxMm", kind: "number", labelKey: "fields.focalMaxMm", min: 0 },
   { key: "maxAperture", kind: "number", labelKey: "fields.maxAperture", min: 0, step: 0.1 },
   { key: "minAperture", kind: "number", labelKey: "fields.minAperture", min: 0, step: 0.1 },
-  { key: "apertureValues", kind: "numberList", labelKey: "fields.apertureValues" },
+  { key: "apertureValues", kind: "numberList", labelKey: "fields.apertureValues", required: true },
   {
     key: "filterThreadMm",
     kind: "number",
@@ -584,10 +590,20 @@ function validateField(field: FieldDescriptor, value: unknown): "required" | "in
 
   if (field.kind === "shutterList") {
     const entries = Array.isArray(value) ? value : [];
+    if (field.required === true && entries.length === 0) return "required";
     const allParseable = entries.every(
       (entry) => typeof entry === "string" && isShutterSpeed(entry),
     );
     return allParseable ? null : "invalid";
+  }
+
+  // The list kinds the editor offers. An empty *required* list is what produced equipment that
+  // the app accepted and the frame editor could not use: a camera without exposure modes or a
+  // lens without apertures leaves those pickers empty, with nothing saying why.
+  if (field.kind === "multiselect" || field.kind === "stringList" || field.kind === "numberList") {
+    const entries = Array.isArray(value) ? value : [];
+    if (field.required === true && entries.length === 0) return "required";
+    return null;
   }
 
   return null;

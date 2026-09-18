@@ -21,7 +21,7 @@ import { useShallow } from "zustand/react/shallow";
 import { confirmDestructive } from "../../lib/confirm";
 import { now } from "../../lib/clock";
 import { useEntity } from "../../store/hooks";
-import { selectFramesForRoll } from "../../store/selectors";
+import { selectFramesForRoll, selectRollCascade } from "../../store/selectors";
 import { useStore } from "../../store/store";
 import {
   Button,
@@ -104,9 +104,12 @@ function RollDetail({ roll }: { roll: Roll }) {
       confirmLabel: t("actions.delete", { ns: "common" }),
       cancelLabel: t("actions.cancel", { ns: "common" }),
       onConfirm: () => {
-        // The frames go with the roll; the sync engine (T-008) pushes each deletion.
-        for (const frame of frames) softDelete("frames", frame.id);
-        softDelete("rolls", roll.id);
+        // Frames, their export logs and the roll's scans go with the roll - otherwise they keep
+        // syncing and keep their files on the server under a rollId that no longer exists. The
+        // sync engine (T-008) pushes each deletion.
+        for (const record of selectRollCascade(useStore.getState(), roll.id)) {
+          softDelete(record.collection, record.id);
+        }
         router.replace("/");
       },
     });

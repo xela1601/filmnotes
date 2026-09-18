@@ -18,11 +18,17 @@ const PASSWORD = "app-password";
 const mockShareOut = jest.fn<Promise<void>, [SharePayload]>();
 const mockGetSecret = jest.fn<Promise<string | null>, [SecretKey]>();
 const mockFileUrl = jest.fn(
-  (collection: string, id: string, fileName: string, thumb?: string): string =>
-    `https://pb.test/api/files/${collection}/${id}/${fileName}${
-      thumb === undefined ? "" : `?thumb=${thumb}`
-    }`,
+  (collection: string, id: string, fileName: string, thumb?: string, token?: string): string => {
+    const query = [
+      ...(thumb === undefined ? [] : [`thumb=${thumb}`]),
+      ...(token === undefined ? [] : [`token=${token}`]),
+    ];
+    return `https://pb.test/api/files/${collection}/${id}/${fileName}${
+      query.length === 0 ? "" : `?${query.join("&")}`
+    }`;
+  },
 );
+const mockFileToken = jest.fn(() => Promise.resolve("file-token"));
 
 // Every factory body stays lazy: it runs while the screen is imported, before the consts
 // above are initialised.
@@ -39,7 +45,15 @@ jest.mock("../../lib/secureStore", () => ({
 // The PocketBase SDK is ESM-only and not transformed by jest-expo, so the client is replaced
 // by the one method an image load uses.
 jest.mock("../../sync/client", () => ({
-  createPocketBaseClient: () => ({ fileUrl: mockFileUrl }),
+  createPocketBaseClient: () => ({ fileUrl: mockFileUrl, fileToken: mockFileToken }),
+}));
+// Scan files are protected, so the export opens a logged-in session to get a file token.
+jest.mock("../../sync/session", () => ({
+  openServerSession: () =>
+    Promise.resolve({
+      client: { fileUrl: mockFileUrl, fileToken: mockFileToken },
+      ownerId: "user00000000001",
+    }),
 }));
 
 const realFetch = globalThis.fetch;
@@ -184,7 +198,13 @@ describe("ExportFrameScreen", () => {
     await waitFor(() => {
       expect(mockShareOut).toHaveBeenCalled();
     });
-    expect(mockFileUrl).toHaveBeenCalledWith("scans", "scan00000000001", "img001_x.jpg", "1600x0");
+    expect(mockFileUrl).toHaveBeenCalledWith(
+      "scans",
+      "scan00000000001",
+      "img001_x.jpg",
+      "1600x0",
+      "file-token",
+    );
     expect(calls[0]?.url).toContain("thumb=1600x0");
     const payload = mockShareOut.mock.calls[0]?.[0];
     expect(payload?.image?.fileName).toBe("img001.jpg");

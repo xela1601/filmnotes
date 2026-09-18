@@ -14,14 +14,10 @@ import { Linking, StyleSheet, Text, View } from "react-native";
 import { useShallow } from "zustand/react/shallow";
 
 import { exportErrorMessage, formatTime, targetLabel } from "./exportMessages";
-import {
-  captionFor,
-  isWordPressConfigured,
-  selectExportLogsForFrame,
-  selectScanForFrame,
-} from "./exportModel";
+import { captionFor, isWordPressConfigured, selectExportLogsForFrame } from "./exportModel";
 import { EXPORT_NAMESPACE } from "./i18n";
 import { useFrameExporter } from "./useFrameExporter";
+import { selectScanForFrame } from "../../store/selectors";
 import { useEntity, useSettings } from "../../store/hooks";
 import { useStore } from "../../store/store";
 import { Button, EmptyState, ListItem, Screen, Section, TextField, useTheme } from "../../ui";
@@ -61,7 +57,7 @@ function ExportFrame({ frame }: { frame: Frame }) {
 
   const builtCaption = useStore((state) => captionFor(state, frame));
   const [caption, setCaption] = useState(builtCaption ?? "");
-  const scan = useStore((state) => selectScanForFrame(state, frame));
+  const scan = useStore((state) => selectScanForFrame(state, frame.id));
   // Shallow-compared: the selector builds a new array on every call.
   const logs = useStore(useShallow((state) => selectExportLogsForFrame(state, frame.id)));
 

@@ -6,7 +6,7 @@ import { uploadScans } from "./uploadScans";
 import { FakeSyncClient } from "../../sync/fakeClient";
 import type { SyncClient, UploadFile } from "../../sync/client";
 import { useStore } from "../../store/store";
-import { makeFrame } from "../../testing/fixtures";
+import { makeFrame, makeScan } from "../../testing/fixtures";
 
 const ROLL_ID = "roll00000000001";
 const OWNER_ID = "user00000000001";
@@ -49,7 +49,9 @@ function recordingClient(failing: string[] = [], failCleanup = false) {
       if (failing.includes(file.name)) throw new Error(`upload of ${file.name} failed`);
       return server.uploadFile(collection, id, field, { ...file, name: `stored_${file.name}` });
     },
-    fileUrl: (collection, id, name, thumb) => server.fileUrl(collection, id, name, thumb),
+    fileToken: () => server.fileToken(),
+    fileUrl: (collection, id, name, thumb, token) =>
+      server.fileUrl(collection, id, name, thumb, token),
   };
 
   return { client, server, uploads };
@@ -61,7 +63,7 @@ function storedScans(): Scan[] {
   );
 }
 
-function run(files: PickedFile[], frames: Frame[], client: SyncClient) {
+function run(files: PickedFile[], frames: Frame[], client: SyncClient, existingScans: Scan[] = []) {
   return uploadScans({
     client,
     ownerId: OWNER_ID,
@@ -70,6 +72,7 @@ function run(files: PickedFile[], frames: Frame[], client: SyncClient) {
     assignments: buildAssignments(files, frames),
     upsert: useStore.getState().upsert,
     now: () => NOW,
+    existingScans,
   });
 }
 
@@ -83,7 +86,7 @@ describe("uploadScans", () => {
 
     const result = await run(FILES, threeFrames(), client);
 
-    expect(result).toEqual({ uploaded: 3, failed: [] });
+    expect(result).toEqual({ uploaded: 3, skipped: 0, failed: [] });
     expect(server.createCalls).toHaveLength(3);
     expect(uploads.map((upload) => upload.name)).toEqual([
       "scan_1.jpg",
@@ -144,7 +147,13 @@ describe("uploadScans", () => {
 
     const result = await run(FILES, threeFrames(), client);
 
-    expect(result).toEqual({ uploaded: 2, failed: ["scan_2.jpg"] });
+    expect(result).toEqual({
+      uploaded: 2,
+      skipped: 0,
+      failed: [
+        { name: "scan_2.jpg", reason: "upload_failed", detail: "upload of scan_2.jpg failed" },
+      ],
+    });
     expect(storedScans().map((scan) => scan.fileName)).toEqual(["scan_1.jpg", "scan_3.jpg"]);
     expect(storedScans().every((scan) => scan.file !== null)).toBe(true);
   });
@@ -164,7 +173,13 @@ describe("uploadScans", () => {
 
     const result = await run(FILES, threeFrames(), client);
 
-    expect(result).toEqual({ uploaded: 2, failed: ["scan_2.jpg"] });
+    expect(result).toEqual({
+      uploaded: 2,
+      skipped: 0,
+      failed: [
+        { name: "scan_2.jpg", reason: "upload_failed", detail: "upload of scan_2.jpg failed" },
+      ],
+    });
     expect(storedScans().map((scan) => scan.fileName)).toEqual(["scan_1.jpg", "scan_3.jpg"]);
   });
 
@@ -217,7 +232,55 @@ describe("uploadScans", () => {
   it("reports nothing to do for an empty pick", async () => {
     const { client, server } = recordingClient();
 
-    expect(await run([], threeFrames(), client)).toEqual({ uploaded: 0, failed: [] });
+    expect(await run([], threeFrames(), client)).toEqual({ uploaded: 0, skipped: 0, failed: [] });
     expect(server.createCalls).toEqual([]);
+  });
+});
+
+describe("uploadScans – a second run", () => {
+  beforeEach(() => {
+    useStore.getState().resetAll();
+  });
+
+  it("retries only what failed and never uploads a file twice", async () => {
+    // The first run uploaded two of three files. Pressing "upload" again used to create three
+    // *new* scan records and three more files on the server, and to leave every frame with two
+    // scans - which is also what made the export pick a different image than the thumbnail.
+    const alreadyUploaded: Scan[] = ["scan_1.jpg", "scan_3.jpg"].map((fileName, index) =>
+      makeScan({
+        id: `scan0000000000${index + 1}`,
+        rollId: ROLL_ID,
+        fileName,
+        file: `${fileName.replace(".jpg", "")}_abc.jpg`,
+        sortIndex: index,
+      }),
+    );
+    const { client, server } = recordingClient();
+
+    const result = await run(FILES, threeFrames(), client, alreadyUploaded);
+
+    expect(result.uploaded).toBe(1);
+    expect(result.skipped).toBe(2);
+    expect(result.failed).toEqual([]);
+    expect(server.count("scans")).toBe(1);
+  });
+
+  it("names the format as the reason instead of failing anonymously two requests later", async () => {
+    const { client, server } = recordingClient();
+    const heic: PickedFile = {
+      name: "IMG_0042.heic",
+      uri: "file:///cache/IMG_0042.heic",
+      mimeType: "image/heic",
+      size: 4,
+    };
+
+    const result = await run([heic], threeFrames(), client);
+
+    expect(result.uploaded).toBe(0);
+    expect(result.failed).toEqual([
+      { name: "IMG_0042.heic", reason: "unsupported_format", detail: "image/heic" },
+    ]);
+    // Nothing was created on the server, so there is no orphan to clean up either.
+    expect(server.count("scans")).toBe(0);
   });
 });

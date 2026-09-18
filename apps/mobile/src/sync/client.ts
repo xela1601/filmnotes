@@ -38,7 +38,14 @@ export interface SyncClient {
   update(collection: string, id: Id, record: RemoteRecord): Promise<RemoteRecord>;
   /** Multipart upload into a file field; used by the scan import (T-009). */
   uploadFile(collection: string, id: Id, field: string, file: UploadFile): Promise<RemoteRecord>;
-  fileUrl(collection: string, id: Id, fileName: string, thumb?: string): string;
+  /**
+   * A short-lived token for the protected `scans.file` field.
+   *
+   * PocketBase serves a protected file only with `?token=`; the token is bound to the logged-in
+   * user and expires after a few minutes, so it is fetched when an image is actually needed.
+   */
+  fileToken(): Promise<string>;
+  fileUrl(collection: string, id: Id, fileName: string, thumb?: string, token?: string): string;
 }
 
 /** The auth collection the single app user lives in (see `backend/README.md`). */
@@ -123,11 +130,18 @@ export function createPocketBaseClient(baseUrl: string): SyncClient {
       return pb.collection(collection).update<RemoteRecord>(id, form);
     },
 
-    fileUrl(collection, id, fileName, thumb) {
+    async fileToken() {
+      return pb.files.getToken();
+    },
+
+    fileUrl(collection, id, fileName, thumb, token) {
       return pb.files.getURL(
         { id, collectionId: collection, collectionName: collection },
         fileName,
-        thumb === undefined ? {} : { thumb },
+        {
+          ...(thumb === undefined ? {} : { thumb }),
+          ...(token === undefined ? {} : { token }),
+        },
       );
     },
   };

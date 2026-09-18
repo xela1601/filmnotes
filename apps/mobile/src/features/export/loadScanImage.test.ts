@@ -30,6 +30,9 @@ function fakeResponse(options: {
   } as unknown as Response;
 }
 
+/** The protected file field hands out a short-lived token; the URL carries it. */
+const fileToken = jest.fn(() => Promise.resolve("file-token"));
+
 const realFetch = globalThis.fetch;
 
 function mockFetch(response: Response): jest.Mock {
@@ -51,9 +54,15 @@ describe("loadScanImage", () => {
     const scan = makeScan({ file: "img001_a1b2c3.jpg" });
     const fetchMock = mockFetch(fakeResponse({}));
 
-    const image = await loadScanImage({ fileUrl }, scan, "full");
+    const image = await loadScanImage({ fileUrl, fileToken }, scan, "full");
 
-    expect(fileUrl).toHaveBeenCalledWith("scans", scan.id, "img001_a1b2c3.jpg", undefined);
+    expect(fileUrl).toHaveBeenCalledWith(
+      "scans",
+      scan.id,
+      "img001_a1b2c3.jpg",
+      undefined,
+      "file-token",
+    );
     expect(fetchMock).toHaveBeenCalledWith(
       "https://pb.test/api/files/scans/scan00000000001/img001_a1b2c3.jpg",
     );
@@ -65,7 +74,7 @@ describe("loadScanImage", () => {
     const scan = makeScan({ fileName: "img001.jpg", file: "img001_a1b2c3.jpg" });
     mockFetch(fakeResponse({}));
 
-    const image = await loadScanImage({ fileUrl }, scan, "full");
+    const image = await loadScanImage({ fileUrl, fileToken }, scan, "full");
 
     expect(image.fileName).toBe("img001.jpg");
   });
@@ -74,16 +83,22 @@ describe("loadScanImage", () => {
     const scan = makeScan({ file: "img001_a1b2c3.jpg" });
     mockFetch(fakeResponse({}));
 
-    await loadScanImage({ fileUrl }, scan, "1600");
+    await loadScanImage({ fileUrl, fileToken }, scan, "1600");
 
-    expect(fileUrl).toHaveBeenCalledWith("scans", scan.id, "img001_a1b2c3.jpg", "1600x0");
+    expect(fileUrl).toHaveBeenCalledWith(
+      "scans",
+      scan.id,
+      "img001_a1b2c3.jpg",
+      "1600x0",
+      "file-token",
+    );
   });
 
   it("ignores a charset the server appends to the content type", async () => {
     const scan = makeScan({ file: "img001_a1b2c3.png" });
     mockFetch(fakeResponse({ contentType: "image/png; charset=binary" }));
 
-    const image = await loadScanImage({ fileUrl }, scan, "full");
+    const image = await loadScanImage({ fileUrl, fileToken }, scan, "full");
 
     expect(image.mimeType).toBe("image/png");
   });
@@ -92,7 +107,7 @@ describe("loadScanImage", () => {
     const scan = makeScan({ fileName: "scan-07.PNG", file: "scan_07_a1b2c3.png" });
     mockFetch(fakeResponse({ contentType: "application/octet-stream" }));
 
-    const image = await loadScanImage({ fileUrl }, scan, "full");
+    const image = await loadScanImage({ fileUrl, fileToken }, scan, "full");
 
     expect(image.mimeType).toBe("image/png");
   });
@@ -101,7 +116,7 @@ describe("loadScanImage", () => {
     const scan = makeScan({ fileName: "scan-07", file: "scan_07_a1b2c3" });
     mockFetch(fakeResponse({ contentType: null }));
 
-    const image = await loadScanImage({ fileUrl }, scan, "full");
+    const image = await loadScanImage({ fileUrl, fileToken }, scan, "full");
 
     expect(image.mimeType).toBe("image/jpeg");
   });
@@ -110,7 +125,9 @@ describe("loadScanImage", () => {
     const scan = makeScan({ file: null });
     const fetchMock = mockFetch(fakeResponse({}));
 
-    await expect(loadScanImage({ fileUrl }, scan, "full")).rejects.toThrow(/not been uploaded/);
+    await expect(loadScanImage({ fileUrl, fileToken }, scan, "full")).rejects.toThrow(
+      /not been uploaded/,
+    );
     expect(fetchMock).not.toHaveBeenCalled();
   });
 
@@ -118,7 +135,7 @@ describe("loadScanImage", () => {
     const scan = makeScan({ file: "img001_a1b2c3.jpg" });
     mockFetch(fakeResponse({ status: 404 }));
 
-    await expect(loadScanImage({ fileUrl }, scan, "full")).rejects.toThrow(/404/);
+    await expect(loadScanImage({ fileUrl, fileToken }, scan, "full")).rejects.toThrow(/404/);
   });
 });
 
@@ -126,12 +143,12 @@ describe("scanImageUrl", () => {
   it("returns the thumbnail url a preview can show", () => {
     const scan = makeScan({ file: "img001_a1b2c3.jpg" });
 
-    expect(scanImageUrl({ fileUrl }, scan, "1600")).toBe(
+    expect(scanImageUrl({ fileUrl, fileToken }, scan, "1600")).toBe(
       "https://pb.test/api/files/scans/scan00000000001/img001_a1b2c3.jpg?thumb=1600x0",
     );
   });
 
   it("returns null for a scan that is not on the server", () => {
-    expect(scanImageUrl({ fileUrl }, makeScan({ file: null }), "full")).toBeNull();
+    expect(scanImageUrl({ fileUrl, fileToken }, makeScan({ file: null }), "full")).toBeNull();
   });
 });

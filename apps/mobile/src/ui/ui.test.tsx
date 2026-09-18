@@ -1,5 +1,6 @@
 import type { ValidationIssue } from "@filmnotes/domain";
 import { fireEvent, render, screen } from "@testing-library/react-native";
+import { useState } from "react";
 import { Text } from "react-native";
 
 import { i18n } from "../i18n";
@@ -81,6 +82,45 @@ describe("ui kit", () => {
     expect(onChange).toHaveBeenCalledWith(4);
     fireEvent.press(screen.getByTestId("frameNo-decrement"));
     expect(onChange).toHaveBeenCalledWith(2);
+  });
+
+  it("lets a decimal be typed, one keystroke at a time", () => {
+    // The regression: a controlled `String(value)` turned "1." back into "1" on the spot, so
+    // typing an f/1.7 lens into the equipment editor stored 17.
+    function Controlled() {
+      const [value, setValue] = useState<number | null>(null);
+      return <NumberField label="Blende" value={value} onChange={setValue} testID="aperture" />;
+    }
+    render(<Controlled />);
+    const input = screen.getByTestId("aperture");
+
+    fireEvent.changeText(input, "1");
+    fireEvent.changeText(input, "1.");
+    expect(screen.getByDisplayValue("1.")).toBeOnTheScreen();
+
+    fireEvent.changeText(input, "1.7");
+    expect(screen.getByDisplayValue("1.7")).toBeOnTheScreen();
+  });
+
+  it("accepts a comma as the decimal separator of a German keyboard", () => {
+    const onChange = jest.fn();
+    render(<NumberField label="Blende" value={null} onChange={onChange} testID="aperture" />);
+
+    fireEvent.changeText(screen.getByTestId("aperture"), "1,7");
+
+    expect(onChange).toHaveBeenCalledWith(1.7);
+    expect(screen.getByDisplayValue("1,7")).toBeOnTheScreen();
+  });
+
+  it("takes a value that changed elsewhere", () => {
+    const { rerender } = render(
+      <NumberField label="Blende" value={5.6} onChange={jest.fn()} testID="aperture" />,
+    );
+    expect(screen.getByDisplayValue("5.6")).toBeOnTheScreen();
+
+    rerender(<NumberField label="Blende" value={8} onChange={jest.fn()} testID="aperture" />);
+
+    expect(screen.getByDisplayValue("8")).toBeOnTheScreen();
   });
 
   it("renders SelectField as a segmented control and reports the choice", () => {

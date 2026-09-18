@@ -270,3 +270,26 @@ describe("isEquipmentType", () => {
     expect(DESCRIPTORS[type]).toBe(DESCRIPTORS.lenses);
   });
 });
+
+describe("validateRecord – lists the app cannot work without", () => {
+  it("refuses a camera without exposure modes or manual shutter speeds", () => {
+    const camera = makeCamera({ exposureModes: [], shutterSpeedsManual: [] });
+
+    const errors = validateRecord("cameras", camera);
+
+    // Both used to save silently and left the frame editor with empty pickers.
+    expect(errors.exposureModes).toBe("required");
+    expect(errors.shutterSpeedsManual).toBe("required");
+  });
+
+  it("refuses a lens without aperture values", () => {
+    expect(validateRecord("lenses", makeLens({ apertureValues: [] })).apertureValues).toBe(
+      "required",
+    );
+  });
+
+  it("accepts the seeded kit", () => {
+    expect(validateRecord("cameras", makeCamera())).toEqual({});
+    expect(validateRecord("lenses", makeLens())).toEqual({});
+  });
+});

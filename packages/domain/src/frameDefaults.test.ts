@@ -1,7 +1,7 @@
 import { FIXTURE_NOW, FILTER_ID, LENS_ID, ROLL_ID, makeCamera, makeFrame } from "./fixtures";
 import { newFrame, nextFrameNo } from "./frameDefaults";
 import { ID_PATTERN } from "./id";
-import type { Frame } from "./types";
+import type { Camera, Frame } from "./types";
 
 const LATER: string = "2026-09-19T12:00:00.000Z";
 
@@ -183,5 +183,26 @@ describe("newFrame with a previous frame without equipment", () => {
     });
     expect(frame.lensId).toBeNull();
     expect(frame.filterIds).toEqual([]);
+  });
+});
+
+describe("newFrame with a camera the admin UI blanked", () => {
+  it("falls back instead of throwing when defaultsForNewFrame is missing", () => {
+    // PocketBase answers `null` for an unset json field; the mapping passes that through, and
+    // every new frame on that camera used to throw on the first property access.
+    const camera = { ...makeCamera(), defaultsForNewFrame: null } as unknown as Camera;
+
+    const frame = newFrame({
+      rollId: "roll00000000001",
+      frameNo: 1,
+      camera,
+      previous: null,
+      now: "2026-09-18T10:00:00.000Z",
+    });
+
+    expect(frame.exposureMode).toBeNull();
+    expect(frame.lensId).toBeNull();
+    expect(frame.filterIds).toEqual([]);
+    expect(frame.exposureCompensationEv).toBe(0);
   });
 });

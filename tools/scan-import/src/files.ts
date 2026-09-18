@@ -11,7 +11,7 @@ import { mkdir, readFile, readdir, stat, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { basename, extname, join } from "node:path";
 
-import { naturalCompare } from "@filmnotes/domain";
+import { naturalCompare, scanMimeType } from "@filmnotes/domain";
 import { unzipSync } from "fflate";
 
 /** One scan file, ready to be uploaded. */
@@ -24,21 +24,14 @@ export interface ImageFile {
 }
 
 /**
- * The extensions the import accepts, mapped to the mime type PocketBase's `scans.file` field
- * allows (see `backend/pb_migrations/1758150000_init_collections.js`).
+ * The mime type for a file name, or `null` when the file is not an image at all.
+ *
+ * The table lives in the domain (`scanFormats.ts`) so that the CLI, the in-app picker, the
+ * export loader and the server migration cannot drift apart - they used to hold four different
+ * lists, and the CLI's silently dropped anything the others accepted.
  */
-const MIME_BY_EXTENSION: Record<string, string> = {
-  ".jpg": "image/jpeg",
-  ".jpeg": "image/jpeg",
-  ".png": "image/png",
-  ".tif": "image/tiff",
-  ".tiff": "image/tiff",
-  ".webp": "image/webp",
-};
-
-/** The mime type for a file name, or `null` when the file is not a scan we handle. */
 function mimeTypeOf(name: string): string | null {
-  return MIME_BY_EXTENSION[extname(name).toLowerCase()] ?? null;
+  return scanMimeType(name);
 }
 
 /** Temp dirs this process created for zip sources, removed by `cleanupTempDirs`. */

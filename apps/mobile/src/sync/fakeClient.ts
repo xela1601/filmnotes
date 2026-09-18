@@ -178,8 +178,19 @@ export class FakeSyncClient implements SyncClient {
     return stored;
   }
 
-  fileUrl(collection: string, id: Id, fileName: string, thumb?: string): string {
-    const query = thumb === undefined ? "" : `?thumb=${thumb}`;
-    return `https://fake.test/api/files/${collection}/${id}/${fileName}${query}`;
+  /** Whatever a test wants `fileToken()` to hand out. */
+  fileTokenValue = "file-token";
+
+  async fileToken(): Promise<string> {
+    return this.fileTokenValue;
+  }
+
+  fileUrl(collection: string, id: Id, fileName: string, thumb?: string, token?: string): string {
+    const query = [
+      ...(thumb === undefined ? [] : [`thumb=${thumb}`]),
+      ...(token === undefined ? [] : [`token=${token}`]),
+    ];
+    const suffix = query.length === 0 ? "" : `?${query.join("&")}`;
+    return `https://fake.test/api/files/${collection}/${id}/${fileName}${suffix}`;
   }
 }

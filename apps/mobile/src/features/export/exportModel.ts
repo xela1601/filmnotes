@@ -107,14 +107,6 @@ export function wordPressConfigFor(
   return parsed.success ? parsed.data : null;
 }
 
-/**
- * The scan assigned to a frame, or null when none is. A frame has at most one scan; if an import
- * ever left two, the first by sort index wins, which is the one the review screen shows.
- */
-export function selectScanForFrame(state: AppState, frame: Frame): Scan | null {
-  return selectScansForRoll(state, frame.rollId).find((scan) => scan.frameId === frame.id) ?? null;
-}
-
 /** Past exports of a frame, most recent first. */
 export function selectExportLogsForFrame(state: AppState, frameId: Id): ExportLog[] {
   return selectActive(state, "exportLogs")
@@ -139,7 +131,10 @@ export interface ExportableFrame {
 export function pairExportableFrames(frames: Frame[], scans: Scan[]): ExportableFrame[] {
   const uploaded = scans.filter((scan) => scan.file !== null);
   return frames.flatMap((frame) => {
-    const scan = uploaded.find((candidate) => candidate.frameId === frame.id);
+    // Newest import wins, exactly as `selectScanForFrame` decides it for the single frame.
+    const scan = uploaded
+      .filter((candidate) => candidate.frameId === frame.id)
+      .sort((a, b) => b.importedAt.localeCompare(a.importedAt))[0];
     return scan === undefined ? [] : [{ frame, scan }];
   });
 }

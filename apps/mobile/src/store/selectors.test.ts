@@ -1,6 +1,8 @@
 import type { AppState } from "./store";
 import {
   selectActive,
+  selectRollCascade,
+  selectScanForFrame,
   selectEquipmentForCaption,
   selectFrameContext,
   selectFramesForRoll,
@@ -82,6 +84,64 @@ describe("selectors", () => {
       });
 
       expect(selectFramesForRoll(state, "roll00000000001").map((f) => f.frameNo)).toEqual([1, 3]);
+    });
+  });
+
+  describe("selectScanForFrame", () => {
+    const uploaded = (overrides: Parameters<typeof makeScan>[0] = {}) =>
+      makeScan({ file: "img.jpg", frameId: "fram00000000001", ...overrides });
+
+    it("takes the newest uploaded scan of the frame", () => {
+      const state = stateWith((store) => {
+        store
+          .getState()
+          .applyRemote("scans", [
+            uploaded({
+              id: "scan00000000001",
+              sortIndex: 1,
+              importedAt: "2026-09-20T10:00:00.000Z",
+            }),
+            uploaded({
+              id: "scan00000000002",
+              sortIndex: 2,
+              importedAt: "2026-09-21T10:00:00.000Z",
+            }),
+          ]);
+      });
+
+      expect(selectScanForFrame(state, "fram00000000001")?.id).toBe("scan00000000002");
+    });
+
+    it("ignores a scan whose file never made it to the server", () => {
+      // The export screen used to take this one, and then created a WordPress draft with no
+      // image at all - reported as a successful export.
+      const state = stateWith((store) => {
+        store.getState().applyRemote("scans", [
+          makeScan({
+            id: "scan00000000001",
+            frameId: "fram00000000001",
+            sortIndex: 1,
+            file: null,
+            importedAt: "2026-09-21T10:00:00.000Z",
+          }),
+          uploaded({ id: "scan00000000002", sortIndex: 2, importedAt: "2026-09-20T10:00:00.000Z" }),
+        ]);
+      });
+
+      expect(selectScanForFrame(state, "fram00000000001")?.id).toBe("scan00000000002");
+    });
+
+    it("ignores deleted scans and other frames", () => {
+      const state = stateWith((store) => {
+        store
+          .getState()
+          .applyRemote("scans", [
+            uploaded({ id: "scan00000000001", deleted: "2026-09-22T10:00:00.000Z" }),
+            uploaded({ id: "scan00000000002", frameId: "fram00000000002" }),
+          ]);
+      });
+
+      expect(selectScanForFrame(state, "fram00000000001")).toBeNull();
     });
   });
 
@@ -192,5 +252,51 @@ describe("selectors", () => {
 
       expect(selectEquipmentForCaption(state, makeFrame())).toBeNull();
     });
+  });
+});
+
+describe("selectRollCascade", () => {
+  it("lists the frames, their export logs and the roll's scans before the roll itself", () => {
+    const state = stateWith((store) => {
+      store.getState().applyRemote("rolls", [makeRoll()]);
+      store.getState().applyRemote("frames", [makeFrame({ id: "fram00000000001" })]);
+      store
+        .getState()
+        .applyRemote("scans", [makeScan({ id: "scan00000000001", frameId: "fram00000000001" })]);
+      store.getState().applyRemote("exportLogs", [
+        {
+          id: "expl00000000001",
+          created: "2026-09-21T10:00:00.000Z",
+          updated: "2026-09-21T10:00:00.000Z",
+          deleted: null,
+          owner: null,
+          frameId: "fram00000000001",
+          target: "wordpress",
+          externalId: "42",
+          url: "https://blog.example/42",
+          exportedAt: "2026-09-21T10:00:00.000Z",
+        },
+      ]);
+    });
+
+    expect(selectRollCascade(state, "roll00000000001")).toEqual([
+      { collection: "exportLogs", id: "expl00000000001" },
+      { collection: "scans", id: "scan00000000001" },
+      { collection: "frames", id: "fram00000000001" },
+      { collection: "rolls", id: "roll00000000001" },
+    ]);
+  });
+
+  it("leaves another roll's records alone", () => {
+    const state = stateWith((store) => {
+      store.getState().applyRemote("rolls", [makeRoll(), makeRoll({ id: "roll00000000002" })]);
+      store
+        .getState()
+        .applyRemote("scans", [makeScan({ id: "scan00000000009", rollId: "roll00000000002" })]);
+    });
+
+    expect(selectRollCascade(state, "roll00000000001")).toEqual([
+      { collection: "rolls", id: "roll00000000001" },
+    ]);
   });
 });

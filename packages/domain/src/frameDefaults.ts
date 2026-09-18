@@ -7,7 +7,7 @@
  * always empty: it is what the photographer is about to record.
  */
 import { newId } from "./id";
-import type { Camera, Frame, Id, ISODateTime } from "./types";
+import type { Camera, Frame, FrameDefaults, Id, ISODateTime } from "./types";
 
 export interface NewFrameInput {
   rollId: Id;
@@ -26,9 +26,32 @@ export function nextFrameNo(frames: Frame[]): number {
   return highest + 1;
 }
 
+/**
+ * What a camera without a usable `defaultsForNewFrame` starts a frame with.
+ *
+ * PocketBase answers `null` for an unset json field, so a camera record that was created or
+ * blanked in the admin UI arrives without this object - and every `newFrame` on it used to
+ * throw on the first property access.
+ */
+export const EMPTY_FRAME_DEFAULTS: FrameDefaults = {
+  exposureMode: null,
+  driveMode: null,
+  focusMode: null,
+  exposureCompensationEv: 0,
+  programShift: false,
+  aeLock: false,
+  lensId: null,
+  filterIds: [],
+  flashId: null,
+  support: null,
+};
+
 export function newFrame(input: NewFrameInput): Frame {
   const { rollId, frameNo, camera, previous, now } = input;
-  const defaults = camera.defaultsForNewFrame;
+  const defaults: FrameDefaults = {
+    ...EMPTY_FRAME_DEFAULTS,
+    ...(camera.defaultsForNewFrame as FrameDefaults | null | undefined),
+  };
   /** Everything that stays mounted/dialled in on the camera between two shots. */
   const carriedOver =
     previous === null

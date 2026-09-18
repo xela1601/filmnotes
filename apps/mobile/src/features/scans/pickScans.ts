@@ -9,7 +9,7 @@ import * as DocumentPicker from "expo-document-picker";
 import { Directory, File, Paths } from "expo-file-system";
 import { unzipSync } from "fflate";
 import { Platform } from "react-native";
-import { naturalCompare } from "@filmnotes/domain";
+import { DEFAULT_SCAN_MIME_TYPE, naturalCompare, scanMimeType } from "@filmnotes/domain";
 
 /**
  * One file ready to be reviewed and uploaded.
@@ -27,27 +27,8 @@ export interface PickedFile {
   blob?: Blob;
 }
 
-/**
- * The image formats a lab delivers, with the MIME type the server should store.
- *
- * Doubles as the allow-list for ZIP entries: anything without one of these extensions is
- * not a scan (`readme.txt`, a contact sheet PDF, the `__MACOSX` bookkeeping).
- */
-const IMAGE_TYPES: Record<string, string> = {
-  jpg: "image/jpeg",
-  jpeg: "image/jpeg",
-  png: "image/png",
-  tif: "image/tiff",
-  tiff: "image/tiff",
-  webp: "image/webp",
-  heic: "image/heic",
-  heif: "image/heif",
-};
-
 /** Sub-directory of the cache the unzipped entries are written to. */
 const CACHE_FOLDER = "filmnotes-scans";
-
-const FALLBACK_MIME_TYPE = "application/octet-stream";
 
 /** The last path segment of a ZIP entry or picker asset name. */
 function baseName(path: string): string {
@@ -55,11 +36,16 @@ function baseName(path: string): string {
   return segments[segments.length - 1] ?? path;
 }
 
-/** The MIME type for a file name, or `null` when it is not an image we accept. */
+/**
+ * The MIME type for a file name, or `null` when it is not an image at all.
+ *
+ * Doubles as the allow-list for ZIP entries: anything without an image extension is not a scan
+ * (`readme.txt`, a contact sheet PDF, the `__MACOSX` bookkeeping). Formats the *server* refuses
+ * - HEIC from a phone that slipped into the folder - are picked up here and rejected with a
+ * reason by the upload, rather than disappearing silently at this point.
+ */
 function imageTypeOf(name: string): string | null {
-  const dot = name.lastIndexOf(".");
-  if (dot <= 0) return null;
-  return IMAGE_TYPES[name.slice(dot + 1).toLowerCase()] ?? null;
+  return scanMimeType(name);
 }
 
 /**
@@ -80,7 +66,7 @@ function toPickedFile(asset: DocumentPicker.DocumentPickerAsset): PickedFile {
   const file: PickedFile = {
     name,
     uri: asset.uri,
-    mimeType: asset.mimeType ?? imageTypeOf(name) ?? FALLBACK_MIME_TYPE,
+    mimeType: asset.mimeType ?? imageTypeOf(name) ?? DEFAULT_SCAN_MIME_TYPE,
     size: asset.size ?? 0,
   };
   // On web the picker hands over the DOM File, which is the Blob the uploader posts.

@@ -22,7 +22,7 @@
   "frameOption": "#{{frameNo}}",
   "frameField": "Bild",
   "result": "{{uploaded}} von {{total}} Scans hochgeladen.",
-  "resultFailed": "Fehlgeschlagen: {{files}}",
+  "resultFailed": "Nicht hochgeladen:",
   "statusAdvanced": "Der Film ist jetzt als entwickelt markiert.",
   "sections": {
     "files": "Dateien",
@@ -32,5 +32,9 @@
     "up": "▲",
     "down": "▼",
     "unassign": "✕"
-  }
+  },
+  "resultSkipped": "{{count}} bereits hochgeladene Dateien übersprungen.",
+  "failureReason_unsupported_format": "{{file}}: Format {{detail}} – der Server nimmt nur JPEG, PNG, TIFF und WebP.",
+  "failureReason_upload_failed": "{{file}}: {{detail}}",
+  "failureReason_upload_failed_plain": "{{file}}: Upload fehlgeschlagen."
 }

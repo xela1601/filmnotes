@@ -78,7 +78,13 @@ const compensationIgnoredInM: Rule = (frame, { camera }) => {
   return [issue("info", "compensation_ignored_in_m", "exposureCompensationEv")];
 };
 
-/** 7. Hand-held below the lens limit risks camera shake. */
+/**
+ * 7. Hand-held below the lens limit risks camera shake.
+ *
+ * A frame without a recorded support counts as hand-held: that is how the camera preset starts
+ * every frame, and a warning the photographer can dismiss by saying "tripod" is more useful than
+ * silence while the field is still empty.
+ */
 const handheldShakeRisk: Rule = (frame, { lens }) => {
   const limit = lens?.handheldMinShutter ?? null;
   if (limit === null || frame.shutterSpeed === null) return [];

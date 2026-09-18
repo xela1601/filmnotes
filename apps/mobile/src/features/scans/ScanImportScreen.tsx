@@ -14,6 +14,7 @@ import { Image } from "expo-image";
 import { router } from "expo-router";
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
+import type { TFunction } from "i18next";
 import { StyleSheet, Text, View } from "react-native";
 import { useShallow } from "zustand/react/shallow";
 
@@ -21,10 +22,10 @@ import { SCANS_NAMESPACE } from "./i18n";
 import { assignTo, buildAssignments, moveAssignment } from "./importModel";
 import { expandZip, isZip, pickScanFiles, type PickedFile } from "./pickScans";
 import { openServerSession } from "./session";
-import { uploadScans, type UploadScansResult } from "./uploadScans";
+import { uploadScans, type FailedUpload, type UploadScansResult } from "./uploadScans";
 import { now } from "../../lib/clock";
 import { useEntity } from "../../store/hooks";
-import { selectFramesForRoll } from "../../store/selectors";
+import { selectFramesForRoll, selectScansForRoll } from "../../store/selectors";
 import { useStore } from "../../store/store";
 import {
   Button,
@@ -58,12 +59,29 @@ export function ScanImportScreen({ rollId }: ScanImportScreenProps) {
   return <ScanImport roll={roll} />;
 }
 
+/**
+ * One line per file that did not make it, with the reason.
+ *
+ * A bare list of names is what the import used to show for everything from a rejected HEIC to a
+ * dropped connection - the format rejection in particular is documented behaviour that the user
+ * had no way of recognising.
+ */
+function failureText(t: TFunction, failure: FailedUpload): string {
+  if (failure.reason === "unsupported_format") {
+    return t("failureReason_unsupported_format", { file: failure.name, detail: failure.detail });
+  }
+  return failure.detail === null
+    ? t("failureReason_upload_failed_plain", { file: failure.name })
+    : t("failureReason_upload_failed", { file: failure.name, detail: failure.detail });
+}
+
 function ScanImport({ roll }: { roll: Roll }) {
   const { t } = useTranslation(SCANS_NAMESPACE);
   const { palette, fontSize } = useTheme();
   const serverUrl = useStore((state) => state.settings.serverUrl);
   // Shallow-compared: the selector builds a new array on every call.
   const frames = useStore(useShallow((state) => selectFramesForRoll(state, roll.id)));
+  const rollScans = useStore(useShallow((state) => selectScansForRoll(state, roll.id)));
   const upsert = useStore((state) => state.upsert);
 
   /** The picked files in natural name order, so index == `ScanAssignment.sortIndex`. */
@@ -129,6 +147,8 @@ function ScanImport({ roll }: { roll: Roll }) {
         assignments,
         upsert,
         now,
+        // Lets a second press retry the failures instead of duplicating what already worked.
+        existingScans: rollScans,
       });
       setResult(outcome);
 
@@ -218,13 +238,26 @@ function ScanImport({ roll }: { roll: Roll }) {
               >
                 {t("result", { uploaded: result.uploaded, total: rows.length })}
               </Text>
-              {result.failed.length > 0 && (
-                <Text
-                  testID="scan-import-failed"
-                  style={{ color: palette.danger, fontSize: fontSize.sm }}
-                >
-                  {t("resultFailed", { files: result.failed.join(", ") })}
+              {result.skipped > 0 && (
+                <Text testID="scan-import-skipped" style={muted}>
+                  {t("resultSkipped", { count: result.skipped })}
                 </Text>
+              )}
+              {result.failed.length > 0 && (
+                <View testID="scan-import-failed">
+                  <Text style={{ color: palette.danger, fontSize: fontSize.sm }}>
+                    {t("resultFailed")}
+                  </Text>
+                  {result.failed.map((failure) => (
+                    <Text
+                      key={failure.name}
+                      testID={`scan-import-failed-${failure.name}`}
+                      style={{ color: palette.danger, fontSize: fontSize.sm }}
+                    >
+                      {failureText(t, failure)}
+                    </Text>
+                  ))}
+                </View>
               )}
               {advanced && (
                 <Text testID="scan-import-status" style={muted}>

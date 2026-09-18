@@ -22,7 +22,7 @@
   "frameOption": "#{{frameNo}}",
   "frameField": "Frame",
   "result": "{{uploaded}} of {{total}} scans uploaded.",
-  "resultFailed": "Failed: {{files}}",
+  "resultFailed": "Not uploaded:",
   "statusAdvanced": "The roll is now marked as developed.",
   "sections": {
     "files": "Files",
@@ -32,5 +32,9 @@
     "up": "▲",
     "down": "▼",
     "unassign": "✕"
-  }
+  },
+  "resultSkipped": "{{count}} files skipped, they were already uploaded.",
+  "failureReason_unsupported_format": "{{file}}: format {{detail}} – the server only takes JPEG, PNG, TIFF and WebP.",
+  "failureReason_upload_failed": "{{file}}: {{detail}}",
+  "failureReason_upload_failed_plain": "{{file}}: upload failed."
 }

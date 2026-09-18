@@ -18,13 +18,14 @@ import {
 } from "@filmnotes/exporters";
 import { useCallback } from "react";
 
-import { selectScanForFrame, wordPressConfigFor } from "./exportModel";
+import { wordPressConfigFor } from "./exportModel";
 import { loadScanImage } from "./loadScanImage";
 import { runFrameExport } from "./runExport";
 import { shareOut } from "./shareOut";
 import * as clock from "../../lib/clock";
 import { getSecret } from "../../lib/secureStore";
-import { createPocketBaseClient } from "../../sync/client";
+import { openServerSession } from "../../sync/session";
+import { selectScanForFrame } from "../../store/selectors";
 import type { AppState } from "../../store/store";
 import { useStore } from "../../store/store";
 
@@ -52,12 +53,17 @@ async function imageFor(
   state: AppState,
   frame: Frame,
 ): Promise<ExportImage | null> {
-  const scan = selectScanForFrame(state, frame);
+  const scan = selectScanForFrame(state, frame.id);
   const serverUrl = state.settings.serverUrl;
   if (scan === null || scan.file === null || serverUrl === null) return null;
 
+  // Scan files are protected, so loading one needs the logged-in session rather than a bare
+  // URL builder; without credentials there is no image to attach.
+  const session = await openServerSession();
+  if (session === null) return null;
+
   const size = exporterId === shareExporter.id ? "1600" : "full";
-  return loadScanImage(createPocketBaseClient(serverUrl), scan, size);
+  return loadScanImage(session.client, scan, size);
 }
 
 /**
