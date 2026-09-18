@@ -13,7 +13,7 @@ import { Alert } from 'react-native';
 import { i18n } from '../../i18n';
 import { useStore } from '../../store/store';
 import { FIXTURE_NOW } from '../../testing/fixtures';
-import { EquipmentEditScreen } from './EquipmentEditScreen';
+import { EquipmentEditRoute, EquipmentEditScreen } from './EquipmentEditScreen';
 import { EquipmentListScreen } from './EquipmentListScreen';
 
 jest.mock('expo-router', () => ({
@@ -228,6 +228,25 @@ describe('EquipmentEditScreen', () => {
 
     expect(screen.getByTestId('equipment-editor-not-found')).toBeOnTheScreen();
     expect(screen.getByText(i18n.t('equipment:notFound'))).toBeOnTheScreen();
+  });
+
+  it('edits the record the route parameters name', () => {
+    render(<EquipmentEditRoute type="lenses" id={LENS_50} />);
+
+    expect(screen.getByDisplayValue('AF 50mm f/1.7')).toBeOnTheScreen();
+  });
+
+  it('creates a record for the `new` route parameter', () => {
+    render(<EquipmentEditRoute type="flashes" id="new" />);
+
+    expect(screen.queryByTestId('equipment-delete')).toBeNull();
+    expect(screen.getByTestId('equipment-field-make')).toHaveDisplayValue('');
+  });
+
+  it('shows a hint for an unknown equipment type', () => {
+    render(<EquipmentEditRoute type="rolls" id="roll00000000001" />);
+
+    expect(screen.getByTestId('equipment-editor-not-found')).toBeOnTheScreen();
   });
 
   it('returns without writing when the editor is cancelled', () => {

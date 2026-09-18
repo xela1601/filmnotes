@@ -35,6 +35,7 @@ import {
   displayName,
   emptyRecord,
   encodeOption,
+  isEquipmentType,
   readField,
   validateRecord,
   writeField,
@@ -51,22 +52,40 @@ export interface EquipmentEditScreenProps {
   id: Id | null;
 }
 
-export function EquipmentEditScreen({ type, id }: EquipmentEditScreenProps) {
+/** Shown for a record (or a `[type]` segment) that does not exist. */
+function NotFound() {
   const { t } = useTranslation('equipment');
+  return (
+    <Screen testID="equipment-editor">
+      <EmptyState
+        title={t('notFound')}
+        hint={t('notFoundHint')}
+        testID="equipment-editor-not-found"
+      />
+    </Screen>
+  );
+}
+
+/**
+ * What the `/equipment/[type]/…` routes render: the path segments are strings, so the
+ * type is checked here before the editor is given a typed collection name.
+ */
+export function EquipmentEditRoute({
+  type,
+  id,
+}: {
+  type: string | undefined;
+  id: string | undefined;
+}) {
+  if (type === undefined || !isEquipmentType(type)) return <NotFound />;
+  return <EquipmentEditScreen type={type} id={id === undefined || id === 'new' ? null : id} />;
+}
+
+export function EquipmentEditScreen({ type, id }: EquipmentEditScreenProps) {
   const found = useEntity(type, id);
   const existing = found !== undefined && found.deleted === null ? found : null;
 
-  if (id !== null && existing === null) {
-    return (
-      <Screen testID="equipment-editor">
-        <EmptyState
-          title={t('notFound')}
-          hint={t('notFoundHint')}
-          testID="equipment-editor-not-found"
-        />
-      </Screen>
-    );
-  }
+  if (id !== null && existing === null) return <NotFound />;
 
   // Remounts once the record is known, so the fields start from its values.
   return <EquipmentFields key={existing?.id ?? 'new'} type={type} existing={existing} />;
