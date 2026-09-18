@@ -1,4 +1,18 @@
-// Placeholder route – this screen is owned by T-009 (scan import & review UI).
-export default function Placeholder() {
-  return null;
+import { Stack, useLocalSearchParams } from 'expo-router';
+import { useTranslation } from 'react-i18next';
+
+import { SCANS_NAMESPACE } from '../../src/features/scans/i18n';
+import { ScanImportScreen } from '../../src/features/scans/ScanImportScreen';
+
+/** `/scans/<rollId>` – pick, review and upload the lab's scans of a roll. */
+export default function ScanImportRoute() {
+  const { t } = useTranslation(SCANS_NAMESPACE);
+  const { rollId } = useLocalSearchParams<{ rollId: string }>();
+
+  return (
+    <>
+      <Stack.Screen options={{ title: t('title') }} />
+      <ScanImportScreen rollId={rollId ?? ''} />
+    </>
+  );
 }
