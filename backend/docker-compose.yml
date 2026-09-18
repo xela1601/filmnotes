@@ -1,0 +1,34 @@
+# filmnotes PocketBase for the home server.
+#
+#   cp .env.example .env && $EDITOR .env
+#   docker compose up -d --build
+#
+# The port is bound to 127.0.0.1 on purpose: the existing reverse proxy terminates
+# TLS and forwards to it. PocketBase itself must never be exposed directly.
+
+services:
+  filmnotes-pb:
+    build:
+      context: .
+      args:
+        PB_VERSION: 0.40.4
+    image: filmnotes-pb:0.40.4
+    container_name: filmnotes-pb
+    restart: unless-stopped
+    env_file: .env
+    ports:
+      - "127.0.0.1:8090:8090"
+    volumes:
+      - pb_data:/pb/pb_data
+    # Uncomment to encrypt the settings table (SMTP/S3 credentials) at rest.
+    # PB_ENCRYPTION_KEY must then be exactly 32 characters, or the container will not start.
+    # command:
+    #   - /pb/pocketbase
+    #   - serve
+    #   - --http=0.0.0.0:8090
+    #   - --dir=/pb/pb_data
+    #   - --migrationsDir=/pb/pb_migrations
+    #   - --encryptionEnv=PB_ENCRYPTION_KEY
+
+volumes:
+  pb_data:
