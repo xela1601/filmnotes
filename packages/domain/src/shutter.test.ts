@@ -58,6 +58,26 @@ describe('formatShutterSpeed', () => {
   });
 });
 
+describe('formatShutterSpeed outside the camera ladder', () => {
+  it('formats a longer exposure than the ladder covers', () => {
+    expect(formatShutterSpeed(60)).toBe('60"');
+    expect(formatShutterSpeed(45.5)).toBe('45"5');
+  });
+
+  it('formats a shorter exposure than the ladder covers', () => {
+    expect(formatShutterSpeed(0.00005)).toBe('1/20000');
+  });
+
+  it('calls an endless exposure bulb', () => {
+    expect(formatShutterSpeed(Number.POSITIVE_INFINITY)).toBe('bulb');
+  });
+
+  it('falls back to the fastest speed for a duration that is no duration', () => {
+    expect(formatShutterSpeed(0)).toBe('1/8000');
+    expect(formatShutterSpeed(Number.NaN)).toBe('1/8000');
+  });
+});
+
 describe('compareShutterSpeeds', () => {
   it('sorts the faster speed first', () => {
     expect(compareShutterSpeeds('1/250', '1/60')).toBeLessThan(0);
@@ -75,6 +95,12 @@ describe('isSlowerThan', () => {
   it('compares durations', () => {
     expect(isSlowerThan('1/30', '1/60')).toBe(true);
     expect(isSlowerThan('1/125', '1/60')).toBe(false);
+  });
+
+  it('treats an unparsable speed like bulb', () => {
+    expect(isSlowerThan('who knows', '1/60')).toBe(true);
+    expect(parseShutterSpeed('1/0')).toBeNull();
+    expect(parseShutterSpeed('   ')).toBeNull();
   });
 
   it('counts bulb as slower than any timed speed', () => {
