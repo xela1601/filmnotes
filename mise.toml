@@ -35,6 +35,10 @@ run = "npm run typecheck"
 description = "ESLint over all TypeScript sources"
 run = "npm run lint"
 
+[tasks.import]
+description = "Import scans for a roll from the desktop (see tools/scan-import/README.md)"
+run = "npm run import -w @filmnotes/scan-import --"
+
 [tasks.web]
 description = "Start the Expo app for the web (port 8081, published to the host)"
 run = "npx expo start --web --port 8081"
