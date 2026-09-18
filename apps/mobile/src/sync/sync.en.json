@@ -1,0 +1,21 @@
+{
+  "server": "Server",
+  "url": "Server URL",
+  "urlPlaceholder": "https://pocketbase.example.org",
+  "email": "Email",
+  "password": "Password",
+  "connect": "Connect",
+  "disconnect": "Disconnect",
+  "connection": "Connection",
+  "connectedAs": "Connected as {{email}}",
+  "notConnected": "No server configured – the app keeps working locally.",
+  "missingFields": "Please provide server URL, email and password.",
+  "connectFailed": "Login failed. Check the address and the credentials.",
+  "syncNow": "Sync now",
+  "syncing": "Syncing …",
+  "lastSync": "Last: {{time}}",
+  "never": "never",
+  "result": "{{pushed}} pushed, {{pulled}} pulled",
+  "conflictsLocalWon": "{{count}} conflicts decided locally",
+  "syncFailed": "Sync failed."
+}
