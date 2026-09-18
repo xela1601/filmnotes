@@ -9,7 +9,12 @@
  * function is testable with a fake exporter and without a network.
  */
 import { newId, type CollectionName, type EntityOf, type Frame, type ISODateTime } from '@filmnotes/domain';
-import { getExporter, type ExportImage, type ExportResult } from '@filmnotes/exporters';
+import {
+  getExporter,
+  type ExportImage,
+  type ExportResult,
+  type SharePayload,
+} from '@filmnotes/exporters';
 
 import { exportInputFor } from './exportModel';
 import type { AppState } from '../../store/store';
@@ -46,6 +51,11 @@ export interface RunFrameExportDeps {
   now: () => ISODateTime;
   /** The caption as edited in the export screen; omitted builds it from the settings. */
   caption?: string;
+  /**
+   * Hands a local target's payload to the OS (share sheet, clipboard, download). It runs before
+   * the log is written, so a share the user cancelled is not recorded as an export.
+   */
+  deliver?: (payload: SharePayload) => Promise<void>;
 }
 
 export async function runFrameExport(deps: RunFrameExportDeps): Promise<ExportResult> {
@@ -62,6 +72,9 @@ export async function runFrameExport(deps: RunFrameExportDeps): Promise<ExportRe
   if (!config.success) throw new ExportPreconditionError('invalidConfig');
 
   const result = await exporter.exportFrame(input, config.data, { fetch: deps.fetch });
+  if (result.sharePayload !== null && deps.deliver !== undefined) {
+    await deps.deliver(result.sharePayload);
+  }
 
   const at = deps.now();
   deps.upsert('exportLogs', {

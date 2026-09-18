@@ -17,6 +17,7 @@ import { resolveLanguage } from '../../i18n';
 import {
   selectActive,
   selectEquipmentForCaption,
+  selectFramesForRoll,
   selectScansForRoll,
   type CaptionEquipment,
 } from '../../store/selectors';
@@ -123,4 +124,31 @@ export function selectExportLogsForFrame(state: AppState, frameId: Id): ExportLo
   return selectActive(state, 'exportLogs')
     .filter((log) => log.frameId === frameId)
     .sort((a, b) => b.exportedAt.localeCompare(a.exportedAt));
+}
+
+/** A frame of a roll together with the uploaded scan an export would attach. */
+export interface ExportableFrame {
+  frame: Frame;
+  scan: Scan;
+}
+
+/**
+ * Pairs frames with the uploaded scan an export would attach, dropping every frame without one.
+ * A scan that is only recorded locally (the import has not uploaded it yet) does not count –
+ * there would be no bytes to attach.
+ *
+ * Taking the records instead of the state keeps this usable from a `useMemo` in the screen: the
+ * pairs are new objects on every call and must not be produced inside a store selector.
+ */
+export function pairExportableFrames(frames: Frame[], scans: Scan[]): ExportableFrame[] {
+  const uploaded = scans.filter((scan) => scan.file !== null);
+  return frames.flatMap((frame) => {
+    const scan = uploaded.find((candidate) => candidate.frameId === frame.id);
+    return scan === undefined ? [] : [{ frame, scan }];
+  });
+}
+
+/** The frames of a roll a roll export offers, in frame order. */
+export function selectExportableFrames(state: AppState, rollId: Id): ExportableFrame[] {
+  return pairExportableFrames(selectFramesForRoll(state, rollId), selectScansForRoll(state, rollId));
 }

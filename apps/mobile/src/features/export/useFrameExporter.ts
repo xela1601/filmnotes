@@ -63,7 +63,7 @@ export function useFrameExporter(): (request: FrameExportRequest) => Promise<Exp
   return useCallback(async ({ frame, exporterId, caption }: FrameExportRequest) => {
     const state = useStore.getState();
 
-    const result = await runFrameExport({
+    return runFrameExport({
       exporterId,
       frame,
       state,
@@ -74,9 +74,7 @@ export function useFrameExporter(): (request: FrameExportRequest) => Promise<Exp
       upsert: state.upsert,
       now: clock.now,
       caption,
+      deliver: shareOut,
     });
-
-    if (result.sharePayload !== null) await shareOut(result.sharePayload);
-    return result;
   }, []);
 }

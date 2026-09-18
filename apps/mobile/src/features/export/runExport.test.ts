@@ -154,6 +154,62 @@ describe('runFrameExport', () => {
     expect(fake.calls[0]?.input.caption).toBe('Edited by hand');
   });
 
+  it('hands a share payload over before the log is written', async () => {
+    const store = seededStore();
+    const shared: string[] = [];
+    fakeExporter('test-share', {
+      externalId: null,
+      url: null,
+      sharePayload: { text: 'Caption', image: IMAGE },
+    });
+
+    await runFrameExport({
+      exporterId: 'test-share',
+      frame: FRAME,
+      state: store.getState(),
+      config: {},
+      image: IMAGE,
+      fetch: fetchSpy,
+      upsert: store.getState().upsert,
+      now: () => NOW,
+      deliver: (payload) => {
+        shared.push(payload.text);
+        // The log is written only afterwards, so nothing is recorded yet.
+        expect(logsOf(store)).toHaveLength(0);
+        return Promise.resolve();
+      },
+    });
+
+    expect(shared).toEqual(['Caption']);
+    expect(logsOf(store)).toHaveLength(1);
+    expect(logsOf(store)[0]).toMatchObject({ target: 'test-share', externalId: null, url: null });
+  });
+
+  it('writes no log when the hand-over to the OS fails', async () => {
+    const store = seededStore();
+    fakeExporter('test-share-fail', {
+      externalId: null,
+      url: null,
+      sharePayload: { text: 'Caption', image: null },
+    });
+
+    await expect(
+      runFrameExport({
+        exporterId: 'test-share-fail',
+        frame: FRAME,
+        state: store.getState(),
+        config: {},
+        image: null,
+        fetch: fetchSpy,
+        upsert: store.getState().upsert,
+        now: () => NOW,
+        deliver: () => Promise.reject(new Error('the user cancelled the share sheet')),
+      }),
+    ).rejects.toThrow('the user cancelled the share sheet');
+
+    expect(logsOf(store)).toHaveLength(0);
+  });
+
   it('propagates the error of a failed export and writes no log', async () => {
     const store = seededStore();
     fakeExporter('test-fail', new Error('WordPress post creation failed (403)'));
