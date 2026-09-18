@@ -7,7 +7,7 @@
   "workspaces": ["packages/*", "apps/*", "tools/*"],
   "scripts": {
     "test": "jest",
-    "typecheck": "tsc -b packages/domain",
+    "typecheck": "tsc -b packages/domain packages/presets",
     "lint": "eslint . --ext .ts,.tsx"
   },
   "devDependencies": {
