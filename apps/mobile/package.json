@@ -8,7 +8,8 @@
     "android": "expo start --android",
     "ios": "expo start --ios",
     "web": "expo start --web",
-    "test": "jest"
+    "test": "jest",
+    "check:web": "node e2e/web-walkthrough.mjs"
   },
   "dependencies": {
     "@expo/metro-runtime": "~57.0.15",
@@ -46,6 +47,7 @@
     "@testing-library/react-native": "^13.3.3",
     "@types/react": "~19.2.2",
     "jest-expo": "~57.0.5",
+    "jsdom": "^30.1.0",
     "react-test-renderer": "19.2.3"
   }
 }

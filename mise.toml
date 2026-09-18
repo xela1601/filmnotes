@@ -27,6 +27,14 @@ run = "npm run fetch-pb -w @filmnotes/backend && npm test -w @filmnotes/backend"
 description = "Every suite: workspaces (jest) plus the backend smoke test"
 depends = ["test", "test:backend"]
 
+[tasks."check:web"]
+description = "Export the web build and walk the core scenario through it (spec 2.1)"
+run = [
+  "npx expo export --platform web",
+  "node e2e/web-walkthrough.mjs",
+]
+dir = "apps/mobile"
+
 [tasks.typecheck]
 description = "TypeScript project references build (no emit of stale output)"
 run = "npm run typecheck"

@@ -79,6 +79,18 @@ const { t } = useTranslation('rolls');
 Validation issues from `@filmnotes/domain` are translated in the `common` namespace under
 `validation.<code>`; `<IssueList>` does that for you.
 
+## End-to-end check of the web build
+
+```bash
+npm run check:web        # exports dist/ and walks the core scenario through the bundle
+```
+
+`e2e/web-walkthrough.mjs` serves the exported bundle and drives the spec's core scenario
+(create a roll from a preset, add the first frame, see a plausibility warning) in a DOM.
+It covers what component tests cannot: metro's output, the expo-router entry, store
+hydration, i18n and the presets together. jsdom has no layout engine, so anything that
+depends on real measurement belongs on a device or in a browser.
+
 ## Tests
 
 - `preset: 'jest-expo'`, discovered automatically by the root Jest config.
