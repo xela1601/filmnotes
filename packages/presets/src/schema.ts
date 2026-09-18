@@ -6,29 +6,25 @@
  * store. Every schema is `strict()` so a typo in the JSON (an unknown or
  * misspelled key) fails the data tests instead of silently disappearing.
  */
-import { z } from 'zod';
-import type {
-  Camera,
-  Filter,
-  FilmStock,
-  Flash,
-  Lens,
-  SyncedRecord,
-} from '@filmnotes/domain';
+import { z } from "zod";
+import type { Camera, Filter, FilmStock, Flash, Lens, SyncedRecord } from "@filmnotes/domain";
 
 /** A preset record carries a stable id but none of the sync fields. */
-export type PresetRecord<T extends SyncedRecord> = Omit<T, 'created' | 'updated' | 'deleted' | 'owner'>;
+export type PresetRecord<T extends SyncedRecord> = Omit<
+  T,
+  "created" | "updated" | "deleted" | "owner"
+>;
 
 /** PocketBase record id format, see `ID_PATTERN` in @filmnotes/domain. */
 export const ID_SCHEMA = z.string().regex(/^[a-z0-9]{15}$/);
 
-const exposureModeSchema = z.enum(['P', 'A', 'S', 'M']);
-const focusModeSchema = z.enum(['AF', 'M']);
-const driveModeSchema = z.enum(['S', 'C', 'ST']);
-const supportSchema = z.enum(['handheld', 'braced', 'tripod', 'beanbag']);
-const flashHeadSchema = z.enum(['direct', 'bounce']);
-const afCompatibilitySchema = z.enum(['yes', 'no', 'limited']);
-const filmProcessSchema = z.enum(['C41', 'BW', 'E6']);
+const exposureModeSchema = z.enum(["P", "A", "S", "M"]);
+const focusModeSchema = z.enum(["AF", "M"]);
+const driveModeSchema = z.enum(["S", "C", "ST"]);
+const supportSchema = z.enum(["handheld", "braced", "tripod", "beanbag"]);
+const flashHeadSchema = z.enum(["direct", "bounce"]);
+const afCompatibilitySchema = z.enum(["yes", "no", "limited"]);
+const filmProcessSchema = z.enum(["C41", "BW", "E6"]);
 /** Camera-style shutter speed string, e.g. "1/125", `2"`, `1"5`, "bulb". */
 const shutterSpeedSchema = z.string();
 const exposuresSchema = z.union([z.literal(24), z.literal(36), z.null()]);
@@ -170,7 +166,7 @@ export type PresetBundle = z.infer<typeof presetBundleSchema>;
  * both directions of assignability are checked, so an added, removed or
  * retyped domain field breaks the build here.
  */
-type Extends<A extends B, B> = true;
+type Extends<_A extends B, B> = true;
 type _CameraOut = Extends<z.infer<typeof cameraPresetSchema>, PresetRecord<Camera>>;
 type _CameraIn = Extends<PresetRecord<Camera>, z.infer<typeof cameraPresetSchema>>;
 type _LensOut = Extends<z.infer<typeof lensPresetSchema>, PresetRecord<Lens>>;

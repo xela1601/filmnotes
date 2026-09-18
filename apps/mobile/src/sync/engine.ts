@@ -33,11 +33,11 @@ import {
   type EntityOf,
   type Id,
   type ISODateTime,
-} from '@filmnotes/domain';
+} from "@filmnotes/domain";
 
-import type { RemoteRecord, SyncClient } from './client';
-import { fromRemote, toRemote } from './mapping';
-import { COLLECTIONS, type AppState, type OutboxEntry } from '../store/store';
+import type { RemoteRecord, SyncClient } from "./client";
+import { fromRemote, toRemote } from "./mapping";
+import { COLLECTIONS, type AppState, type OutboxEntry } from "../store/store";
 
 export interface SyncResult {
   /** Records written to the server. */
@@ -69,20 +69,20 @@ const WATERMARK_MARGIN_MS = 5_000;
  * therefore need the explicit first-sync upload.
  */
 const SEED_COLLECTIONS: readonly CollectionName[] = [
-  'cameras',
-  'lenses',
-  'filters',
-  'flashes',
-  'filmStocks',
+  "cameras",
+  "lenses",
+  "filters",
+  "flashes",
+  "filmStocks",
 ];
 
 /** The fetched remote changes, per collection and keyed by record id. */
 type RemoteChanges = Map<CollectionName, Map<Id, RemoteRecord>>;
 
 function statusOf(error: unknown): number | null {
-  if (typeof error === 'object' && error !== null && 'status' in error) {
-    const status: unknown = (error as { status: unknown }).status;
-    if (typeof status === 'number') return status;
+  if (typeof error === "object" && error !== null && "status" in error) {
+    const status: unknown = error.status;
+    if (typeof status === "number") return status;
   }
   return null;
 }
@@ -185,7 +185,12 @@ async function uploadSeedData(
   result: SyncResult,
 ): Promise<void> {
   for (const collection of SEED_COLLECTIONS) {
-    for (const record of Object.values(deps.getState().entities[collection])) {
+    // Indexing the entity map with a union key widens the values to `any`; the cast puts
+    // the collection's entity type back, which is what `pushRecord` is generic over.
+    const records = Object.values(
+      deps.getState().entities[collection],
+    ) as EntityOf<CollectionName>[];
+    for (const record of records) {
       if (written.has(`${collection}/${record.id}`)) continue;
       try {
         await pushRecord(deps, collection, record);
@@ -228,7 +233,7 @@ export async function runSync(deps: SyncDeps): Promise<SyncResult> {
 
   const written = await pushOutbox(deps, changes, result);
 
-  const serverIsEmpty = (changes.get('cameras')?.size ?? 0) === 0;
+  const serverIsEmpty = (changes.get("cameras")?.size ?? 0) === 0;
   if (complete && since === null && serverIsEmpty) {
     await uploadSeedData(deps, changes, written, result);
   }

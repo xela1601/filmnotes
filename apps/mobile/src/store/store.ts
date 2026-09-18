@@ -8,32 +8,32 @@ import type {
   Id,
   ISODateTime,
   Lens,
-} from '@filmnotes/domain';
-import { create } from 'zustand';
-import { createJSONStorage, persist, type StateStorage } from 'zustand/middleware';
+} from "@filmnotes/domain";
+import { create } from "zustand";
+import { createJSONStorage, persist, type StateStorage } from "zustand/middleware";
 
-import * as clock from '../lib/clock';
-import { persistStorage } from './persistStorage';
+import * as clock from "../lib/clock";
+import { persistStorage } from "./persistStorage";
 import {
   FILM_STOCK_BUNDLE_ID,
   loadEquipmentPresets,
   loadFilmStockPresets,
   materialize,
-} from '../lib/presets';
+} from "../lib/presets";
 
 /** Storage key of the persisted slice; bump the suffix on a breaking state change. */
-export const PERSIST_KEY = 'filmnotes-v1';
+export const PERSIST_KEY = "filmnotes-v1";
 
 export const COLLECTIONS = [
-  'cameras',
-  'lenses',
-  'filters',
-  'flashes',
-  'filmStocks',
-  'rolls',
-  'frames',
-  'scans',
-  'exportLogs',
+  "cameras",
+  "lenses",
+  "filters",
+  "flashes",
+  "filmStocks",
+  "rolls",
+  "frames",
+  "scans",
+  "exportLogs",
 ] as const satisfies readonly CollectionName[];
 
 /** All entities, normalised per collection and keyed by record id. */
@@ -43,12 +43,12 @@ export type Entities = { [K in CollectionName]: Record<Id, EntityOf<K>> };
 export interface OutboxEntry {
   collection: CollectionName;
   id: Id;
-  op: 'upsert' | 'delete';
+  op: "upsert" | "delete";
   at: ISODateTime;
 }
 
 export interface Settings {
-  locale: 'system' | 'de' | 'en';
+  locale: "system" | "de" | "en";
   /** PocketBase base URL. */
   serverUrl: string | null;
   /** Password and token live in secure storage, see src/lib/secureStore.ts. */
@@ -92,7 +92,7 @@ export interface PersistedState {
 }
 
 export const DEFAULT_SETTINGS: Settings = {
-  locale: 'system',
+  locale: "system",
   serverUrl: null,
   serverEmail: null,
   wordpressSiteUrl: null,
@@ -136,7 +136,7 @@ function withRecords<K extends CollectionName>(
   for (const record of records) map[record.id] = record;
   // TypeScript cannot narrow a write through the generic key K of the mapped type,
   // so the assembled object is asserted once here; `map` itself is fully typed.
-  return { ...entities, [collection]: map } as Entities;
+  return { ...entities, [collection]: map };
 }
 
 /** Appends an entry, replacing any earlier entry for the same collection+id. */
@@ -162,7 +162,7 @@ export function createAppStore(storage?: StateStorage) {
           const stored = { ...record, updated: at } as EntityOf<K>;
           set((state) => ({
             entities: withRecords(state.entities, collection, [stored]),
-            outbox: queue(state.outbox, { collection, id: record.id, op: 'upsert', at }),
+            outbox: queue(state.outbox, { collection, id: record.id, op: "upsert", at }),
           }));
         },
 
@@ -173,7 +173,7 @@ export function createAppStore(storage?: StateStorage) {
           const deleted = { ...existing, deleted: at, updated: at };
           set((state) => ({
             entities: withRecords(state.entities, collection, [deleted]),
-            outbox: queue(state.outbox, { collection, id, op: 'delete', at }),
+            outbox: queue(state.outbox, { collection, id, op: "delete", at }),
           }));
         },
 
@@ -209,22 +209,22 @@ export function createAppStore(storage?: StateStorage) {
               if (seeded.has(bundle.id)) continue;
               entities = withRecords(
                 entities,
-                'cameras',
+                "cameras",
                 bundle.cameras.map((r) => materialize<Camera>(r, now)),
               );
               entities = withRecords(
                 entities,
-                'lenses',
+                "lenses",
                 bundle.lenses.map((r) => materialize<Lens>(r, now)),
               );
               entities = withRecords(
                 entities,
-                'filters',
+                "filters",
                 bundle.filters.map((r) => materialize<Filter>(r, now)),
               );
               entities = withRecords(
                 entities,
-                'flashes',
+                "flashes",
                 bundle.flashes.map((r) => materialize<Flash>(r, now)),
               );
               newlySeeded.push(bundle.id);
@@ -233,7 +233,7 @@ export function createAppStore(storage?: StateStorage) {
             if (!seeded.has(FILM_STOCK_BUNDLE_ID)) {
               entities = withRecords(
                 entities,
-                'filmStocks',
+                "filmStocks",
                 loadFilmStockPresets().map((r) => materialize<FilmStock>(r, now)),
               );
               newlySeeded.push(FILM_STOCK_BUNDLE_ID);

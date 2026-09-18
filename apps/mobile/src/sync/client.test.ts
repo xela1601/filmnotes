@@ -6,6 +6,8 @@
  * any network access. The real SDK is exercised by the backend smoke test (T-004) and by
  * the manual end-to-end check.
  */
+import { createPocketBaseClient } from "./client";
+
 const mockPb = {
   authWithPassword: jest.fn(),
   authRefresh: jest.fn(),
@@ -15,9 +17,8 @@ const mockPb = {
   autoCancellation: jest.fn(),
   save: jest.fn(),
   clear: jest.fn(),
-  filter: jest.fn(
-    (raw: string, params: Record<string, unknown>): string =>
-      raw.replace('{:since}', `"${String(params.since)}"`),
+  filter: jest.fn((raw: string, params: Record<string, unknown>): string =>
+    raw.replace("{:since}", `"${String(params.since)}"`),
   ),
   getURL: jest.fn(
     (record: { id: string; collectionName: string }, fileName: string): string =>
@@ -25,7 +26,7 @@ const mockPb = {
   ),
 };
 
-jest.mock('pocketbase', () => ({
+jest.mock("pocketbase", () => ({
   __esModule: true,
   // The field initialisers run when the adapter constructs the client, which is well
   // after this module has finished loading – so touching `mockPb` here is safe.
@@ -38,97 +39,95 @@ jest.mock('pocketbase', () => ({
   },
 }));
 
-import { createPocketBaseClient } from './client';
-
-describe('createPocketBaseClient', () => {
+describe("createPocketBaseClient", () => {
   beforeEach(() => {
     jest.clearAllMocks();
   });
 
-  it('builds a client with the whole SyncClient surface and no auto-cancellation', () => {
-    const client = createPocketBaseClient('https://pb.test');
+  it("builds a client with the whole SyncClient surface and no auto-cancellation", () => {
+    const client = createPocketBaseClient("https://pb.test");
 
     expect(mockPb.autoCancellation).toHaveBeenCalledWith(false);
     for (const method of [
-      'authWithPassword',
-      'authWithToken',
-      'list',
-      'create',
-      'update',
-      'uploadFile',
-      'fileUrl',
+      "authWithPassword",
+      "authWithToken",
+      "list",
+      "create",
+      "update",
+      "uploadFile",
+      "fileUrl",
     ] as const) {
-      expect(typeof client[method]).toBe('function');
+      expect(typeof client[method]).toBe("function");
     }
   });
 
-  it('lists everything when there is no watermark', async () => {
+  it("lists everything when there is no watermark", async () => {
     mockPb.getFullList.mockResolvedValue([]);
 
-    await createPocketBaseClient('https://pb.test').list('rolls', null);
+    await createPocketBaseClient("https://pb.test").list("rolls", null);
 
-    expect(mockPb.getFullList).toHaveBeenLastCalledWith({ filter: '', sort: 'updated' });
+    expect(mockPb.getFullList).toHaveBeenLastCalledWith({ filter: "", sort: "updated" });
   });
 
-  it('passes the watermark in PocketBase date format, not ISO', async () => {
+  it("passes the watermark in PocketBase date format, not ISO", async () => {
     // PocketBase compares date filters lexically against its stored
     // `YYYY-MM-DD HH:mm:ss.SSSZ` form. An ISO watermark keeps the `T`, which sorts after
     // every timestamp of the same day ("T" > " "), so the server would silently answer
     // with an empty change feed until the next calendar day.
     mockPb.getFullList.mockResolvedValue([]);
 
-    await createPocketBaseClient('https://pb.test').list('rolls', '2026-09-18T10:00:00.000Z');
+    await createPocketBaseClient("https://pb.test").list("rolls", "2026-09-18T10:00:00.000Z");
 
-    expect(mockPb.filter).toHaveBeenLastCalledWith('updated > {:since}', {
-      since: '2026-09-18 10:00:00.000Z',
+    expect(mockPb.filter).toHaveBeenLastCalledWith("updated > {:since}", {
+      since: "2026-09-18 10:00:00.000Z",
     });
     expect(mockPb.getFullList).toHaveBeenLastCalledWith({
       filter: 'updated > "2026-09-18 10:00:00.000Z"',
-      sort: 'updated',
+      sort: "updated",
     });
   });
 
-  it('returns token and user id after a password login', async () => {
-    mockPb.authWithPassword.mockResolvedValue({ token: 'tok', record: { id: 'user00000000001' } });
+  it("returns token and user id after a password login", async () => {
+    mockPb.authWithPassword.mockResolvedValue({ token: "tok", record: { id: "user00000000001" } });
 
-    const auth = await createPocketBaseClient('https://pb.test').authWithPassword(
-      'me@example.test',
-      'secret',
+    const auth = await createPocketBaseClient("https://pb.test").authWithPassword(
+      "me@example.test",
+      "secret",
     );
 
-    expect(auth).toEqual({ token: 'tok', userId: 'user00000000001' });
+    expect(auth).toEqual({ token: "tok", userId: "user00000000001" });
   });
 
-  it('validates a stored token via authRefresh and reports an invalid one as null', async () => {
+  it("validates a stored token via authRefresh and reports an invalid one as null", async () => {
     mockPb.authRefresh.mockResolvedValueOnce({
-      token: 'fresh',
-      record: { id: 'user00000000001' },
+      token: "fresh",
+      record: { id: "user00000000001" },
     });
-    const client = createPocketBaseClient('https://pb.test');
+    const client = createPocketBaseClient("https://pb.test");
 
-    expect(await client.authWithToken('tok')).toEqual({ userId: 'user00000000001' });
-    expect(mockPb.save).toHaveBeenCalledWith('fresh', { id: 'user00000000001' });
+    expect(await client.authWithToken("tok")).toEqual({ userId: "user00000000001" });
+    expect(mockPb.save).toHaveBeenCalledWith("fresh", { id: "user00000000001" });
 
-    mockPb.authRefresh.mockRejectedValueOnce(new Error('401'));
-    expect(await client.authWithToken('stale')).toBeNull();
+    mockPb.authRefresh.mockRejectedValueOnce(new Error("401"));
+    expect(await client.authWithToken("stale")).toBeNull();
     expect(mockPb.clear).toHaveBeenCalled();
   });
 
-  it('builds a file url with an optional thumb', () => {
-    const client = createPocketBaseClient('https://pb.test');
+  it("builds a file url with an optional thumb", () => {
+    const client = createPocketBaseClient("https://pb.test");
 
-    expect(client.fileUrl('scans', 'scan00000000001', 'img.jpg')).toBe(
-      'https://pb.test/api/files/scans/scan00000000001/img.jpg',
+    expect(client.fileUrl("scans", "scan00000000001", "img.jpg")).toBe(
+      "https://pb.test/api/files/scans/scan00000000001/img.jpg",
     );
     expect(mockPb.getURL).toHaveBeenLastCalledWith(
-      { id: 'scan00000000001', collectionId: 'scans', collectionName: 'scans' },
-      'img.jpg',
+      { id: "scan00000000001", collectionId: "scans", collectionName: "scans" },
+      "img.jpg",
       {},
     );
 
-    client.fileUrl('scans', 'scan00000000001', 'img.jpg', '200x200');
-    expect(mockPb.getURL).toHaveBeenLastCalledWith(expect.anything(), 'img.jpg', {
-      thumb: '200x200',
+    client.fileUrl("scans", "scan00000000001", "img.jpg", "200x200");
+    expect(mockPb.getURL).toHaveBeenLastCalledWith(expect.anything(), "img.jpg", {
+      thumb: "200x200",
     });
   });
 });

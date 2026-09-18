@@ -4,14 +4,14 @@
  * The permission is requested when the photographer presses "use current position" and never
  * before – the app is fully usable without it, the location is one optional field of a frame.
  */
-import * as Location from 'expo-location';
-import { useCallback, useState } from 'react';
+import * as Location from "expo-location";
+import { useCallback, useState } from "react";
 
 /** Outcome of a single lookup. Coordinates only exist in the granted case. */
 export type LocationResult =
-  | { status: 'granted'; lat: number; lon: number }
-  | { status: 'denied' }
-  | { status: 'unavailable' };
+  | { status: "granted"; lat: number; lon: number }
+  | { status: "denied" }
+  | { status: "unavailable" };
 
 export interface LocationLookup {
   /** True while a lookup is running, for the button's pending state. */
@@ -38,19 +38,19 @@ export function useLocation(): LocationLookup {
     setBusy(true);
     try {
       const permission = await Location.requestForegroundPermissionsAsync();
-      if (permission.status !== 'granted') return { status: 'denied' };
+      if (!permission.granted) return { status: "denied" };
 
       const position = await Location.getCurrentPositionAsync({
         accuracy: Location.Accuracy.Balanced,
       });
       return {
-        status: 'granted',
+        status: "granted",
         lat: round(position.coords.latitude),
         lon: round(position.coords.longitude),
       };
     } catch {
       // No location services, no hardware, a timeout – all the same to the photographer.
-      return { status: 'unavailable' };
+      return { status: "unavailable" };
     } finally {
       setBusy(false);
     }

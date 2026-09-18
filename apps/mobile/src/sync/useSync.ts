@@ -6,17 +6,16 @@
  * foreground. The store itself only keeps the durable part (`lastSyncAt`, outbox), so a
  * restart never shows a stale "running".
  */
-import type { Id } from '@filmnotes/domain';
-import { useCallback, useEffect, useState } from 'react';
-import { AppState as ReactNativeAppState } from 'react-native';
+import { useCallback, useEffect, useState } from "react";
+import { AppState as ReactNativeAppState } from "react-native";
 
-import { createPocketBaseClient } from './client';
-import { runSync, type SyncResult } from './engine';
-import { authenticate } from './session';
-import * as clock from '../lib/clock';
-import { useStore } from '../store/store';
+import { createPocketBaseClient } from "./client";
+import { runSync, type SyncResult } from "./engine";
+import { authenticate } from "./session";
+import * as clock from "../lib/clock";
+import { useStore } from "../store/store";
 
-export type SyncStatus = 'idle' | 'running' | 'error' | 'no_server';
+export type SyncStatus = "idle" | "running" | "error" | "no_server";
 
 export interface UseSyncResult {
   status: SyncStatus;
@@ -55,9 +54,8 @@ function messageOf(error: unknown): string {
 export function useSync(): UseSyncResult {
   const serverUrl = useStore((state) => state.settings.serverUrl);
   const serverEmail = useStore((state) => state.settings.serverEmail);
-  const [status, setStatus] = useState<SyncStatus>('idle');
+  const [status, setStatus] = useState<SyncStatus>("idle");
   const [lastResult, setLastResult] = useState<SyncResult | null>(null);
-
 
   const isConfigured = serverUrl !== null;
 
@@ -65,14 +63,14 @@ export function useSync(): UseSyncResult {
     if (serverUrl === null || syncRunning) return;
     syncRunning = true;
     lastRunStartedAt = Date.now();
-    setStatus('running');
+    setStatus("running");
 
     try {
       const client = createPocketBaseClient(serverUrl);
       const ownerId = await authenticate(client, serverEmail);
       if (ownerId === null) {
-        setLastResult(failure('no usable credentials for the configured server'));
-        setStatus('error');
+        setLastResult(failure("no usable credentials for the configured server"));
+        setStatus("error");
         return;
       }
 
@@ -86,10 +84,10 @@ export function useSync(): UseSyncResult {
         now: clock.now,
       });
       setLastResult(result);
-      setStatus(result.errors.length > 0 ? 'error' : 'idle');
+      setStatus(result.errors.length > 0 ? "error" : "idle");
     } catch (error) {
       setLastResult(failure(messageOf(error)));
-      setStatus('error');
+      setStatus("error");
     } finally {
       syncRunning = false;
     }
@@ -97,8 +95,8 @@ export function useSync(): UseSyncResult {
 
   useEffect(() => {
     if (!isConfigured) return;
-    const subscription = ReactNativeAppState.addEventListener('change', (next) => {
-      if (next !== 'active') return;
+    const subscription = ReactNativeAppState.addEventListener("change", (next) => {
+      if (next !== "active") return;
       if (Date.now() - lastRunStartedAt < AUTO_SYNC_INTERVAL_MS) return;
       void syncNow();
     });
@@ -106,7 +104,7 @@ export function useSync(): UseSyncResult {
   }, [isConfigured, syncNow]);
 
   return {
-    status: isConfigured ? status : 'no_server',
+    status: isConfigured ? status : "no_server",
     lastResult,
     syncNow,
     isConfigured,
