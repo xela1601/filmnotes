@@ -19,22 +19,22 @@
  * not distinguish "absent" from "zero" for those field types. Records written by this app
  * always carry a value, so this only shows up for records edited in the admin UI.
  */
-import type { CollectionName, EntityOf, Id, ISODateTime, SyncedRecord } from '@filmnotes/domain';
+import type { CollectionName, EntityOf, Id, ISODateTime, SyncedRecord } from "@filmnotes/domain";
 
-import type { RemoteRecord } from './client';
+import type { RemoteRecord } from "./client";
 
 /** How a remote value is read back into the domain type; `?` marks a nullable field. */
 type FieldKind =
-  | 'text'
-  | 'text?'
-  | 'number'
-  | 'number?'
-  | 'bool'
-  | 'bool?'
-  | 'date'
-  | 'date?'
-  | 'json'
-  | 'jsonArray';
+  | "text"
+  | "text?"
+  | "number"
+  | "number?"
+  | "bool"
+  | "bool?"
+  | "date"
+  | "date?"
+  | "json"
+  | "jsonArray";
 
 /** Every field of an entity except the ones `SyncedRecord` already covers. */
 type FieldSpec<K extends CollectionName> = {
@@ -48,129 +48,129 @@ type FieldSpec<K extends CollectionName> = {
  */
 const FIELD_SPECS: { [K in CollectionName]: FieldSpec<K> } = {
   cameras: {
-    make: 'text',
-    model: 'text',
-    aliases: 'jsonArray',
-    year: 'number?',
-    format: 'text',
-    mount: 'text?',
-    exposureModes: 'jsonArray',
-    shutterSpeedsManual: 'jsonArray',
-    shutterSpeedsAutoExtra: 'jsonArray',
-    bulbOnlyInModes: 'jsonArray',
-    exposureCompensation: 'json',
-    iso: 'json',
-    focusModes: 'jsonArray',
-    driveModes: 'jsonArray',
-    flashSync: 'text?',
-    metering: 'text',
-    notes: 'text',
-    conditionNotes: 'jsonArray',
-    defaultsForNewFrame: 'json',
+    make: "text",
+    model: "text",
+    aliases: "jsonArray",
+    year: "number?",
+    format: "text",
+    mount: "text?",
+    exposureModes: "jsonArray",
+    shutterSpeedsManual: "jsonArray",
+    shutterSpeedsAutoExtra: "jsonArray",
+    bulbOnlyInModes: "jsonArray",
+    exposureCompensation: "json",
+    iso: "json",
+    focusModes: "jsonArray",
+    driveModes: "jsonArray",
+    flashSync: "text?",
+    metering: "text",
+    notes: "text",
+    conditionNotes: "jsonArray",
+    defaultsForNewFrame: "json",
   },
   lenses: {
-    make: 'text',
-    model: 'text',
-    focalMinMm: 'number',
-    focalMaxMm: 'number',
-    maxAperture: 'number',
-    minAperture: 'number',
-    apertureValues: 'jsonArray',
-    filterThreadMm: 'number?',
-    minFocusM: 'number?',
-    macroNote: 'text?',
-    weightG: 'number?',
-    defaultFilterIds: 'jsonArray',
-    handheldMinShutter: 'text?',
-    hasHood: 'bool',
+    make: "text",
+    model: "text",
+    focalMinMm: "number",
+    focalMaxMm: "number",
+    maxAperture: "number",
+    minAperture: "number",
+    apertureValues: "jsonArray",
+    filterThreadMm: "number?",
+    minFocusM: "number?",
+    macroNote: "text?",
+    weightG: "number?",
+    defaultFilterIds: "jsonArray",
+    handheldMinShutter: "text?",
+    hasHood: "bool",
   },
   filters: {
-    make: 'text',
-    model: 'text',
-    threadMm: 'number',
-    type: 'text',
-    exposureFactorEv: 'number',
-    afCompatible: 'text',
-    warning: 'text?',
-    mountedOnLensId: 'text?',
+    make: "text",
+    model: "text",
+    threadMm: "number",
+    type: "text",
+    exposureFactorEv: "number",
+    afCompatible: "text",
+    warning: "text?",
+    mountedOnLensId: "text?",
   },
   flashes: {
-    make: 'text',
-    model: 'text',
-    guideNumberIso100M: 'number?',
-    powerLevels: 'jsonArray',
-    headPositions: 'jsonArray',
-    afIlluminator: 'bool',
-    sync: 'text?',
-    notes: 'text',
+    make: "text",
+    model: "text",
+    guideNumberIso100M: "number?",
+    powerLevels: "jsonArray",
+    headPositions: "jsonArray",
+    afIlluminator: "bool",
+    sync: "text?",
+    notes: "text",
   },
   filmStocks: {
-    name: 'text',
-    maker: 'text',
-    iso: 'number',
-    process: 'text',
-    color: 'bool',
-    exposures: 'number?',
-    dxCoded: 'bool?',
-    notes: 'text',
+    name: "text",
+    maker: "text",
+    iso: "number",
+    process: "text",
+    color: "bool",
+    exposures: "number?",
+    dxCoded: "bool?",
+    notes: "text",
   },
   rolls: {
-    cameraId: 'text',
-    filmStockId: 'text',
-    isoSet: 'number',
-    isoSource: 'text',
-    exposures: 'number',
-    pushPullEv: 'number',
-    status: 'text',
-    loadedAt: 'date',
-    unloadedAt: 'date?',
-    lab: 'text?',
-    notes: 'text',
+    cameraId: "text",
+    filmStockId: "text",
+    isoSet: "number",
+    isoSource: "text",
+    exposures: "number",
+    pushPullEv: "number",
+    status: "text",
+    loadedAt: "date",
+    unloadedAt: "date?",
+    lab: "text?",
+    notes: "text",
   },
   frames: {
-    rollId: 'text',
-    frameNo: 'number',
-    takenAt: 'date?',
-    lensId: 'text?',
-    focalLengthMm: 'number?',
-    exposureMode: 'text?',
-    shutterSpeed: 'text?',
-    aperture: 'number?',
-    exposureCompensationEv: 'number',
-    programShift: 'bool',
-    aeLock: 'bool',
-    focusMode: 'text?',
-    afResult: 'text?',
-    driveMode: 'text?',
-    flashId: 'text?',
-    flashHead: 'text?',
-    flashPower: 'text?',
-    flashOk: 'bool?',
-    filterIds: 'jsonArray',
-    lensHood: 'bool',
-    support: 'text?',
-    beepWarning: 'bool',
-    light: 'text?',
-    subject: 'text?',
-    location: 'json',
-    notes: 'text',
+    rollId: "text",
+    frameNo: "number",
+    takenAt: "date?",
+    lensId: "text?",
+    focalLengthMm: "number?",
+    exposureMode: "text?",
+    shutterSpeed: "text?",
+    aperture: "number?",
+    exposureCompensationEv: "number",
+    programShift: "bool",
+    aeLock: "bool",
+    focusMode: "text?",
+    afResult: "text?",
+    driveMode: "text?",
+    flashId: "text?",
+    flashHead: "text?",
+    flashPower: "text?",
+    flashOk: "bool?",
+    filterIds: "jsonArray",
+    lensHood: "bool",
+    support: "text?",
+    beepWarning: "bool",
+    light: "text?",
+    subject: "text?",
+    location: "json",
+    notes: "text",
   },
   scans: {
-    rollId: 'text',
-    frameId: 'text?',
-    fileName: 'text',
-    sortIndex: 'number',
-    file: 'text?',
-    width: 'number?',
-    height: 'number?',
-    importedAt: 'date',
+    rollId: "text",
+    frameId: "text?",
+    fileName: "text",
+    sortIndex: "number",
+    file: "text?",
+    width: "number?",
+    height: "number?",
+    importedAt: "date",
   },
   exportLogs: {
-    frameId: 'text',
-    target: 'text',
-    externalId: 'text?',
-    url: 'text?',
-    exportedAt: 'date',
+    frameId: "text",
+    target: "text",
+    externalId: "text?",
+    url: "text?",
+    exportedAt: "date",
   },
 };
 
@@ -183,23 +183,28 @@ const TIMEZONE = /(?:Z|[+-]\d{2}:?\d{2})$/;
 
 /** Reads a PocketBase date (`2026-09-18 10:00:00.000Z`) as an ISO UTC string. */
 function asDate(value: unknown): ISODateTime | null {
-  if (typeof value !== 'string' || value === '') return null;
-  let text = value.replace(' ', 'T');
+  if (typeof value !== "string" || value === "") return null;
+  let text = value.replace(" ", "T");
   // PocketBase stores UTC; older versions omit the designator, which `Date` would
   // otherwise read as local time.
-  if (!TIMEZONE.test(text)) text += 'Z';
+  if (!TIMEZONE.test(text)) text += "Z";
   const parsed = new Date(text);
   return Number.isNaN(parsed.getTime()) ? null : parsed.toISOString();
 }
 
 function asText(value: unknown): string | null {
-  if (typeof value === 'string') return value === '' ? null : value;
-  return value === null || value === undefined ? null : String(value);
+  if (typeof value === "string") return value === "" ? null : value;
+  // A number or boolean in a text field is a server-side type slip worth keeping; an object
+  // (an expanded relation, a nested error payload) would stringify to "[object Object]" and
+  // silently write that into the entity, so it is dropped instead.
+  if (typeof value === "number") return Number.isFinite(value) ? String(value) : null;
+  if (typeof value === "boolean") return String(value);
+  return null;
 }
 
 function asNumber(value: unknown): number | null {
-  if (typeof value === 'number') return Number.isFinite(value) ? value : null;
-  if (typeof value === 'string' && value !== '') {
+  if (typeof value === "number") return Number.isFinite(value) ? value : null;
+  if (typeof value === "string" && value !== "") {
     const parsed = Number(value);
     return Number.isFinite(parsed) ? parsed : null;
   }
@@ -208,25 +213,25 @@ function asNumber(value: unknown): number | null {
 
 function coerce(value: unknown, kind: FieldKind): unknown {
   switch (kind) {
-    case 'text':
-      return typeof value === 'string' ? value : (asText(value) ?? '');
-    case 'text?':
+    case "text":
+      return typeof value === "string" ? value : (asText(value) ?? "");
+    case "text?":
       return asText(value);
-    case 'number':
+    case "number":
       return asNumber(value) ?? 0;
-    case 'number?':
+    case "number?":
       return asNumber(value);
-    case 'bool':
+    case "bool":
       return value === true;
-    case 'bool?':
-      return value === null || value === undefined || value === '' ? null : value === true;
-    case 'date':
-      return asDate(value) ?? '';
-    case 'date?':
+    case "bool?":
+      return value === null || value === undefined || value === "" ? null : value === true;
+    case "date":
+      return asDate(value) ?? "";
+    case "date?":
       return asDate(value);
-    case 'jsonArray':
+    case "jsonArray":
       return Array.isArray(value) ? value : [];
-    case 'json':
+    case "json":
       return value === undefined ? null : value;
   }
 }
@@ -272,7 +277,7 @@ export function fromRemote<K extends CollectionName>(
   for (const [field, kind] of Object.entries(spec)) entity[field] = coerce(remote[field], kind);
 
   const serverUpdated = asDate(remote.updated);
-  const created = asDate(remote.created) ?? serverUpdated ?? '';
+  const created = asDate(remote.created) ?? serverUpdated ?? "";
 
   entity.id = String(remote.id);
   entity.created = created;
