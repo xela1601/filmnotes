@@ -25,6 +25,7 @@
     "expo-secure-store": "~57.0.4",
     "expo-status-bar": "~57.0.1",
     "i18next": "^26.4.2",
+    "pocketbase": "^0.28.1",
     "react": "19.2.3",
     "react-dom": "19.2.3",
     "react-i18next": "^17.0.14",
