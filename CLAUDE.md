@@ -8,6 +8,12 @@
 - Ids: `newId()` from `@filmnotes/domain`. Dates: ISO strings in UTC.
 - Never commit secrets, `pb_data`, `node_modules`, or `backend/bin`.
 
+## The workspace is on a case-insensitive filesystem
+
+The repository is bind-mounted from macOS, so `rollForm.ts` and `RollForm.tsx` are the *same*
+path for module resolution: imports resolve to the wrong file and `tsc` reports TS1149. Never let
+two files in one directory differ only in case – suffix the component (`RollFormScreen.tsx`).
+
 ## Tooling (mise)
 
 CLI tooling and the task runner are managed with [mise](https://mise.jdx.dev); `mise.toml` pins
