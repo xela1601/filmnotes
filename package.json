@@ -4,7 +4,7 @@
   "version": "0.1.0",
   "description": "Per-frame notes for analogue film rolls – Expo app + PocketBase backend",
   "license": "MIT",
-  "workspaces": ["packages/*", "apps/*", "tools/*"],
+  "workspaces": ["packages/*", "apps/*", "tools/*", "backend"],
   "scripts": {
     "test": "jest",
     "typecheck": "tsc -b packages/domain packages/presets",
