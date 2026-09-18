@@ -50,6 +50,19 @@ export interface SyncClient {
 const USERS_COLLECTION = 'users';
 
 /**
+ * Rewrites an ISO timestamp into PocketBase's own date format (`YYYY-MM-DD HH:mm:ss.SSSZ`).
+ *
+ * PocketBase compares a date filter lexically against the stored string, so an ISO
+ * watermark keeps its `T` separator and sorts *after* every timestamp of the same day
+ * (`'T'` = 0x54 > `' '` = 0x20). The change feed would then come back empty until the
+ * next calendar day – silently, because an empty page is a perfectly valid answer.
+ * Verified against PocketBase 0.40 with the schema from T-004.
+ */
+function asPocketBaseDate(iso: string): string {
+  return iso.replace('T', ' ');
+}
+
+/**
  * `SyncClient` on top of the `pocketbase` JS SDK.
  *
  * Auto-cancellation is switched off: the engine lists every collection one after the
@@ -86,7 +99,9 @@ export function createPocketBaseClient(baseUrl: string): SyncClient {
 
     async list(collection, sinceIso) {
       const filter =
-        sinceIso === null ? '' : pb.filter('updated > {:since}', { since: sinceIso });
+        sinceIso === null
+          ? ''
+          : pb.filter('updated > {:since}', { since: asPocketBaseDate(sinceIso) });
       return pb.collection(collection).getFullList<RemoteRecord>({ filter, sort: 'updated' });
     },
 

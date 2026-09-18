@@ -5,7 +5,9 @@
  *  - one `Map` per collection, keyed by record id,
  *  - `created`/`updated` stamped with the fake server clock on every write (the client's
  *    own timestamp stays in `clientUpdated`, exactly as the real schema does),
- *  - `list(collection, since)` filters on the *server* `updated`,
+ *  - `list(collection, since)` filters on the *server* `updated` – by parsing both sides,
+ *    so unlike the real server it accepts an ISO watermark as well as PocketBase's own
+ *    date format (the conversion lives in `client.ts`, which is where it is tested),
  *  - `update` on an unknown id throws a 404, which is what makes the engine fall back to
  *    `create`.
  *

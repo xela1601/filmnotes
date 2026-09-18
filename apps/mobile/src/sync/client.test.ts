@@ -62,16 +62,28 @@ describe('createPocketBaseClient', () => {
     }
   });
 
-  it('lists everything without a filter and filters by the server updated otherwise', async () => {
+  it('lists everything when there is no watermark', async () => {
     mockPb.getFullList.mockResolvedValue([]);
-    const client = createPocketBaseClient('https://pb.test');
 
-    await client.list('rolls', null);
+    await createPocketBaseClient('https://pb.test').list('rolls', null);
+
     expect(mockPb.getFullList).toHaveBeenLastCalledWith({ filter: '', sort: 'updated' });
+  });
 
-    await client.list('rolls', '2026-09-18T10:00:00.000Z');
+  it('passes the watermark in PocketBase date format, not ISO', async () => {
+    // PocketBase compares date filters lexically against its stored
+    // `YYYY-MM-DD HH:mm:ss.SSSZ` form. An ISO watermark keeps the `T`, which sorts after
+    // every timestamp of the same day ("T" > " "), so the server would silently answer
+    // with an empty change feed until the next calendar day.
+    mockPb.getFullList.mockResolvedValue([]);
+
+    await createPocketBaseClient('https://pb.test').list('rolls', '2026-09-18T10:00:00.000Z');
+
+    expect(mockPb.filter).toHaveBeenLastCalledWith('updated > {:since}', {
+      since: '2026-09-18 10:00:00.000Z',
+    });
     expect(mockPb.getFullList).toHaveBeenLastCalledWith({
-      filter: 'updated > "2026-09-18T10:00:00.000Z"',
+      filter: 'updated > "2026-09-18 10:00:00.000Z"',
       sort: 'updated',
     });
   });
