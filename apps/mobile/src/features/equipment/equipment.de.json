@@ -1,0 +1,139 @@
+{
+  "title": "Ausrüstung",
+  "empty": "Nichts in dieser Gruppe",
+  "emptyHint": "Lege eine eigene Ausrüstung an – die Vorlagen sind nur der Anfang.",
+  "unnamed": "Ohne Namen",
+  "notFound": "Nicht gefunden",
+  "notFoundHint": "Dieser Eintrag wurde gelöscht oder gehört zu einem anderen Gerät.",
+  "newTitle": "Neu: {{type}}",
+  "editTitle": "{{type}} bearbeiten",
+  "addOf": "{{type}} hinzufügen",
+  "deleteOf": "{{type}} löschen",
+  "deleteConfirm": "Dieser Eintrag wird gelöscht. Filme und Bilder, die ihn nennen, behalten den Verweis.",
+  "types": {
+    "cameras": "Kameras",
+    "lenses": "Objektive",
+    "filters": "Filter",
+    "flashes": "Blitze",
+    "filmStocks": "Filme"
+  },
+  "typesSingular": {
+    "cameras": "Kamera",
+    "lenses": "Objektiv",
+    "filters": "Filter",
+    "flashes": "Blitz",
+    "filmStocks": "Film"
+  },
+  "summaries": {
+    "camera": "{{format}}",
+    "cameraWithYear": "{{format}} · {{year}}",
+    "focalFixed": "{{focal}} mm · f/{{aperture}}",
+    "focalZoom": "{{min}}–{{max}} mm · f/{{aperture}}",
+    "filter": "{{thread}} mm · {{type}}",
+    "flash": "Leitzahl {{guideNumber}}",
+    "filmStock": "ISO {{iso}} · {{process}}"
+  },
+  "lists": {
+    "add": "Hinzufügen",
+    "remove": "{{value}} entfernen",
+    "emptyValue": "Noch kein Eintrag"
+  },
+  "fields": {
+    "make": "Hersteller",
+    "model": "Modell",
+    "name": "Name",
+    "maker": "Hersteller",
+    "aliases": "Weitere Namen",
+    "year": "Baujahr",
+    "format": "Format",
+    "mount": "Bajonett",
+    "exposureModes": "Belichtungsprogramme",
+    "shutterSpeedsManual": "Verschlusszeiten (S/M)",
+    "shutterSpeedsAutoExtra": "Zusätzliche Automatikzeiten",
+    "bulbOnlyInModes": "Bulb nur in",
+    "exposureCompensationMin": "Korrektur min (EV)",
+    "exposureCompensationMax": "Korrektur max (EV)",
+    "exposureCompensationStep": "Korrektur Schrittweite (EV)",
+    "isoMin": "ISO min",
+    "isoMax": "ISO max",
+    "focusModes": "Fokusarten",
+    "driveModes": "Transportarten",
+    "flashSync": "Blitzsynchronzeit",
+    "metering": "Messmethode",
+    "notes": "Notizen",
+    "conditionNotes": "Zustand",
+    "defaultExposureMode": "Standard: Programm",
+    "defaultDriveMode": "Standard: Transport",
+    "defaultFocusMode": "Standard: Fokus",
+    "defaultSupport": "Standard: Halt",
+    "defaultLens": "Standard: Objektiv",
+    "defaultFilters": "Standard: Filter",
+    "defaultFlash": "Standard: Blitz",
+    "defaultExposureCompensation": "Standard: Korrektur (EV)",
+    "defaultProgramShift": "Standard: Programmshift",
+    "defaultAeLock": "Standard: Messwertspeicher",
+    "focalMinMm": "Brennweite min (mm)",
+    "focalMaxMm": "Brennweite max (mm)",
+    "maxAperture": "Größte Blende",
+    "minAperture": "Kleinste Blende",
+    "apertureValues": "Blendenwerte",
+    "filterThreadMm": "Filtergewinde (mm)",
+    "minFocusM": "Naheinstellgrenze (m)",
+    "macroNote": "Makro-Hinweis",
+    "weightG": "Gewicht (g)",
+    "handheldMinShutter": "Freihandgrenze",
+    "hasHood": "Streulichtblende vorhanden",
+    "defaultFilterIds": "Standardfilter",
+    "threadMm": "Gewinde (mm)",
+    "type": "Art",
+    "exposureFactorEv": "Verlängerungsfaktor (EV)",
+    "afCompatible": "Autofokus-tauglich",
+    "warning": "Warnhinweis",
+    "mountedOnLensId": "Montiert auf",
+    "guideNumberIso100M": "Leitzahl (ISO 100, m)",
+    "powerLevels": "Leistungsstufen",
+    "headPositions": "Reflektorstellungen",
+    "afIlluminator": "AF-Hilfslicht",
+    "sync": "Synchronzeit",
+    "iso": "ISO",
+    "process": "Prozess",
+    "color": "Farbfilm",
+    "exposures": "Bilder",
+    "dxCoded": "DX-codiert"
+  },
+  "options": {
+    "focusModes": {
+      "AF": "Autofokus",
+      "M": "manuell"
+    },
+    "driveModes": {
+      "S": "Einzelbild",
+      "C": "Serie",
+      "ST": "Selbstauslöser"
+    },
+    "support": {
+      "handheld": "aus der Hand",
+      "braced": "abgestützt",
+      "tripod": "Stativ",
+      "beanbag": "Bohnensack"
+    },
+    "afCompatible": {
+      "yes": "ja",
+      "no": "nein",
+      "limited": "eingeschränkt"
+    },
+    "headPositions": {
+      "direct": "direkt",
+      "bounce": "indirekt"
+    },
+    "tristate": {
+      "yes": "ja",
+      "no": "nein",
+      "unknown": "unbekannt"
+    }
+  },
+  "errors": {
+    "required": "Pflichtfeld",
+    "invalid": "Ungültiger Wert"
+  }
+}

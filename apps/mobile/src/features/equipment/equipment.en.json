@@ -1,0 +1,139 @@
+{
+  "title": "Equipment",
+  "empty": "Nothing in this group",
+  "emptyHint": "Add your own equipment – the presets are only a starting point.",
+  "unnamed": "Unnamed",
+  "notFound": "Not found",
+  "notFoundHint": "This entry was deleted or belongs to another device.",
+  "newTitle": "New: {{type}}",
+  "editTitle": "Edit {{type}}",
+  "addOf": "Add {{type}}",
+  "deleteOf": "Delete {{type}}",
+  "deleteConfirm": "This entry will be deleted. Rolls and frames that name it keep the reference.",
+  "types": {
+    "cameras": "Cameras",
+    "lenses": "Lenses",
+    "filters": "Filters",
+    "flashes": "Flashes",
+    "filmStocks": "Film stocks"
+  },
+  "typesSingular": {
+    "cameras": "camera",
+    "lenses": "lens",
+    "filters": "filter",
+    "flashes": "flash",
+    "filmStocks": "film stock"
+  },
+  "summaries": {
+    "camera": "{{format}}",
+    "cameraWithYear": "{{format}} · {{year}}",
+    "focalFixed": "{{focal}} mm · f/{{aperture}}",
+    "focalZoom": "{{min}}–{{max}} mm · f/{{aperture}}",
+    "filter": "{{thread}} mm · {{type}}",
+    "flash": "Guide number {{guideNumber}}",
+    "filmStock": "ISO {{iso}} · {{process}}"
+  },
+  "lists": {
+    "add": "Add",
+    "remove": "Remove {{value}}",
+    "emptyValue": "No entry yet"
+  },
+  "fields": {
+    "make": "Make",
+    "model": "Model",
+    "name": "Name",
+    "maker": "Maker",
+    "aliases": "Other names",
+    "year": "Year",
+    "format": "Format",
+    "mount": "Mount",
+    "exposureModes": "Exposure modes",
+    "shutterSpeedsManual": "Shutter speeds (S/M)",
+    "shutterSpeedsAutoExtra": "Additional automatic speeds",
+    "bulbOnlyInModes": "Bulb only in",
+    "exposureCompensationMin": "Compensation min (EV)",
+    "exposureCompensationMax": "Compensation max (EV)",
+    "exposureCompensationStep": "Compensation step (EV)",
+    "isoMin": "ISO min",
+    "isoMax": "ISO max",
+    "focusModes": "Focus modes",
+    "driveModes": "Drive modes",
+    "flashSync": "Flash sync speed",
+    "metering": "Metering",
+    "notes": "Notes",
+    "conditionNotes": "Condition",
+    "defaultExposureMode": "Default: exposure mode",
+    "defaultDriveMode": "Default: drive mode",
+    "defaultFocusMode": "Default: focus mode",
+    "defaultSupport": "Default: support",
+    "defaultLens": "Default: lens",
+    "defaultFilters": "Default: filters",
+    "defaultFlash": "Default: flash",
+    "defaultExposureCompensation": "Default: compensation (EV)",
+    "defaultProgramShift": "Default: program shift",
+    "defaultAeLock": "Default: AE lock",
+    "focalMinMm": "Focal length min (mm)",
+    "focalMaxMm": "Focal length max (mm)",
+    "maxAperture": "Widest aperture",
+    "minAperture": "Smallest aperture",
+    "apertureValues": "Aperture values",
+    "filterThreadMm": "Filter thread (mm)",
+    "minFocusM": "Minimum focus (m)",
+    "macroNote": "Macro note",
+    "weightG": "Weight (g)",
+    "handheldMinShutter": "Hand-held limit",
+    "hasHood": "Lens hood available",
+    "defaultFilterIds": "Default filters",
+    "threadMm": "Thread (mm)",
+    "type": "Type",
+    "exposureFactorEv": "Exposure factor (EV)",
+    "afCompatible": "Autofocus compatible",
+    "warning": "Warning",
+    "mountedOnLensId": "Mounted on",
+    "guideNumberIso100M": "Guide number (ISO 100, m)",
+    "powerLevels": "Power levels",
+    "headPositions": "Head positions",
+    "afIlluminator": "AF illuminator",
+    "sync": "Sync speed",
+    "iso": "ISO",
+    "process": "Process",
+    "color": "Colour film",
+    "exposures": "Exposures",
+    "dxCoded": "DX coded"
+  },
+  "options": {
+    "focusModes": {
+      "AF": "autofocus",
+      "M": "manual"
+    },
+    "driveModes": {
+      "S": "single",
+      "C": "continuous",
+      "ST": "self-timer"
+    },
+    "support": {
+      "handheld": "hand-held",
+      "braced": "braced",
+      "tripod": "tripod",
+      "beanbag": "beanbag"
+    },
+    "afCompatible": {
+      "yes": "yes",
+      "no": "no",
+      "limited": "limited"
+    },
+    "headPositions": {
+      "direct": "direct",
+      "bounce": "bounce"
+    },
+    "tristate": {
+      "yes": "yes",
+      "no": "no",
+      "unknown": "unknown"
+    }
+  },
+  "errors": {
+    "required": "Required",
+    "invalid": "Invalid value"
+  }
+}
