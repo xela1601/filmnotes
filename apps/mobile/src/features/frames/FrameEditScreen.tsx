@@ -20,24 +20,24 @@ import type {
   Roll,
   ShutterSpeed,
   Support,
-} from '@filmnotes/domain';
+} from "@filmnotes/domain";
 import {
   apertureValuesForLens,
   newFrame,
   nextFrameNo,
   shutterSpeedsForMode,
   validateFrame,
-} from '@filmnotes/domain';
-import { Stack, router, useLocalSearchParams } from 'expo-router';
-import { useMemo, useState } from 'react';
-import { useTranslation } from 'react-i18next';
-import { StyleSheet, Text, View } from 'react-native';
+} from "@filmnotes/domain";
+import { Stack, router, useLocalSearchParams } from "expo-router";
+import { useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
+import { StyleSheet, Text, View } from "react-native";
 
-import { confirmDestructive } from '../../lib/confirm';
-import { now } from '../../lib/clock';
-import { useActive, useEntity } from '../../store/hooks';
-import { selectFramesForRoll } from '../../store/selectors';
-import { useStore } from '../../store/store';
+import { confirmDestructive } from "../../lib/confirm";
+import { now } from "../../lib/clock";
+import { useActive, useEntity } from "../../store/hooks";
+import { selectFramesForRoll } from "../../store/selectors";
+import { useStore } from "../../store/store";
 import {
   Button,
   EmptyState,
@@ -51,8 +51,8 @@ import {
   TextField,
   useTheme,
   type SelectOption,
-} from '../../ui';
-import { FRAMES_NAMESPACE } from './i18n';
+} from "../../ui";
+import { FRAMES_NAMESPACE } from "./i18n";
 import {
   LIGHT_OPTIONS,
   SUBJECT_OPTIONS,
@@ -60,13 +60,13 @@ import {
   editableFields,
   filterOptions,
   focalLengthOptions,
-} from './frameForm';
-import { useLocation } from './useLocation';
+} from "./frameForm";
+import { useLocation } from "./useLocation";
 
 /** AF feedback the Minolta gives through its viewfinder lamp. */
-const AF_RESULTS: AfResult[] = ['green', 'red_blink', 'manual'];
+const AF_RESULTS: AfResult[] = ["green", "red_blink", "manual"];
 /** How the camera was held – the input of the camera-shake rule. */
-const SUPPORTS: Support[] = ['handheld', 'braced', 'tripod', 'beanbag'];
+const SUPPORTS: Support[] = ["handheld", "braced", "tripod", "beanbag"];
 
 const DATE_PATTERN = /^(\d{4})-(\d{1,2})-(\d{1,2})$/;
 const TIME_PATTERN = /^(\d{1,2}):(\d{2})$/;
@@ -76,9 +76,9 @@ const TIME_PATTERN = /^(\d{1,2}):(\d{2})$/;
  * because that is how the record stores them – no hidden timezone shift on a round trip.
  */
 function splitTakenAt(takenAt: ISODateTime | null): { date: string; time: string } {
-  if (takenAt === null) return { date: '', time: '' };
+  if (takenAt === null) return { date: "", time: "" };
   const parsed = new Date(takenAt);
-  if (Number.isNaN(parsed.getTime())) return { date: '', time: '' };
+  if (Number.isNaN(parsed.getTime())) return { date: "", time: "" };
   const iso = parsed.toISOString();
   return { date: iso.slice(0, 10), time: iso.slice(11, 16) };
 }
@@ -109,14 +109,14 @@ function isPresent<T>(value: T | undefined): value is T {
 export function FrameEditScreen() {
   const { t } = useTranslation(FRAMES_NAMESPACE);
   const { frameId } = useLocalSearchParams<{ frameId?: string }>();
-  const frame = useEntity('frames', frameId ?? null);
-  const roll = useEntity('rolls', frame?.rollId ?? null);
-  const camera = useEntity('cameras', roll?.cameraId ?? null);
+  const frame = useEntity("frames", frameId ?? null);
+  const roll = useEntity("rolls", frame?.rollId ?? null);
+  const camera = useEntity("cameras", roll?.cameraId ?? null);
 
   if (frame === undefined || frame.deleted !== null || roll === undefined || camera === undefined) {
     return (
       <Screen testID="frame-edit">
-        <EmptyState title={t('notFound')} hint={t('notFoundHint')} testID="frame-not-found" />
+        <EmptyState title={t("notFound")} hint={t("notFoundHint")} testID="frame-not-found" />
       </Screen>
     );
   }
@@ -140,10 +140,10 @@ function FrameEditor({ initial, roll, camera }: FrameEditorProps) {
   const [takenTime, setTakenTime] = useState(initialTakenAt.time);
   const [locationHint, setLocationHint] = useState<string | null>(null);
 
-  const lenses = useActive('lenses');
-  const allFilters = useActive('filters');
-  const flashes = useActive('flashes');
-  const allFrames = useActive('frames');
+  const lenses = useActive("lenses");
+  const allFilters = useActive("filters");
+  const flashes = useActive("flashes");
+  const allFrames = useActive("frames");
   const upsert = useStore((state) => state.upsert);
   const softDelete = useStore((state) => state.softDelete);
   const { busy: locating, requestPosition } = useLocation();
@@ -167,15 +167,15 @@ function FrameEditor({ initial, roll, camera }: FrameEditorProps) {
     [camera, roll, lens, mountedFilters, flash, siblingFrames],
   );
   const issues = useMemo(() => validateFrame(frame, context), [frame, context]);
-  const blocked = issues.some((issue) => issue.level === 'error');
+  const blocked = issues.some((issue) => issue.level === "error");
 
-  const title = t('title', { no: frame.frameNo, total: roll.exposures });
+  const title = t("title", { no: frame.frameNo, total: roll.exposures });
   const isLastFrame = frame.frameNo >= roll.exposures;
 
   /** Writes the edited frame (including the two time fields) to the store. */
   const persist = (): Frame => {
     const saved: Frame = { ...frame, takenAt: joinTakenAt(takenDate, takenTime) };
-    upsert('frames', saved);
+    upsert("frames", saved);
     return saved;
   };
 
@@ -194,18 +194,18 @@ function FrameEditor({ initial, roll, camera }: FrameEditorProps) {
       previous: saved,
       now: now(),
     });
-    upsert('frames', next);
+    upsert("frames", next);
     router.replace(`/frames/${next.id}`);
   };
 
   const onDelete = () => {
     confirmDestructive({
-      title: t('delete'),
-      message: t('deleteConfirm'),
-      confirmLabel: t('common:actions.delete'),
-      cancelLabel: t('common:actions.cancel'),
+      title: t("delete"),
+      message: t("deleteConfirm"),
+      confirmLabel: t("common:actions.delete"),
+      cancelLabel: t("common:actions.cancel"),
       onConfirm: () => {
-        softDelete('frames', frame.id);
+        softDelete("frames", frame.id);
         router.back();
       },
     });
@@ -226,7 +226,7 @@ function FrameEditor({ initial, roll, camera }: FrameEditorProps) {
   };
 
   const onLocationName = (name: string) => {
-    const trimmed = name.trim() === '' ? null : name;
+    const trimmed = name.trim() === "" ? null : name;
     const lat = frame.location?.lat ?? null;
     const lon = frame.location?.lon ?? null;
     patch(
@@ -238,12 +238,12 @@ function FrameEditor({ initial, roll, camera }: FrameEditorProps) {
 
   const onUseCurrentPosition = async () => {
     const result = await requestPosition();
-    if (result.status === 'granted') {
+    if (result.status === "granted") {
       setLocationHint(null);
       patch({ location: { name: frame.location?.name ?? null, lat: result.lat, lon: result.lon } });
       return;
     }
-    setLocationHint(result.status === 'denied' ? t('location.denied') : t('location.unavailable'));
+    setLocationHint(result.status === "denied" ? t("location.denied") : t("location.unavailable"));
   };
 
   const labelled = <T extends string>(values: T[], prefix: string): SelectOption<T>[] =>
@@ -256,9 +256,9 @@ function FrameEditor({ initial, roll, camera }: FrameEditorProps) {
     <Screen title={title} testID="frame-edit">
       <Stack.Screen options={{ title }} />
 
-      <Section title={t('sections.exposure')} testID="frame-section-exposure">
+      <Section title={t("sections.exposure")} testID="frame-section-exposure">
         <SelectField<ExposureMode>
-          label={t('fields.mode')}
+          label={t("fields.mode")}
           value={frame.exposureMode}
           options={camera.exposureModes.map((mode) => ({ value: mode, label: mode }))}
           onChange={(mode) => patch({ exposureMode: mode })}
@@ -267,7 +267,7 @@ function FrameEditor({ initial, roll, camera }: FrameEditorProps) {
         />
         {editable.shutter && (
           <SelectField<ShutterSpeed>
-            label={t('fields.shutter')}
+            label={t("fields.shutter")}
             value={frame.shutterSpeed}
             options={shutterSpeedsForMode(camera, frame.exposureMode).map((speed) => ({
               value: speed,
@@ -280,7 +280,7 @@ function FrameEditor({ initial, roll, camera }: FrameEditorProps) {
         )}
         {editable.aperture && (
           <SelectField<number>
-            label={t('fields.aperture')}
+            label={t("fields.aperture")}
             value={frame.aperture}
             options={apertureValuesForLens(lens).map((value) => ({
               value,
@@ -293,7 +293,7 @@ function FrameEditor({ initial, roll, camera }: FrameEditorProps) {
         )}
         {editable.compensation && (
           <NumberField
-            label={t('fields.compensation')}
+            label={t("fields.compensation")}
             value={frame.exposureCompensationEv}
             onChange={(value) => patch({ exposureCompensationEv: value ?? 0 })}
             step={camera.exposureCompensation.step}
@@ -304,23 +304,23 @@ function FrameEditor({ initial, roll, camera }: FrameEditorProps) {
         )}
         {editable.programShift && (
           <SwitchField
-            label={t('fields.programShift')}
+            label={t("fields.programShift")}
             value={frame.programShift}
             onChange={(programShift) => patch({ programShift })}
             testID="frame-program-shift"
           />
         )}
         <SwitchField
-          label={t('fields.aeLock')}
+          label={t("fields.aeLock")}
           value={frame.aeLock}
           onChange={(aeLock) => patch({ aeLock })}
           testID="frame-ae-lock"
         />
       </Section>
 
-      <Section title={t('sections.optics')} testID="frame-section-optics">
+      <Section title={t("sections.optics")} testID="frame-section-optics">
         <SelectField<Id>
-          label={t('fields.lens')}
+          label={t("fields.lens")}
           value={frame.lensId}
           options={lenses.map((candidate) => ({ value: candidate.id, label: candidate.model }))}
           onChange={onLensChange}
@@ -328,7 +328,7 @@ function FrameEditor({ initial, roll, camera }: FrameEditorProps) {
           testID="frame-lens"
         />
         <SelectField<number>
-          label={t('fields.focalLength')}
+          label={t("fields.focalLength")}
           value={frame.focalLengthMm}
           options={focalLengthOptions(lens).map((value) => ({ value, label: `${value} mm` }))}
           onChange={(focalLengthMm) => patch({ focalLengthMm })}
@@ -336,7 +336,7 @@ function FrameEditor({ initial, roll, camera }: FrameEditorProps) {
           testID="frame-focal-length"
         />
         <MultiSelectField<Id>
-          label={t('fields.filters')}
+          label={t("fields.filters")}
           values={frame.filterIds}
           options={filterOptions(allFilters, lens).map((filter) => ({
             value: filter.id,
@@ -347,7 +347,7 @@ function FrameEditor({ initial, roll, camera }: FrameEditorProps) {
         />
         {lens?.hasHood === true && (
           <SwitchField
-            label={t('fields.lensHood')}
+            label={t("fields.lensHood")}
             value={frame.lensHood}
             onChange={(lensHood) => patch({ lensHood })}
             testID="frame-lens-hood"
@@ -355,42 +355,42 @@ function FrameEditor({ initial, roll, camera }: FrameEditorProps) {
         )}
       </Section>
 
-      <Section title={t('sections.focus')} testID="frame-section-focus">
+      <Section title={t("sections.focus")} testID="frame-section-focus">
         <SelectField<FocusMode>
-          label={t('fields.focusMode')}
+          label={t("fields.focusMode")}
           value={frame.focusMode}
-          options={labelled(camera.focusModes, 'focusModes')}
+          options={labelled(camera.focusModes, "focusModes")}
           onChange={(focusMode) => patch({ focusMode })}
           nullable
           testID="frame-focus-mode"
         />
         <SelectField<AfResult>
-          label={t('fields.afResult')}
+          label={t("fields.afResult")}
           value={frame.afResult}
-          options={labelled(AF_RESULTS, 'afResults')}
+          options={labelled(AF_RESULTS, "afResults")}
           onChange={(afResult) => patch({ afResult })}
           nullable
           testID="frame-af-result"
         />
         <SelectField<DriveMode>
-          label={t('fields.driveMode')}
+          label={t("fields.driveMode")}
           value={frame.driveMode}
-          options={labelled(camera.driveModes, 'driveModes')}
+          options={labelled(camera.driveModes, "driveModes")}
           onChange={(driveMode) => patch({ driveMode })}
           nullable
           testID="frame-drive-mode"
         />
         <SwitchField
-          label={t('fields.beepWarning')}
+          label={t("fields.beepWarning")}
           value={frame.beepWarning}
           onChange={(beepWarning) => patch({ beepWarning })}
           testID="frame-beep-warning"
         />
       </Section>
 
-      <Section title={t('sections.flash')} testID="frame-section-flash">
+      <Section title={t("sections.flash")} testID="frame-section-flash">
         <SelectField<Id>
-          label={t('fields.flash')}
+          label={t("fields.flash")}
           value={frame.flashId}
           options={flashes.map((candidate) => ({ value: candidate.id, label: candidate.model }))}
           onChange={onFlashChange}
@@ -400,15 +400,15 @@ function FrameEditor({ initial, roll, camera }: FrameEditorProps) {
         {flash !== null && (
           <>
             <SelectField<FlashHead>
-              label={t('fields.flashHead')}
+              label={t("fields.flashHead")}
               value={frame.flashHead}
-              options={labelled(flash.headPositions, 'flashHeads')}
+              options={labelled(flash.headPositions, "flashHeads")}
               onChange={(flashHead) => patch({ flashHead })}
               nullable
               testID="frame-flash-head"
             />
             <SelectField<string>
-              label={t('fields.flashPower')}
+              label={t("fields.flashPower")}
               value={frame.flashPower}
               options={flash.powerLevels.map((level) => ({ value: level, label: level }))}
               onChange={(flashPower) => patch({ flashPower })}
@@ -416,7 +416,7 @@ function FrameEditor({ initial, roll, camera }: FrameEditorProps) {
               testID="frame-flash-power"
             />
             <SwitchField
-              label={t('fields.flashOk')}
+              label={t("fields.flashOk")}
               value={frame.flashOk === true}
               onChange={(flashOk) => patch({ flashOk })}
               testID="frame-flash-ok"
@@ -425,40 +425,40 @@ function FrameEditor({ initial, roll, camera }: FrameEditorProps) {
         )}
       </Section>
 
-      <Section title={t('sections.context')} testID="frame-section-context">
+      <Section title={t("sections.context")} testID="frame-section-context">
         <SelectField<Support>
-          label={t('fields.support')}
+          label={t("fields.support")}
           value={frame.support}
-          options={labelled(SUPPORTS, 'support')}
+          options={labelled(SUPPORTS, "support")}
           onChange={(support) => patch({ support })}
           nullable
           testID="frame-support"
         />
         <SelectField<string>
-          label={t('fields.light')}
+          label={t("fields.light")}
           value={frame.light}
-          options={labelled(LIGHT_OPTIONS, 'light')}
+          options={labelled(LIGHT_OPTIONS, "light")}
           onChange={(light) => patch({ light })}
           nullable
           testID="frame-light"
         />
         <SelectField<string>
-          label={t('fields.subject')}
+          label={t("fields.subject")}
           value={frame.subject}
-          options={labelled(SUBJECT_OPTIONS, 'subject')}
+          options={labelled(SUBJECT_OPTIONS, "subject")}
           onChange={(subject) => patch({ subject })}
           nullable
           testID="frame-subject"
         />
         <TextField
-          label={t('fields.locationName')}
-          value={frame.location?.name ?? ''}
+          label={t("fields.locationName")}
+          value={frame.location?.name ?? ""}
           onChangeText={onLocationName}
-          placeholder={t('placeholders.locationName')}
+          placeholder={t("placeholders.locationName")}
           testID="frame-location-name"
         />
         <Button
-          title={locating ? t('location.locating') : t('location.useCurrent')}
+          title={locating ? t("location.locating") : t("location.useCurrent")}
           variant="secondary"
           disabled={locating}
           onPress={() => void onUseCurrentPosition()}
@@ -481,40 +481,40 @@ function FrameEditor({ initial, roll, camera }: FrameEditorProps) {
           </Text>
         )}
         <TextField
-          label={t('fields.date')}
+          label={t("fields.date")}
           value={takenDate}
           onChangeText={setTakenDate}
-          placeholder={t('placeholders.date')}
+          placeholder={t("placeholders.date")}
           testID="frame-taken-date"
         />
         <TextField
-          label={t('fields.time')}
+          label={t("fields.time")}
           value={takenTime}
           onChangeText={setTakenTime}
-          placeholder={t('placeholders.time')}
+          placeholder={t("placeholders.time")}
           testID="frame-taken-time"
         />
         <TextField
-          label={t('fields.notes')}
+          label={t("fields.notes")}
           value={frame.notes}
           onChangeText={(notes) => patch({ notes })}
-          placeholder={t('placeholders.notes')}
+          placeholder={t("placeholders.notes")}
           multiline
           testID="frame-notes"
         />
       </Section>
 
       {issues.length > 0 && (
-        <Section title={t('sections.issues')} testID="frame-section-issues">
+        <Section title={t("sections.issues")} testID="frame-section-issues">
           <IssueList issues={issues} testID="frame-issues" />
         </Section>
       )}
 
       <View style={styles.actions}>
-        <Button title={t('save')} onPress={onSave} disabled={blocked} testID="frame-save" />
+        <Button title={t("save")} onPress={onSave} disabled={blocked} testID="frame-save" />
         {!isLastFrame && (
           <Button
-            title={t('saveNext')}
+            title={t("saveNext")}
             variant="secondary"
             onPress={onSaveNext}
             disabled={blocked}
@@ -522,17 +522,12 @@ function FrameEditor({ initial, roll, camera }: FrameEditorProps) {
           />
         )}
         <Button
-          title={t('export')}
+          title={t("export")}
           variant="secondary"
           onPress={() => router.push(`/export/frame/${frame.id}`)}
           testID="frame-export"
         />
-        <Button
-          title={t('delete')}
-          variant="danger"
-          onPress={onDelete}
-          testID="frame-delete"
-        />
+        <Button title={t("delete")} variant="danger" onPress={onDelete} testID="frame-delete" />
       </View>
     </Screen>
   );
@@ -540,5 +535,5 @@ function FrameEditor({ initial, roll, camera }: FrameEditorProps) {
 
 const styles = StyleSheet.create({
   actions: { gap: 8 },
-  coords: { fontWeight: '500' },
+  coords: { fontWeight: "500" },
 });

@@ -13,16 +13,16 @@ export interface SyncedRecord {
   owner: Id | null;
 }
 
-export type ExposureMode = 'P' | 'A' | 'S' | 'M';
-export type FocusMode = 'AF' | 'M';
-export type AfResult = 'green' | 'red_blink' | 'manual';
-export type DriveMode = 'S' | 'C' | 'ST';
-export type FlashHead = 'direct' | 'bounce';
-export type Support = 'handheld' | 'braced' | 'tripod' | 'beanbag';
-export type AfCompatibility = 'yes' | 'no' | 'limited';
-export type FilmProcess = 'C41' | 'BW' | 'E6';
-export type RollStatus = 'loaded' | 'shot' | 'at_lab' | 'developed' | 'archived';
-export type IsoSource = 'DX' | 'manual';
+export type ExposureMode = "P" | "A" | "S" | "M";
+export type FocusMode = "AF" | "M";
+export type AfResult = "green" | "red_blink" | "manual";
+export type DriveMode = "S" | "C" | "ST";
+export type FlashHead = "direct" | "bounce";
+export type Support = "handheld" | "braced" | "tripod" | "beanbag";
+export type AfCompatibility = "yes" | "no" | "limited";
+export type FilmProcess = "C41" | "BW" | "E6";
+export type RollStatus = "loaded" | "shot" | "at_lab" | "developed" | "archived";
+export type IsoSource = "DX" | "manual";
 
 /**
  * Shutter speed as displayed on the camera:
@@ -49,7 +49,7 @@ export interface Camera extends SyncedRecord {
   model: string;
   aliases: string[];
   year: number | null;
-  format: string;          // "135"
+  format: string; // "135"
   mount: string | null;
   exposureModes: ExposureMode[];
   /** Whole-stop speeds selectable in S/M, including "bulb" if supported. */
@@ -73,8 +73,8 @@ export interface Lens extends SyncedRecord {
   model: string;
   focalMinMm: number;
   focalMaxMm: number;
-  maxAperture: number;     // widest, e.g. 1.7
-  minAperture: number;     // smallest, e.g. 22
+  maxAperture: number; // widest, e.g. 1.7
+  minAperture: number; // smallest, e.g. 22
   apertureValues: number[];
   filterThreadMm: number | null;
   minFocusM: number | null;
@@ -102,7 +102,7 @@ export interface Flash extends SyncedRecord {
   make: string;
   model: string;
   guideNumberIso100M: number | null;
-  powerLevels: string[];      // ["Hi", "Lo"]
+  powerLevels: string[]; // ["Hi", "Lo"]
   headPositions: FlashHead[];
   afIlluminator: boolean;
   sync: ShutterSpeed | null;
@@ -163,8 +163,8 @@ export interface Frame extends SyncedRecord {
   lensHood: boolean;
   support: Support | null;
   beepWarning: boolean;
-  light: string | null;      // sun, cloudy, shade, indoor_window, indoor_artificial, night, backlight, snow_beach – free
-  subject: string | null;    // portrait, landscape, street, sport, macro, group, night, other – free
+  light: string | null; // sun, cloudy, shade, indoor_window, indoor_artificial, night, backlight, snow_beach – free
+  subject: string | null; // portrait, landscape, street, sport, macro, group, night, other – free
   location: FrameLocation | null;
   notes: string;
 }
@@ -183,29 +183,50 @@ export interface Scan extends SyncedRecord {
 
 export interface ExportLog extends SyncedRecord {
   frameId: Id;
-  target: string;            // 'wordpress' | 'share' | future ids
+  target: string; // 'wordpress' | 'share' | future ids
   externalId: string | null;
   url: string | null;
   exportedAt: ISODateTime;
 }
 
 export type CollectionName =
-  | 'cameras' | 'lenses' | 'filters' | 'flashes' | 'filmStocks'
-  | 'rolls' | 'frames' | 'scans' | 'exportLogs';
+  | "cameras"
+  | "lenses"
+  | "filters"
+  | "flashes"
+  | "filmStocks"
+  | "rolls"
+  | "frames"
+  | "scans"
+  | "exportLogs";
 
 export interface EntityMap {
-  cameras: Camera; lenses: Lens; filters: Filter; flashes: Flash; filmStocks: FilmStock;
-  rolls: Roll; frames: Frame; scans: Scan; exportLogs: ExportLog;
+  cameras: Camera;
+  lenses: Lens;
+  filters: Filter;
+  flashes: Flash;
+  filmStocks: FilmStock;
+  rolls: Roll;
+  frames: Frame;
+  scans: Scan;
+  exportLogs: ExportLog;
 }
 export type EntityOf<K extends CollectionName> = EntityMap[K];
 
 /** Maps store collection names to PocketBase collection names. */
 export const PB_COLLECTION: Record<CollectionName, string> = {
-  cameras: 'cameras', lenses: 'lenses', filters: 'filters', flashes: 'flashes', filmStocks: 'film_stocks',
-  rolls: 'rolls', frames: 'frames', scans: 'scans', exportLogs: 'export_logs',
+  cameras: "cameras",
+  lenses: "lenses",
+  filters: "filters",
+  flashes: "flashes",
+  filmStocks: "film_stocks",
+  rolls: "rolls",
+  frames: "frames",
+  scans: "scans",
+  exportLogs: "export_logs",
 };
 
-export type IssueLevel = 'error' | 'warning' | 'info';
+export type IssueLevel = "error" | "warning" | "info";
 export interface ValidationIssue {
   level: IssueLevel;
   /** stable code, doubles as i18n key suffix: validation.<code> */

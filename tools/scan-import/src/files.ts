@@ -6,13 +6,13 @@
  * temp dir so the rest of the CLI only ever deals with plain paths; `cleanupTempDirs()` removes
  * those dirs again.
  */
-import { mkdtempSync, rmSync } from 'node:fs';
-import { mkdir, readFile, readdir, stat, writeFile } from 'node:fs/promises';
-import { tmpdir } from 'node:os';
-import { basename, extname, join } from 'node:path';
+import { mkdtempSync, rmSync } from "node:fs";
+import { mkdir, readFile, readdir, stat, writeFile } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import { basename, extname, join } from "node:path";
 
-import { naturalCompare } from '@filmnotes/domain';
-import { unzipSync } from 'fflate';
+import { naturalCompare } from "@filmnotes/domain";
+import { unzipSync } from "fflate";
 
 /** One scan file, ready to be uploaded. */
 export interface ImageFile {
@@ -28,12 +28,12 @@ export interface ImageFile {
  * allows (see `backend/pb_migrations/1758150000_init_collections.js`).
  */
 const MIME_BY_EXTENSION: Record<string, string> = {
-  '.jpg': 'image/jpeg',
-  '.jpeg': 'image/jpeg',
-  '.png': 'image/png',
-  '.tif': 'image/tiff',
-  '.tiff': 'image/tiff',
-  '.webp': 'image/webp',
+  ".jpg": "image/jpeg",
+  ".jpeg": "image/jpeg",
+  ".png": "image/png",
+  ".tif": "image/tiff",
+  ".tiff": "image/tiff",
+  ".webp": "image/webp",
 };
 
 /** The mime type for a file name, or `null` when the file is not a scan we handle. */
@@ -59,16 +59,16 @@ export function cleanupTempDirs(): void {
  */
 function isHidden(relativePath: string): boolean {
   return relativePath
-    .split('/')
-    .some((segment) => segment.startsWith('.') || segment === '__MACOSX');
+    .split("/")
+    .some((segment) => segment.startsWith(".") || segment === "__MACOSX");
 }
 
 /** Every file below `dir`, recursively, as `{ name, path }` with the plain base name. */
-async function walk(dir: string, prefix = ''): Promise<{ name: string; path: string }[]> {
+async function walk(dir: string, prefix = ""): Promise<{ name: string; path: string }[]> {
   const entries = await readdir(dir, { withFileTypes: true });
   const found: { name: string; path: string }[] = [];
   for (const entry of entries) {
-    const relativePath = prefix === '' ? entry.name : `${prefix}/${entry.name}`;
+    const relativePath = prefix === "" ? entry.name : `${prefix}/${entry.name}`;
     if (isHidden(relativePath)) continue;
     const path = join(dir, entry.name);
     if (entry.isDirectory()) {
@@ -106,12 +106,12 @@ function toImageFiles(candidates: { name: string; path: string }[]): ImageFile[]
 /** Extracts the images of a zip into a fresh temp dir and returns them. */
 async function fromZip(zipPath: string): Promise<ImageFile[]> {
   const archive = unzipSync(new Uint8Array(await readFile(zipPath)));
-  const dir = mkdtempSync(join(tmpdir(), 'filmnotes-scan-import-'));
+  const dir = mkdtempSync(join(tmpdir(), "filmnotes-scan-import-"));
   tempDirs.push(dir);
 
   const entries = Object.entries(archive).filter(
     ([entryPath]) =>
-      !entryPath.endsWith('/') && !isHidden(entryPath) && mimeTypeOf(entryPath) !== null,
+      !entryPath.endsWith("/") && !isHidden(entryPath) && mimeTypeOf(entryPath) !== null,
   );
   // Name the extracted files after the (unique) import names, so `path` and `name` agree.
   const files = toImageFiles(
@@ -144,6 +144,6 @@ export async function listImageFiles(source: string): Promise<ImageFile[]> {
   }
 
   if (entry.isDirectory()) return toImageFiles(await walk(source));
-  if (extname(source).toLowerCase() === '.zip') return fromZip(source);
+  if (extname(source).toLowerCase() === ".zip") return fromZip(source);
   throw new Error(`${source} is not a folder or a .zip file`);
 }

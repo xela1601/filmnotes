@@ -5,7 +5,7 @@
  * files are sorted naturally and handed to the frames ordered by frame number. The result is a
  * proposal the user corrects in the review screen with `shiftAssignments`.
  */
-import type { Frame, Id } from './types';
+import type { Frame, Id } from "./types";
 
 export interface ScanAssignment {
   fileName: string;
@@ -31,8 +31,8 @@ export function naturalCompare(a: string, b: string): number {
   const right = chunksOf(b);
   const shared = Math.min(left.length, right.length);
   for (let index = 0; index < shared; index += 1) {
-    const leftChunk = left[index] ?? '';
-    const rightChunk = right[index] ?? '';
+    const leftChunk = left[index] ?? "";
+    const rightChunk = right[index] ?? "";
     if (leftChunk === rightChunk) continue;
     if (NUMERIC.test(leftChunk) && NUMERIC.test(rightChunk)) {
       const difference = Number(leftChunk) - Number(rightChunk);
@@ -41,8 +41,8 @@ export function naturalCompare(a: string, b: string): number {
     }
     // A number meets text (`img.jpg` vs `img2.jpg`): the chunks are not aligned any more, so the
     // rest of both names decides, plainly.
-    const leftRest = left.slice(index).join('');
-    const rightRest = right.slice(index).join('');
+    const leftRest = left.slice(index).join("");
+    const rightRest = right.slice(index).join("");
     return leftRest < rightRest ? -1 : 1;
   }
   if (left.length === right.length) return 0;
@@ -88,9 +88,11 @@ export function shiftAssignments(
   direction: 1 | -1,
 ): ScanAssignment[] {
   const ordered = orderedFrames(frames);
-  const indexOfFrameNo = new Map<number, number>(ordered.map((frame, index) => [frame.frameNo, index]));
+  const indexOfFrameNo = new Map<number, number>(
+    ordered.map((frame, index) => [frame.frameNo, index]),
+  );
   const positionOf = (assignment: ScanAssignment): number =>
-    assignment.frameNo === null ? -1 : indexOfFrameNo.get(assignment.frameNo) ?? -1;
+    assignment.frameNo === null ? -1 : (indexOfFrameNo.get(assignment.frameNo) ?? -1);
 
   const sorted = [...assignments].sort((a, b) => a.sortIndex - b.sortIndex);
   const moving = sorted.filter((assignment) => assignment.sortIndex >= fromSortIndex);

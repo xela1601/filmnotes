@@ -9,6 +9,7 @@
 **Interfaces consumed:** store/selectors/ui/i18n (T-005); `validateFrame`, `shutterSpeedsForMode`, `apertureValuesForLens`, `newFrame`, `nextFrameNo`, `isSlowerThan` (T-002).
 
 **Interfaces produced:**
+
 ```ts
 // src/features/frames/frameForm.ts (pure)
 editableFields(mode: ExposureMode | null): { shutter: boolean; aperture: boolean; programShift: boolean; compensation: boolean }
@@ -30,6 +31,7 @@ src/features/frames/useLocation.ts, useLocation.test.ts     (wraps expo-location
 src/features/frames/FrameEditScreen.tsx, FrameEditScreen.test.tsx
 app/frames/[frameId].tsx → <FrameEditScreen/>
 ```
+
 Add `expo-location` via `npx expo install expo-location` (declare in `apps/mobile/package.json`; app.json plugin entry with `locationWhenInUsePermission` text is a T-005-owned file – ask the integrator to add it in your final report).
 
 ## Steps
@@ -47,7 +49,7 @@ Add `expo-location` via `npx expo install expo-location` (declare in `apps/mobil
   8. "Save" writes the frame to the store (`updated` changed) and `router.back()`; "Save & next" saves and creates frame #2 carrying over lens/filters/mode (assert via store) then `router.replace('/frames/<newId>')`; "Save & next" is hidden when `frameNo === roll.exposures`.
   9. "Delete frame" confirms then soft-deletes.
   10. errors (level `error`) disable Save; warnings/info do not.
-- [ ] **Step 4: implement FrameEditScreen.tsx** – sections: *Exposure* (mode segmented, shutter, aperture, compensation −4…+4 step 0.5, program shift, AE lock), *Optics* (lens, focal length segmented from `focalLengthOptions`, filters multi-select, lens hood switch only when `lens.hasHood`), *Focus & drive* (focus mode, AF result, drive), *Flash* (flash select, head, power, flash OK), *Context* (support, light, subject, location name + "Use current position" button showing `lat, lon` when set, date/time, notes multiline), *Issues* (`IssueList` from `validateFrame` recomputed on every change). Keep the screen a thin composition: state = local `Frame` copy; `issues = useMemo(() => validateFrame(frame, ctx))`. Commit `feat(app): frame edit screen`.
+- [ ] **Step 4: implement FrameEditScreen.tsx** – sections: _Exposure_ (mode segmented, shutter, aperture, compensation −4…+4 step 0.5, program shift, AE lock), _Optics_ (lens, focal length segmented from `focalLengthOptions`, filters multi-select, lens hood switch only when `lens.hasHood`), _Focus & drive_ (focus mode, AF result, drive), _Flash_ (flash select, head, power, flash OK), _Context_ (support, light, subject, location name + "Use current position" button showing `lat, lon` when set, date/time, notes multiline), _Issues_ (`IssueList` from `validateFrame` recomputed on every change). Keep the screen a thin composition: state = local `Frame` copy; `issues = useMemo(() => validateFrame(frame, ctx))`. Commit `feat(app): frame edit screen`.
 - [ ] **Step 5: translations + route file.** `frames.de.json`: `title: "Bild {{no}} / {{total}}"`, `sections.exposure: "Belichtung"`, `fields.shutter: "Zeit"`, `fields.aperture: "Blende"`, `light.sun: "Sonne"`, …, `saveNext: "Speichern & nächstes"`; en likewise. Run tests, commit `feat(app): frame route and translations`.
 
 **Done when:** tests 1–10 green, `tsc` clean, core scenario step 4 (spec §2.1) works in the web build.

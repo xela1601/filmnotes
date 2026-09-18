@@ -1,5 +1,5 @@
-import type { Id } from '@filmnotes/domain';
-import PocketBase from 'pocketbase';
+import type { Id } from "@filmnotes/domain";
+import PocketBase from "pocketbase";
 
 /**
  * A record exactly as PocketBase stores it: our camelCase entity fields plus the
@@ -37,17 +37,12 @@ export interface SyncClient {
   create(collection: string, record: RemoteRecord): Promise<RemoteRecord>;
   update(collection: string, id: Id, record: RemoteRecord): Promise<RemoteRecord>;
   /** Multipart upload into a file field; used by the scan import (T-009). */
-  uploadFile(
-    collection: string,
-    id: Id,
-    field: string,
-    file: UploadFile,
-  ): Promise<RemoteRecord>;
+  uploadFile(collection: string, id: Id, field: string, file: UploadFile): Promise<RemoteRecord>;
   fileUrl(collection: string, id: Id, fileName: string, thumb?: string): string;
 }
 
 /** The auth collection the single app user lives in (see `backend/README.md`). */
-const USERS_COLLECTION = 'users';
+const USERS_COLLECTION = "users";
 
 /**
  * Rewrites an ISO timestamp into PocketBase's own date format (`YYYY-MM-DD HH:mm:ss.SSSZ`).
@@ -59,7 +54,7 @@ const USERS_COLLECTION = 'users';
  * Verified against PocketBase 0.40 with the schema from T-004.
  */
 function asPocketBaseDate(iso: string): string {
-  return iso.replace('T', ' ');
+  return iso.replace("T", " ");
 }
 
 /**
@@ -100,9 +95,9 @@ export function createPocketBaseClient(baseUrl: string): SyncClient {
     async list(collection, sinceIso) {
       const filter =
         sinceIso === null
-          ? ''
-          : pb.filter('updated > {:since}', { since: asPocketBaseDate(sinceIso) });
-      return pb.collection(collection).getFullList<RemoteRecord>({ filter, sort: 'updated' });
+          ? ""
+          : pb.filter("updated > {:since}", { since: asPocketBaseDate(sinceIso) });
+      return pb.collection(collection).getFullList<RemoteRecord>({ filter, sort: "updated" });
     },
 
     async create(collection, record) {
@@ -123,7 +118,7 @@ export function createPocketBaseClient(baseUrl: string): SyncClient {
         const native = { uri: file.uri, name: file.name, type: file.type };
         form.append(field, native as unknown as Blob);
       } else {
-        throw new Error('uploadFile needs either a blob or a uri');
+        throw new Error("uploadFile needs either a blob or a uri");
       }
       return pb.collection(collection).update<RemoteRecord>(id, form);
     },

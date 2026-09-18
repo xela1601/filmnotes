@@ -7,13 +7,13 @@
  *
  * Exit codes: 0 success, 1 the import did not (fully) happen, 2 a usage mistake.
  */
-import type { Frame, Id } from '@filmnotes/domain';
+import type { Frame, Id } from "@filmnotes/domain";
 
-import { ArgumentError, PASSWORD_ENV, USAGE, parseArgs, wantsHelp } from './args';
-import { cleanupTempDirs, listImageFiles } from './files';
-import { planImport, renderPlan, unassignedCount } from './plan';
-import type { PocketBaseLike } from './upload';
-import { uploadPlan } from './upload';
+import { ArgumentError, PASSWORD_ENV, USAGE, parseArgs, wantsHelp } from "./args";
+import { cleanupTempDirs, listImageFiles } from "./files";
+import { planImport, renderPlan, unassignedCount } from "./plan";
+import type { PocketBaseLike } from "./upload";
+import { uploadPlan } from "./upload";
 
 /** Options for `Io.prompt`. */
 export interface PromptOptions {
@@ -56,7 +56,7 @@ function messageOf(error: unknown): string {
 /** True for `y`, `yes` and their upper-case variants; everything else means no. */
 function isYes(answer: string): boolean {
   const normalized = answer.trim().toLowerCase();
-  return normalized === 'y' || normalized === 'yes';
+  return normalized === "y" || normalized === "yes";
 }
 
 export async function main(argv: string[], io: Io, deps: Deps): Promise<number> {
@@ -71,7 +71,7 @@ export async function main(argv: string[], io: Io, deps: Deps): Promise<number> 
   } catch (error) {
     if (!(error instanceof ArgumentError)) throw error;
     io.stderr(`filmnotes-import: ${error.message}`);
-    io.stderr('');
+    io.stderr("");
     io.stderr(USAGE);
     return EXIT_USAGE;
   }
@@ -85,7 +85,7 @@ export async function main(argv: string[], io: Io, deps: Deps): Promise<number> 
 
     const password =
       args.password ?? (await io.prompt(`Password for ${args.email}: `, { hidden: true }));
-    if (password === '') {
+    if (password === "") {
       io.stderr(`filmnotes-import: no password given (use --password or ${PASSWORD_ENV})`);
       return EXIT_USAGE;
     }
@@ -113,9 +113,9 @@ export async function main(argv: string[], io: Io, deps: Deps): Promise<number> 
     io.stdout(
       `Roll ${args.roll}: ${files.length} file(s) from ${args.source}, ${alive.length} frame(s) on the server`,
     );
-    io.stdout('');
+    io.stdout("");
     io.stdout(renderPlan(assignments, frames));
-    io.stdout('');
+    io.stdout("");
     if (unassigned > 0) {
       io.stdout(
         `${unassigned} file(s) have no frame; they are uploaded unassigned and can be attached in the app.`,
@@ -123,16 +123,14 @@ export async function main(argv: string[], io: Io, deps: Deps): Promise<number> 
     }
 
     if (args.dryRun) {
-      io.stdout('Dry run: nothing was uploaded.');
+      io.stdout("Dry run: nothing was uploaded.");
       return EXIT_OK;
     }
 
     if (!args.yes) {
-      const answer = await io.prompt(
-        `Upload ${files.length} scan(s) to ${args.server}? [y/N] `,
-      );
+      const answer = await io.prompt(`Upload ${files.length} scan(s) to ${args.server}? [y/N] `);
       if (!isYes(answer)) {
-        io.stdout('Aborted, nothing was uploaded.');
+        io.stdout("Aborted, nothing was uploaded.");
         return EXIT_FAILED;
       }
     }
@@ -140,10 +138,10 @@ export async function main(argv: string[], io: Io, deps: Deps): Promise<number> 
     const result = await uploadPlan(client, ownerId, args.roll, files, assignments, (line) =>
       io.stdout(line),
     );
-    io.stdout('');
+    io.stdout("");
     io.stdout(`Uploaded ${result.uploaded} of ${files.length} scan(s).`);
     if (result.failed.length > 0) {
-      io.stderr(`filmnotes-import: ${result.failed.length} failed: ${result.failed.join(', ')}`);
+      io.stderr(`filmnotes-import: ${result.failed.length} failed: ${result.failed.join(", ")}`);
       return EXIT_FAILED;
     }
     return EXIT_OK;

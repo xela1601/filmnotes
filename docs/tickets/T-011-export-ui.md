@@ -9,6 +9,7 @@
 **Interfaces consumed:** `listExporters`, `getExporter`, `wordPressExporter`, `shareExporter`, `ExportInput` (T-010); `buildCaption`, `DEFAULT_CAPTION_TEMPLATE` (T-002); `selectEquipmentForCaption`, settings `captionTemplate`, `hashtags`, `wordpress*` (T-005); `SyncClient.fileUrl` + `selectScansForRoll` (T-008/T-009) to fetch scan bytes.
 
 **Interfaces produced:**
+
 ```ts
 // src/features/export/exportModel.ts (pure)
 captionFor(state: AppState, frame: Frame): string | null                     // buildCaption with settings template/hashtags/locale
@@ -34,6 +35,7 @@ src/features/export/ExportRollScreen.tsx, ExportRollScreen.test.tsx
 src/features/export/WordPressSettingsScreen.tsx, WordPressSettingsScreen.test.tsx
 app/export/frame/[frameId].tsx, app/export/roll/[rollId].tsx, app/settings/wordpress.tsx
 ```
+
 Dependencies: `expo-sharing`, `expo-clipboard`, `@filmnotes/exporters "*"`.
 
 ## Steps

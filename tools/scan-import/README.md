@@ -14,34 +14,34 @@ screen, where a wrong mapping can still be shifted.
 npx filmnotes-import --server <url> --email <address> --roll <rollId> <folder|zip>
 ```
 
-| Option | Meaning |
-|---|---|
-| `--server <url>` | PocketBase base URL, e.g. `https://pb.example.com` |
-| `--email <address>` | The app user; it becomes the `owner` of every created scan |
+| Option                | Meaning                                                                                                                      |
+| --------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
+| `--server <url>`      | PocketBase base URL, e.g. `https://pb.example.com`                                                                           |
+| `--email <address>`   | The app user; it becomes the `owner` of every created scan                                                                   |
 | `--password <secret>` | Password. Prefer `FILMNOTES_PASSWORD` or the prompt – a command line is visible in the process list and in the shell history |
-| `--roll <rollId>` | Id of the roll the scans belong to (copy it from the app, 15 characters) |
-| `-y`, `--yes` | Do not ask for confirmation – for cron-like scripts |
-| `--dry-run` | Print the plan and exit without uploading anything |
-| `-h`, `--help` | Show the usage |
+| `--roll <rollId>`     | Id of the roll the scans belong to (copy it from the app, 15 characters)                                                     |
+| `-y`, `--yes`         | Do not ask for confirmation – for cron-like scripts                                                                          |
+| `--dry-run`           | Print the plan and exit without uploading anything                                                                           |
+| `-h`, `--help`        | Show the usage                                                                                                               |
 
 `--flag value` and `--flag=value` are both accepted.
 
-| Environment variable | Meaning |
-|---|---|
+| Environment variable | Meaning                                         |
+| -------------------- | ----------------------------------------------- |
 | `FILMNOTES_PASSWORD` | The password, used when `--password` is omitted |
 
 If neither is set, the CLI asks for the password and does not echo what is typed.
 
-| Exit code | Meaning |
-|---|---|
-| `0` | Everything was uploaded (or `--dry-run`, or `--help`) |
-| `1` | The import did not happen (login failed, unknown roll, declined prompt) or a file failed |
-| `2` | A usage mistake; the usage text is printed to stderr |
+| Exit code | Meaning                                                                                  |
+| --------- | ---------------------------------------------------------------------------------------- |
+| `0`       | Everything was uploaded (or `--dry-run`, or `--help`)                                    |
+| `1`       | The import did not happen (login failed, unknown roll, declined prompt) or a file failed |
+| `2`       | A usage mistake; the usage text is printed to stderr                                     |
 
 ### Sources
 
-* **Folder** – searched recursively, so the `DCIM/100LAB/` layout of a CD works as it is.
-* **`.zip`** – extracted into a temp directory that is removed again at the end.
+- **Folder** – searched recursively, so the `DCIM/100LAB/` layout of a CD works as it is.
+- **`.zip`** – extracted into a temp directory that is removed again at the end.
 
 Accepted extensions are `.jpg`, `.jpeg`, `.png`, `.tif`, `.tiff` and `.webp` (the mime types
 PocketBase's `scans.file` field allows); everything else in the source – `index.txt`, thumbnails,
@@ -88,15 +88,15 @@ they can be attached to a frame in the app.
 
 One record per file in the `scans` collection, created with a client-generated 15-character id:
 
-| Field | Value |
-|---|---|
-| `rollId` | `--roll` |
-| `frameId` | The matched frame, or empty for an unassigned file |
-| `fileName` | The name in the source (a repeated base name gets a `-2` suffix) |
-| `sortIndex` | Position in the natural order, starting at 0 |
-| `file` | The uploaded image |
-| `importedAt`, `clientUpdated` | Time of the import (UTC) |
-| `owner` | The user behind `--email` |
+| Field                         | Value                                                            |
+| ----------------------------- | ---------------------------------------------------------------- |
+| `rollId`                      | `--roll`                                                         |
+| `frameId`                     | The matched frame, or empty for an unassigned file               |
+| `fileName`                    | The name in the source (a repeated base name gets a `-2` suffix) |
+| `sortIndex`                   | Position in the natural order, starting at 0                     |
+| `file`                        | The uploaded image                                               |
+| `importedAt`, `clientUpdated` | Time of the import (UTC)                                         |
+| `owner`                       | The user behind `--email`                                        |
 
 `width`/`height` stay empty: the CLI does not decode the images. Existing records are never
 touched – the only exception is a record whose file upload failed, which is marked deleted again

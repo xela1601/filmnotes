@@ -44,14 +44,14 @@ purpose**: PocketBase must never be reachable directly from the network. It has 
 
 ### Environment variables
 
-| Variable | Where | Meaning |
-|---|---|---|
-| `PB_ADMIN_EMAIL` | `backend/.env` | superuser address, used once by the bootstrap command in step 3 |
-| `PB_ADMIN_PASSWORD` | `backend/.env` | superuser password, used once in step 3 |
-| `PB_ENCRYPTION_KEY` | `backend/.env` | exactly 32 characters (`openssl rand -hex 16`); encrypts the PocketBase settings table (SMTP/S3 credentials) at rest. Only takes effect once the `command:` block in `docker-compose.yml` is uncommented. **Once enabled the key must never be lost** — without it PocketBase cannot read its own settings |
-| `PB_VERSION` | `docker-compose.yml` (`build.args`) | the PocketBase release that goes into the image, currently `0.40.4` |
-| `PB_HTTP` | local development only | listen address of `backend/scripts/serve.sh`, default `127.0.0.1:8090` |
-| `PB_VERSION`, `FILMNOTES_PB_BIN` | local development only | read by `npm run fetch-pb -w @filmnotes/backend` — see `backend/README.md` |
+| Variable                         | Where                               | Meaning                                                                                                                                                                                                                                                                                                    |
+| -------------------------------- | ----------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `PB_ADMIN_EMAIL`                 | `backend/.env`                      | superuser address, used once by the bootstrap command in step 3                                                                                                                                                                                                                                            |
+| `PB_ADMIN_PASSWORD`              | `backend/.env`                      | superuser password, used once in step 3                                                                                                                                                                                                                                                                    |
+| `PB_ENCRYPTION_KEY`              | `backend/.env`                      | exactly 32 characters (`openssl rand -hex 16`); encrypts the PocketBase settings table (SMTP/S3 credentials) at rest. Only takes effect once the `command:` block in `docker-compose.yml` is uncommented. **Once enabled the key must never be lost** — without it PocketBase cannot read its own settings |
+| `PB_VERSION`                     | `docker-compose.yml` (`build.args`) | the PocketBase release that goes into the image, currently `0.40.4`                                                                                                                                                                                                                                        |
+| `PB_HTTP`                        | local development only              | listen address of `backend/scripts/serve.sh`, default `127.0.0.1:8090`                                                                                                                                                                                                                                     |
+| `PB_VERSION`, `FILMNOTES_PB_BIN` | local development only              | read by `npm run fetch-pb -w @filmnotes/backend` — see `backend/README.md`                                                                                                                                                                                                                                 |
 
 The app itself needs no environment variables: server URL, account and WordPress credentials are
 entered in the UI and stored on the device.
@@ -76,7 +76,7 @@ If you want to narrow it down, uncomment the `command:` block in `docker-compose
 flag to the argument list:
 
 ```yaml
-      - --origins=https://filmnotes.example.org
+- --origins=https://filmnotes.example.org
 ```
 
 Native apps are not affected by CORS at all, so this only concerns the web build.
@@ -131,9 +131,9 @@ binary) and `--indexFallback` is on by default, which is exactly the SPA rule. T
 and copy the build in:
 
 ```yaml
-    volumes:
-      - pb_data:/pb/pb_data
-      - ./web:/pb/pb_public:ro     # then: rsync -a apps/mobile/dist/ server:backend/web/
+volumes:
+  - pb_data:/pb/pb_data
+  - ./web:/pb/pb_public:ro # then: rsync -a apps/mobile/dist/ server:backend/web/
 ```
 
 That serves app and API from one origin, which also makes the CORS question disappear.
@@ -155,7 +155,7 @@ in `backend/pb_migrations/`, and the next image build would overwrite the differ
 
 ## 6. Backup and restore
 
-Everything is in the `pb_data` volume: the SQLite database *and* the uploaded scan files. The
+Everything is in the `pb_data` volume: the SQLite database _and_ the uploaded scan files. The
 scans exist nowhere else — the app only caches thumbnails by URL — so this is the one backup that
 matters.
 
@@ -185,7 +185,7 @@ docker compose up -d
 ```
 
 Restoring an archive that was taken with an older PocketBase release is fine — the container
-migrates on start. Restoring a *newer* one into an older image is not.
+migrates on start. Restoring a _newer_ one into an older image is not.
 
 A backup made through the admin UI is restored through the admin UI (Settings → Backups → the
 restore action), which is the easier path if the server still starts.
@@ -196,16 +196,16 @@ Sync resolves that by last-write-wins on `clientUpdated`, so open the app on eve
 
 ## 7. Troubleshooting
 
-| Symptom | Cause and fix |
-|---|---|
-| App shows **"Anmeldung fehlgeschlagen. Adresse und Zugangsdaten prüfen."** | Wrong URL, wrong password, or the URL is not reachable. Check `https://<host>/api/health` in a browser first |
-| Sync fails after weeks of not using the app (`401`) | The stored auth token expired. The app validates it with `authRefresh` and, if that fails, logs in again with the password it kept on the device — so this normally heals itself. It does not if the password changed on the server: then open "Einstellungen" → "Server" and press **"Verbinden"** again. The user only ever sees **"Synchronisierung fehlgeschlagen."**, never the status code |
-| A list request returns `200` with an empty result although data exists | PocketBase applies the list rule as a query filter, so an unauthenticated list is answered with an empty page, not `401`. It means "not logged in", not "no data" |
-| Upload of a scan fails with `413` | Proxy body limit below 50 MB — see §2 |
-| A `.heic`/`.HEIC` file is rejected | `scans.file` allows `image/jpeg`, `image/png`, `image/tiff` and `image/webp` only. Convert first (`heif-convert`, macOS Preview, or ask the lab for JPEG) |
-| Scan import in the app says **"Für Scans wird ein konfigurierter Server benötigt."** | No server configured on that device — the image files live on the server, so import needs one |
-| Container restarts in a loop after enabling encryption | `PB_ENCRYPTION_KEY` is not exactly 32 characters, or it changed after the settings were first encrypted |
-| `docker compose up` cannot download PocketBase | The build stage fetches the release from `github.com`; the server needs outbound HTTPS to it |
+| Symptom                                                                              | Cause and fix                                                                                                                                                                                                                                                                                                                                                                                    |
+| ------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| App shows **"Anmeldung fehlgeschlagen. Adresse und Zugangsdaten prüfen."**           | Wrong URL, wrong password, or the URL is not reachable. Check `https://<host>/api/health` in a browser first                                                                                                                                                                                                                                                                                     |
+| Sync fails after weeks of not using the app (`401`)                                  | The stored auth token expired. The app validates it with `authRefresh` and, if that fails, logs in again with the password it kept on the device — so this normally heals itself. It does not if the password changed on the server: then open "Einstellungen" → "Server" and press **"Verbinden"** again. The user only ever sees **"Synchronisierung fehlgeschlagen."**, never the status code |
+| A list request returns `200` with an empty result although data exists               | PocketBase applies the list rule as a query filter, so an unauthenticated list is answered with an empty page, not `401`. It means "not logged in", not "no data"                                                                                                                                                                                                                                |
+| Upload of a scan fails with `413`                                                    | Proxy body limit below 50 MB — see §2                                                                                                                                                                                                                                                                                                                                                            |
+| A `.heic`/`.HEIC` file is rejected                                                   | `scans.file` allows `image/jpeg`, `image/png`, `image/tiff` and `image/webp` only. Convert first (`heif-convert`, macOS Preview, or ask the lab for JPEG)                                                                                                                                                                                                                                        |
+| Scan import in the app says **"Für Scans wird ein konfigurierter Server benötigt."** | No server configured on that device — the image files live on the server, so import needs one                                                                                                                                                                                                                                                                                                    |
+| Container restarts in a loop after enabling encryption                               | `PB_ENCRYPTION_KEY` is not exactly 32 characters, or it changed after the settings were first encrypted                                                                                                                                                                                                                                                                                          |
+| `docker compose up` cannot download PocketBase                                       | The build stage fetches the release from `github.com`; the server needs outbound HTTPS to it                                                                                                                                                                                                                                                                                                     |
 
 For the day-to-day routine — when sync runs, how to force it, what to do when the lab scans
 arrive — see [`workflow.md`](workflow.md).

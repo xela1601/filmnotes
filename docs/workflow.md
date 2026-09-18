@@ -20,25 +20,15 @@ PocketBase server — see [`deployment.md`](deployment.md).
       cartridge; the value appears on the LCD. If the film has no DX code, or you deliberately
       pull or push, the camera has to be set by hand — and the app has to be told the same thing.
 - [ ] Open the app, tab **"Filme"**, press **"+"** (top right) → `/rolls/new`.
-- [ ] Section **"Film"**:
-      - **"Kamera"** — preselected with the first camera in the equipment list.
-      - **"Filmart"** — **"Farbe"** or **"Schwarzweiß"**. This only narrows the next field.
-      - **"Film"** — the stock, from the seeded catalogue (22 films) or your own entries.
-        Picking one **sets "ISO" and "Bilder" from the preset**, so pick the film before you touch
-        those two.
-      - **"ISO"** — what the camera meters at. Must match the LCD, not the box.
-      - **"ISO-Quelle"** — **"DX"** or **"manuell"**. This is the note-to-self about *why* the ISO
-        is what it is.
-      - **"Bilder"** — 24 or 36.
-      - **"Push/Pull (EV)"** — leave at 0 unless you are deliberately rating the film differently.
-        A value here is an instruction for the lab; write it in **"Notizen"** as well, because the
-        lab never sees the app.
-- [ ] Section **"Entwicklung"**:
-      - **"Eingelegt am"** — plain text in the form `YYYY-MM-DD` (the placeholder shows it).
-      - **"Labor"** — where the roll will go, e.g. `dm` or `Rossmann`. It may stay empty for now;
-        the field is on this screen and on **"Film bearbeiten"**.
-      - **"Notizen"** — the free-form place for everything lab-relevant: push/pull, "please do not
-        cut the negatives", the order number of the envelope.
+- [ ] Section **"Film"**: - **"Kamera"** — preselected with the first camera in the equipment list. - **"Filmart"** — **"Farbe"** or **"Schwarzweiß"**. This only narrows the next field. - **"Film"** — the stock, from the seeded catalogue (22 films) or your own entries.
+      Picking one **sets "ISO" and "Bilder" from the preset**, so pick the film before you touch
+      those two. - **"ISO"** — what the camera meters at. Must match the LCD, not the box. - **"ISO-Quelle"** — **"DX"** or **"manuell"**. This is the note-to-self about _why_ the ISO
+      is what it is. - **"Bilder"** — 24 or 36. - **"Push/Pull (EV)"** — leave at 0 unless you are deliberately rating the film differently.
+      A value here is an instruction for the lab; write it in **"Notizen"** as well, because the
+      lab never sees the app.
+- [ ] Section **"Entwicklung"**: - **"Eingelegt am"** — plain text in the form `YYYY-MM-DD` (the placeholder shows it). - **"Labor"** — where the roll will go, e.g. `dm` or `Rossmann`. It may stay empty for now;
+      the field is on this screen and on **"Film bearbeiten"**. - **"Notizen"** — the free-form place for everything lab-relevant: push/pull, "please do not
+      cut the negatives", the order number of the envelope.
 - [ ] **"Speichern"** → you land on the roll detail screen `/rolls/<id>`, status **"eingelegt"**.
 
 The roll id is the last path segment of that URL and is what the desktop CLI in step 4 needs.
@@ -63,7 +53,7 @@ The roll id is the last path segment of that URL and is what the desktop CLI in 
       **"Kontext"**.
 - [ ] **"Ort"** is free text; **"Aktuelle Position verwenden"** adds coordinates (it asks for the
       location permission the first time, and only then). **"Datum"** and **"Uhrzeit"** are
-      prefilled with *now* and are plain text fields (`JJJJ-MM-TT`, `HH:MM`) — correct them if you
+      prefilled with _now_ and are plain text fields (`JJJJ-MM-TT`, `HH:MM`) — correct them if you
       write the note later in the evening.
 - [ ] **"Speichern & nächstes"** for the next frame (the button is not shown on the last frame of
       the roll), or **"Speichern"** to go back to the roll.
@@ -77,16 +67,16 @@ Three levels:
 - **Orange (warning)** is a "you probably do not want this".
 - **Grey (info)** is "the camera will do something you should know about".
 
-| Hint | When | What it means |
-|---|---|---|
-| *"Autofokus funktioniert mit linearem Polfilter nicht – manuell fokussieren."* (warning) | focus mode **"AF"** and a mounted filter is marked as not AF-compatible — in the seeded kit that is the **Kenko PL (linear) 49** | The linear polarizer kills the phase-detect AF. Switch **"Fokus"** to **"Manuell"** and focus by hand, then set **"AF-Ergebnis"** to **"Manuell fokussiert"**. |
-| *"Verwacklungsgefahr: länger als {{limit}} aus der Hand."* (warning) | a shutter speed slower than the lens's handheld limit while **"Halt"** is empty or **"Aus der Hand"**. Seeded limits: 1/60 for the 35-70 and the 50 mm, **1/250 for the 70-210 "Beercan"** | Brace yourself, use the flash, or set **"Halt"** to **"Abgestützt"** / **"Stativ"** / **"Bohnensack"** once you have — the warning then goes away, and later you know why a frame is soft. |
-| *"Mit Blitz erzwingt die Kamera die Synchronzeit {{sync}}."* (info) | a flash is set, mode **M**, and the chosen time is faster than the camera's sync speed (1/100 on the 7000 AF) | The camera overrides you. Record 1/100 in **"Zeit"**, otherwise the note lies about the frame. |
-| *"Belichtungskorrektur hat im Modus M keine Wirkung."* (info) | compensation ≠ 0 in mode M | Harmless; the camera ignores it. |
-| *"Bulb ist nur im Modus M verfügbar."* (error) | Bulb outside M | |
-| *"Diese Blende gibt es am gewählten Objektiv nicht."* / *"Diese Verschlusszeit bietet die Kamera in diesem Modus nicht an."* / *"Brennweite liegt außerhalb des Bereichs dieses Objektivs."* (errors) | the value is not on the lens or not offered by the camera in that mode | Usually the wrong lens is selected in **"Objektiv"**. |
-| *"Filter {{filter}} hat {{filterThread}} mm, das Objektiv {{lensThread}} mm."* (error) | a filter whose thread does not fit the lens | The filter list is filtered by thread; this only appears after changing the lens under a mounted filter. |
-| *"Bildnummer liegt außerhalb der Länge des Films."* / *"Diese Bildnummer ist auf dem Film schon vergeben."* (errors) | frame number out of 1…exposures, or a duplicate | |
+| Hint                                                                                                                                                                                                  | When                                                                                                                                                                                       | What it means                                                                                                                                                                              |
+| ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| _"Autofokus funktioniert mit linearem Polfilter nicht – manuell fokussieren."_ (warning)                                                                                                              | focus mode **"AF"** and a mounted filter is marked as not AF-compatible — in the seeded kit that is the **Kenko PL (linear) 49**                                                           | The linear polarizer kills the phase-detect AF. Switch **"Fokus"** to **"Manuell"** and focus by hand, then set **"AF-Ergebnis"** to **"Manuell fokussiert"**.                             |
+| _"Verwacklungsgefahr: länger als {{limit}} aus der Hand."_ (warning)                                                                                                                                  | a shutter speed slower than the lens's handheld limit while **"Halt"** is empty or **"Aus der Hand"**. Seeded limits: 1/60 for the 35-70 and the 50 mm, **1/250 for the 70-210 "Beercan"** | Brace yourself, use the flash, or set **"Halt"** to **"Abgestützt"** / **"Stativ"** / **"Bohnensack"** once you have — the warning then goes away, and later you know why a frame is soft. |
+| _"Mit Blitz erzwingt die Kamera die Synchronzeit {{sync}}."_ (info)                                                                                                                                   | a flash is set, mode **M**, and the chosen time is faster than the camera's sync speed (1/100 on the 7000 AF)                                                                              | The camera overrides you. Record 1/100 in **"Zeit"**, otherwise the note lies about the frame.                                                                                             |
+| _"Belichtungskorrektur hat im Modus M keine Wirkung."_ (info)                                                                                                                                         | compensation ≠ 0 in mode M                                                                                                                                                                 | Harmless; the camera ignores it.                                                                                                                                                           |
+| _"Bulb ist nur im Modus M verfügbar."_ (error)                                                                                                                                                        | Bulb outside M                                                                                                                                                                             |                                                                                                                                                                                            |
+| _"Diese Blende gibt es am gewählten Objektiv nicht."_ / _"Diese Verschlusszeit bietet die Kamera in diesem Modus nicht an."_ / _"Brennweite liegt außerhalb des Bereichs dieses Objektivs."_ (errors) | the value is not on the lens or not offered by the camera in that mode                                                                                                                     | Usually the wrong lens is selected in **"Objektiv"**.                                                                                                                                      |
+| _"Filter {{filter}} hat {{filterThread}} mm, das Objektiv {{lensThread}} mm."_ (error)                                                                                                                | a filter whose thread does not fit the lens                                                                                                                                                | The filter list is filtered by thread; this only appears after changing the lens under a mounted filter.                                                                                   |
+| _"Bildnummer liegt außerhalb der Länge des Films."_ / _"Diese Bildnummer ist auf dem Film schon vergeben."_ (errors)                                                                                  | frame number out of 1…exposures, or a duplicate                                                                                                                                            |                                                                                                                                                                                            |
 
 Field tips:
 
@@ -143,21 +133,18 @@ Without one the screen offers only **"Server einrichten"**.
       unpacked inside the app. To start over: **"Andere Dateien wählen"**.
 - [ ] **Check the mapping against your notes.** The files are sorted the way a file browser sorts
       them (`img2.jpg` before `img10.jpg`) and the n-th file is assigned to the n-th frame — the
-      filename is *not* parsed for a frame number. Each row shows the thumbnail next to the frame
+      filename is _not_ parsed for a frame number. Each row shows the thumbnail next to the frame
       it landed on (**"→ #{{frameNo}}"**) and that frame's notes, which is what makes the check
       possible: the note says "Hafen, Gegenlicht" and the thumbnail had better be the harbour.
-- [ ] Fix what is wrong, per row:
-      - **"▲"** / **"▼"** shift this row **and every row after it** by one frame. This is the
-        repair for a lab that dropped or added a single scan.
-      - **"✕"** takes the scan off its frame (**"keinem Bild zugeordnet"**).
-      - the **"Bild"** picker assigns one specific frame number. A frame holds at most one scan,
-        so assigning a taken frame frees the scan that was there.
+- [ ] Fix what is wrong, per row: - **"▲"** / **"▼"** shift this row **and every row after it** by one frame. This is the
+      repair for a lab that dropped or added a single scan. - **"✕"** takes the scan off its frame (**"keinem Bild zugeordnet"**). - the **"Bild"** picker assigns one specific frame number. A frame holds at most one scan,
+      so assigning a taken frame frees the scan that was there.
 - [ ] **"Hochladen"**. Result: **"{{uploaded}} von {{total}} Scans hochgeladen."**, and any
       failures listed as **"Fehlgeschlagen: {{files}}"** — a single bad file does not abort the rest, and a
       half-uploaded record is cleaned up, so you can simply retry those files.
 - [ ] If the roll was **"belichtet"** or **"im Labor"**, it is now **"entwickelt"** and the screen
       says **"Der Film ist jetzt als entwickelt markiert."** A roll still on **"eingelegt"** is
-      *not* advanced — set the status by hand.
+      _not_ advanced — set the status by hand.
 - [ ] Surplus files (more scans than frames) are uploaded unassigned and can be attached later.
 
 ### 4b. From the desktop, with the CLI
@@ -222,7 +209,7 @@ Export needs the uploaded scan, so it needs the server. One frame at a time from
       WordPress under **Profil → Anwendungspasswörter**, not your login password.
 - [ ] **"Verbindung testen"** → **"Verbunden als {{name}}."**, then **"Speichern"**.
 - [ ] Exporting uploads the scan to the media library and creates the post **always as a draft**:
-      *"Beiträge werden immer als Entwurf angelegt – veröffentlicht wird in WordPress."* The post
+      _"Beiträge werden immer als Entwurf angelegt – veröffentlicht wird in WordPress."_ The post
       gets a title (`Film – #Nr – Ort`), a metadata table, your notes, and the scan as featured
       image.
 - [ ] **"Beitrag öffnen"** jumps into WordPress. Review it there — check the title, crop the
@@ -301,10 +288,10 @@ loses nothing. See the troubleshooting table in [`deployment.md`](deployment.md)
 ### Backup
 
 - [ ] **The server is the backup that matters.** Scan files exist only there — the app caches
-      thumbnails by URL. Back up the `pb_data` volume (database *and* files) as described in
+      thumbnails by URL. Back up the `pb_data` volume (database _and_ files) as described in
       [`deployment.md`](deployment.md) §6, and check once a year that a restore actually works.
 - [ ] **Before "Lokale Daten zurücksetzen"** (Einstellungen, red button), sync. That button wipes
-      the device's copy *and* the queue of not-yet-uploaded changes.
+      the device's copy _and_ the queue of not-yet-uploaded changes.
 - [ ] **Negatives are the real archive.** Keep them; the scans are a rendering of them, and the
       notes in this app are what tells you which negative is which.
 

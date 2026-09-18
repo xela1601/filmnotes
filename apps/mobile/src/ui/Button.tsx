@@ -1,8 +1,8 @@
-import { Pressable, StyleSheet, Text } from 'react-native';
+import { Pressable, StyleSheet, Text } from "react-native";
 
-import { useTheme } from './theme';
+import { useTheme } from "./theme";
 
-export type ButtonVariant = 'primary' | 'secondary' | 'danger';
+export type ButtonVariant = "primary" | "secondary" | "danger";
 
 export interface ButtonProps {
   title: string;
@@ -15,15 +15,15 @@ export interface ButtonProps {
 export function Button({
   title,
   onPress,
-  variant = 'primary',
+  variant = "primary",
   disabled = false,
   testID,
 }: ButtonProps) {
   const { palette, fontSize } = useTheme();
 
   const background =
-    variant === 'primary' ? palette.primary : variant === 'danger' ? palette.danger : 'transparent';
-  const label = variant === 'secondary' ? palette.text : palette.onPrimary;
+    variant === "primary" ? palette.primary : variant === "danger" ? palette.danger : "transparent";
+  const label = variant === "secondary" ? palette.text : palette.onPrimary;
 
   return (
     <Pressable
@@ -36,7 +36,7 @@ export function Button({
         styles.button,
         {
           backgroundColor: background,
-          borderColor: variant === 'secondary' ? palette.border : background,
+          borderColor: variant === "secondary" ? palette.border : background,
           opacity: disabled ? 0.5 : 1,
         },
       ]}
@@ -52,8 +52,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     borderRadius: 6,
     borderWidth: StyleSheet.hairlineWidth,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
   },
-  label: { fontWeight: '600' },
+  label: { fontWeight: "600" },
 });

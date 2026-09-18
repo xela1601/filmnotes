@@ -1,7 +1,7 @@
-import { Stack } from 'expo-router';
-import { useTranslation } from 'react-i18next';
+import { Stack } from "expo-router";
+import { useTranslation } from "react-i18next";
 
-import { WordPressSettingsScreen } from '../../src/features/export/WordPressSettingsScreen';
+import { WordPressSettingsScreen } from "../../src/features/export/WordPressSettingsScreen";
 
 /** `/settings/wordpress` – the credentials the WordPress exporter needs. */
 export default function WordPressSettingsRoute() {
@@ -9,7 +9,7 @@ export default function WordPressSettingsRoute() {
 
   return (
     <>
-      <Stack.Screen options={{ title: t('settings.wordpress') }} />
+      <Stack.Screen options={{ title: t("settings.wordpress") }} />
       <WordPressSettingsScreen />
     </>
   );

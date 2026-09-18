@@ -1,7 +1,7 @@
-import type { ReactNode } from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import type { ReactNode } from "react";
+import { StyleSheet, Text, View } from "react-native";
 
-import { useTheme } from './theme';
+import { useTheme } from "./theme";
 
 export interface SectionProps {
   title: string;
@@ -29,6 +29,6 @@ export function Section({ title, children, testID }: SectionProps) {
 
 const styles = StyleSheet.create({
   section: { gap: 8 },
-  title: { fontWeight: '600', letterSpacing: 0.5 },
+  title: { fontWeight: "600", letterSpacing: 0.5 },
   body: { borderRadius: 10, borderWidth: StyleSheet.hairlineWidth, padding: 12, gap: 16 },
 });

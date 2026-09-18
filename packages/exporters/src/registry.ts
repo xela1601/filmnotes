@@ -10,7 +10,7 @@
  * the config type either, so it validates the stored settings with `configSchema` and hands the
  * result straight back to `exportFrame`.
  */
-import type { Exporter } from './types';
+import type { Exporter } from "./types";
 
 const exporters = new Map<string, Exporter<unknown>>();
 

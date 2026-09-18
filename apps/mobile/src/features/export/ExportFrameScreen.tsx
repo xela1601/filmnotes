@@ -5,26 +5,26 @@
  * wording of a post is a decision no template makes. A frame without an uploaded scan can still
  * be exported – the caption alone is useful, and the scans often arrive weeks after the notes.
  */
-import type { Frame, Id } from '@filmnotes/domain';
-import { listExporters, wordPressExporter, shareExporter } from '@filmnotes/exporters';
-import { router } from 'expo-router';
-import { useMemo, useState } from 'react';
-import { useTranslation } from 'react-i18next';
-import { Linking, StyleSheet, Text, View } from 'react-native';
-import { useShallow } from 'zustand/react/shallow';
+import type { Frame, Id } from "@filmnotes/domain";
+import { listExporters, wordPressExporter, shareExporter } from "@filmnotes/exporters";
+import { router } from "expo-router";
+import { useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
+import { Linking, StyleSheet, Text, View } from "react-native";
+import { useShallow } from "zustand/react/shallow";
 
-import { exportErrorMessage, formatTime, targetLabel } from './exportMessages';
+import { exportErrorMessage, formatTime, targetLabel } from "./exportMessages";
 import {
   captionFor,
   isWordPressConfigured,
   selectExportLogsForFrame,
   selectScanForFrame,
-} from './exportModel';
-import { EXPORT_NAMESPACE } from './i18n';
-import { useFrameExporter } from './useFrameExporter';
-import { useEntity, useSettings } from '../../store/hooks';
-import { useStore } from '../../store/store';
-import { Button, EmptyState, ListItem, Screen, Section, TextField, useTheme } from '../../ui';
+} from "./exportModel";
+import { EXPORT_NAMESPACE } from "./i18n";
+import { useFrameExporter } from "./useFrameExporter";
+import { useEntity, useSettings } from "../../store/hooks";
+import { useStore } from "../../store/store";
+import { Button, EmptyState, ListItem, Screen, Section, TextField, useTheme } from "../../ui";
 
 export interface ExportFrameScreenProps {
   frameId: Id;
@@ -32,14 +32,14 @@ export interface ExportFrameScreenProps {
 
 export function ExportFrameScreen({ frameId }: ExportFrameScreenProps) {
   const { t } = useTranslation(EXPORT_NAMESPACE);
-  const frame = useEntity('frames', frameId);
+  const frame = useEntity("frames", frameId);
 
   if (frame === undefined || frame.deleted !== null) {
     return (
       <Screen testID="export-frame">
         <EmptyState
-          title={t('frameNotFound')}
-          hint={t('frameNotFoundHint')}
+          title={t("frameNotFound")}
+          hint={t("frameNotFoundHint")}
           testID="export-frame-not-found"
         />
       </Screen>
@@ -60,7 +60,7 @@ function ExportFrame({ frame }: { frame: Frame }) {
   const [exporterId, setExporterId] = useState<string>(shareExporter.id);
 
   const builtCaption = useStore((state) => captionFor(state, frame));
-  const [caption, setCaption] = useState(builtCaption ?? '');
+  const [caption, setCaption] = useState(builtCaption ?? "");
   const scan = useStore((state) => selectScanForFrame(state, frame));
   // Shallow-compared: the selector builds a new array on every call.
   const logs = useStore(useShallow((state) => selectExportLogsForFrame(state, frame.id)));
@@ -85,7 +85,7 @@ function ExportFrame({ frame }: { frame: Frame }) {
     try {
       const result = await exportFrame({ frame, exporterId, caption });
       setLink(result.url);
-      setMessage(result.sharePayload === null ? t('exported') : t('shared'));
+      setMessage(result.sharePayload === null ? t("exported") : t("shared"));
     } catch (caught) {
       setError(exportErrorMessage(t, caught));
     } finally {
@@ -97,12 +97,12 @@ function ExportFrame({ frame }: { frame: Frame }) {
 
   return (
     <Screen testID="export-frame">
-      <Section title={t('target')}>
+      <Section title={t("target")}>
         {exporters.map((exporter) => (
           <Button
             key={exporter.id}
             title={t(exporter.nameKey)}
-            variant={exporter.id === exporterId ? 'primary' : 'secondary'}
+            variant={exporter.id === exporterId ? "primary" : "secondary"}
             disabled={!available(exporter.id)}
             onPress={() => setExporterId(exporter.id)}
             testID={`export-target-${exporter.id}`}
@@ -111,46 +111,49 @@ function ExportFrame({ frame }: { frame: Frame }) {
         {!wordPressReady && (
           <>
             <Text testID="export-wordpress-hint" style={muted}>
-              {t('notConfigured')}
+              {t("notConfigured")}
             </Text>
             <Button
-              title={t('configure')}
+              title={t("configure")}
               variant="secondary"
-              onPress={() => router.push('/settings/wordpress')}
+              onPress={() => router.push("/settings/wordpress")}
               testID="export-configure-wordpress"
             />
           </>
         )}
       </Section>
 
-      <Section title={t('image')}>
+      <Section title={t("image")}>
         <Text testID="export-image" style={muted}>
-          {hasImage && scan !== null ? t('withImage', { fileName: scan.fileName }) : t('noImage')}
+          {hasImage && scan !== null ? t("withImage", { fileName: scan.fileName }) : t("noImage")}
         </Text>
       </Section>
 
-      <Section title={t('caption')}>
+      <Section title={t("caption")}>
         {builtCaption === null ? (
-          <Text testID="export-caption-missing" style={{ color: palette.danger, fontSize: fontSize.sm }}>
-            {t('captionMissing')}
+          <Text
+            testID="export-caption-missing"
+            style={{ color: palette.danger, fontSize: fontSize.sm }}
+          >
+            {t("captionMissing")}
           </Text>
         ) : (
           <>
             <TextField
-              label={t('caption')}
+              label={t("caption")}
               value={caption}
               onChangeText={setCaption}
               multiline
               testID="export-caption"
             />
-            <Text style={muted}>{t('captionHint')}</Text>
+            <Text style={muted}>{t("captionHint")}</Text>
           </>
         )}
       </Section>
 
       <View style={styles.actions}>
         <Button
-          title={running ? t('running') : t('run')}
+          title={running ? t("running") : t("run")}
           onPress={() => void run()}
           disabled={running || builtCaption === null || !available(exporterId)}
           testID="export-run"
@@ -162,7 +165,7 @@ function ExportFrame({ frame }: { frame: Frame }) {
         )}
         {link !== null && (
           <Button
-            title={t('openPost')}
+            title={t("openPost")}
             variant="secondary"
             onPress={() => void Linking.openURL(link)}
             testID="export-open-post"
@@ -175,10 +178,10 @@ function ExportFrame({ frame }: { frame: Frame }) {
         )}
       </View>
 
-      <Section title={t('previous')}>
+      <Section title={t("previous")}>
         {logs.length === 0 ? (
           <Text testID="export-no-previous" style={muted}>
-            {t('noPrevious')}
+            {t("noPrevious")}
           </Text>
         ) : (
           logs.map((log) => (
@@ -187,7 +190,7 @@ function ExportFrame({ frame }: { frame: Frame }) {
               testID={`export-log-${log.id}`}
               title={targetLabel(t, log.target)}
               subtitle={formatTime(log.exportedAt, i18n.language)}
-              onPress={log.url === null ? undefined : () => void Linking.openURL(log.url ?? '')}
+              onPress={log.url === null ? undefined : () => void Linking.openURL(log.url ?? "")}
             />
           ))
         )}

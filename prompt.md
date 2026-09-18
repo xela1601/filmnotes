@@ -5,7 +5,7 @@ Szenario: Nutzer nimmt Foto auf, öffnet App, legt neuen Film in der App an, wä
 @./Minolta_7000_AF_Preset.md
  Als initialen Dateninput kannst du mein eigenes Kamera Setup verwenden. Die App soll aber erweiterbar sein.
 
-Später wenn die Fotos entwickelt von dm oder Roßmann in digitalisierter Form via API ankommen, sollen diese Fotos für Social Media Plattformen oder für einen persönlichen Wordpress Blog exportiert werden können. 
+Später wenn die Fotos entwickelt von dm oder Roßmann in digitalisierter Form via API ankommen, sollen diese Fotos für Social Media Plattformen oder für einen persönlichen Wordpress Blog exportiert werden können.
 
 Ich will einen Arbeitsablauf etablieren, der routiniert die neu entwickelten Fotos in digitalisierter Form entsprechend zu meiner App hinzufügt und auf die vorher gesammelten Notizen.
 

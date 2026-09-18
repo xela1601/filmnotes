@@ -5,10 +5,10 @@
  * Jest fails hard on a `projects` pattern that currently matches nothing (e.g. `apps/*`
  * before the Expo app exists), which would break the root test run between tickets.
  */
-const { existsSync, readdirSync } = require('node:fs');
-const { join } = require('node:path');
+const { existsSync, readdirSync } = require("node:fs");
+const { join } = require("node:path");
 
-const workspaceRoots = ['packages', 'apps', 'tools'];
+const workspaceRoots = ["packages", "apps", "tools"];
 
 const projects = workspaceRoots.flatMap((root) => {
   const dir = join(__dirname, root);
@@ -16,7 +16,7 @@ const projects = workspaceRoots.flatMap((root) => {
   return readdirSync(dir, { withFileTypes: true })
     .filter((entry) => entry.isDirectory())
     .map((entry) => join(dir, entry.name))
-    .filter((path) => existsSync(join(path, 'jest.config.js')));
+    .filter((path) => existsSync(join(path, "jest.config.js")));
 });
 
 module.exports = { projects };

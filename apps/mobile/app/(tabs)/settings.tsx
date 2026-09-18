@@ -1,11 +1,11 @@
-import Constants from 'expo-constants';
-import { router } from 'expo-router';
-import { useTranslation } from 'react-i18next';
-import { Text } from 'react-native';
+import Constants from "expo-constants";
+import { router } from "expo-router";
+import { useTranslation } from "react-i18next";
+import { Text } from "react-native";
 
-import { setAppLanguage, type LocaleSetting } from '../../src/i18n';
-import { confirmDestructive } from '../../src/lib/confirm';
-import { useStore } from '../../src/store/store';
+import { setAppLanguage, type LocaleSetting } from "../../src/i18n";
+import { confirmDestructive } from "../../src/lib/confirm";
+import { useStore } from "../../src/store/store";
 import {
   Button,
   ListItem,
@@ -14,7 +14,7 @@ import {
   SelectField,
   useTheme,
   type SelectOption,
-} from '../../src/ui';
+} from "../../src/ui";
 
 export default function SettingsScreen() {
   const { t } = useTranslation();
@@ -24,32 +24,32 @@ export default function SettingsScreen() {
   const resetAll = useStore((state) => state.resetAll);
 
   const languageOptions: SelectOption<LocaleSetting>[] = [
-    { value: 'system', label: t('settings.languages.system') },
-    { value: 'de', label: t('settings.languages.de') },
-    { value: 'en', label: t('settings.languages.en') },
+    { value: "system", label: t("settings.languages.system") },
+    { value: "de", label: t("settings.languages.de") },
+    { value: "en", label: t("settings.languages.en") },
   ];
 
   const changeLanguage = (next: LocaleSetting | null) => {
-    const value = next ?? 'system';
+    const value = next ?? "system";
     updateSettings({ locale: value });
     void setAppLanguage(value);
   };
 
   const confirmReset = () => {
     confirmDestructive({
-      title: t('settings.reset'),
-      message: t('settings.resetConfirm'),
-      confirmLabel: t('actions.confirm'),
-      cancelLabel: t('actions.cancel'),
+      title: t("settings.reset"),
+      message: t("settings.resetConfirm"),
+      confirmLabel: t("actions.confirm"),
+      cancelLabel: t("actions.cancel"),
       onConfirm: resetAll,
     });
   };
 
   return (
     <Screen testID="settings-screen">
-      <Section title={t('settings.language')}>
+      <Section title={t("settings.language")}>
         <SelectField
-          label={t('settings.language')}
+          label={t("settings.language")}
           value={locale}
           options={languageOptions}
           onChange={changeLanguage}
@@ -57,31 +57,28 @@ export default function SettingsScreen() {
         />
       </Section>
 
-      <Section title={t('app.title')}>
+      <Section title={t("app.title")}>
         <ListItem
-          title={t('settings.server')}
-          onPress={() => router.push('/settings/server')}
+          title={t("settings.server")}
+          onPress={() => router.push("/settings/server")}
           testID="settings-server"
         />
         <ListItem
-          title={t('settings.wordpress')}
-          onPress={() => router.push('/settings/wordpress')}
+          title={t("settings.wordpress")}
+          onPress={() => router.push("/settings/wordpress")}
           testID="settings-wordpress"
         />
       </Section>
 
       <Button
-        title={t('settings.reset')}
+        title={t("settings.reset")}
         variant="danger"
         onPress={confirmReset}
         testID="settings-reset"
       />
 
-      <Text
-        testID="settings-version"
-        style={{ color: palette.textMuted, fontSize: fontSize.sm }}
-      >
-        {t('settings.version')} {Constants.expoConfig?.version ?? '–'}
+      <Text testID="settings-version" style={{ color: palette.textMuted, fontSize: fontSize.sm }}>
+        {t("settings.version")} {Constants.expoConfig?.version ?? "–"}
       </Text>
     </Screen>
   );

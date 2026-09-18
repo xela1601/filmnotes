@@ -6,54 +6,45 @@
  * record and a seeded record are interchangeable in store and selector tests. Use the
  * domain fixtures for anything that tests domain behaviour.
  */
-import type {
-  Camera,
-  Filter,
-  FilmStock,
-  Flash,
-  Frame,
-  Lens,
-  Roll,
-  Scan,
-} from '@filmnotes/domain';
+import type { Camera, Filter, FilmStock, Flash, Frame, Lens, Roll, Scan } from "@filmnotes/domain";
 
-export const FIXTURE_NOW = '2026-09-18T10:00:00.000Z';
+export const FIXTURE_NOW = "2026-09-18T10:00:00.000Z";
 
 const sync = { created: FIXTURE_NOW, updated: FIXTURE_NOW, deleted: null, owner: null } as const;
 
 export function makeCamera(overrides: Partial<Camera> = {}): Camera {
   return {
-    id: 'cam0minolta7000',
+    id: "cam0minolta7000",
     ...sync,
-    make: 'Minolta',
-    model: '7000 AF',
+    make: "Minolta",
+    model: "7000 AF",
     aliases: [],
     year: 1985,
-    format: '135',
-    mount: 'Minolta A',
-    exposureModes: ['P', 'A', 'S', 'M'],
-    shutterSpeedsManual: ['1/60', '1/125', '1/250', 'bulb'],
-    shutterSpeedsAutoExtra: ['1/90', '1/180'],
-    bulbOnlyInModes: ['M'],
-    exposureCompensation: { min: -4, max: 4, step: 0.5, notInModes: ['M'] },
+    format: "135",
+    mount: "Minolta A",
+    exposureModes: ["P", "A", "S", "M"],
+    shutterSpeedsManual: ["1/60", "1/125", "1/250", "bulb"],
+    shutterSpeedsAutoExtra: ["1/90", "1/180"],
+    bulbOnlyInModes: ["M"],
+    exposureCompensation: { min: -4, max: 4, step: 0.5, notInModes: ["M"] },
     iso: { min: 25, max: 6400, stepEv: 0.333, dxAuto: true },
-    focusModes: ['AF', 'M'],
-    driveModes: ['S', 'C', 'ST'],
-    flashSync: '1/100',
-    metering: 'TTL center-weighted',
-    notes: '',
+    focusModes: ["AF", "M"],
+    driveModes: ["S", "C", "ST"],
+    flashSync: "1/100",
+    metering: "TTL center-weighted",
+    notes: "",
     conditionNotes: [],
     defaultsForNewFrame: {
-      exposureMode: 'P',
-      driveMode: 'S',
-      focusMode: 'AF',
+      exposureMode: "P",
+      driveMode: "S",
+      focusMode: "AF",
       exposureCompensationEv: 0,
       programShift: false,
       aeLock: false,
-      lensId: 'lens0min3570f40',
-      filterIds: ['filt0hamauv49a0'],
+      lensId: "lens0min3570f40",
+      filterIds: ["filt0hamauv49a0"],
       flashId: null,
-      support: 'handheld',
+      support: "handheld",
     },
     ...overrides,
   };
@@ -61,10 +52,10 @@ export function makeCamera(overrides: Partial<Camera> = {}): Camera {
 
 export function makeLens(overrides: Partial<Lens> = {}): Lens {
   return {
-    id: 'lens0min3570f40',
+    id: "lens0min3570f40",
     ...sync,
-    make: 'Minolta',
-    model: 'AF Zoom 35-70mm f/4',
+    make: "Minolta",
+    model: "AF Zoom 35-70mm f/4",
     focalMinMm: 35,
     focalMaxMm: 70,
     maxAperture: 4,
@@ -75,7 +66,7 @@ export function makeLens(overrides: Partial<Lens> = {}): Lens {
     macroNote: null,
     weightG: 255,
     defaultFilterIds: [],
-    handheldMinShutter: '1/60',
+    handheldMinShutter: "1/60",
     hasHood: false,
     ...overrides,
   };
@@ -83,14 +74,14 @@ export function makeLens(overrides: Partial<Lens> = {}): Lens {
 
 export function makeFilter(overrides: Partial<Filter> = {}): Filter {
   return {
-    id: 'filt0hamauv49a0',
+    id: "filt0hamauv49a0",
     ...sync,
-    make: 'Hama',
-    model: 'UV 390 49',
+    make: "Hama",
+    model: "UV 390 49",
     threadMm: 49,
-    type: 'UV',
+    type: "UV",
     exposureFactorEv: 0,
-    afCompatible: 'yes',
+    afCompatible: "yes",
     warning: null,
     mountedOnLensId: null,
     ...overrides,
@@ -99,60 +90,60 @@ export function makeFilter(overrides: Partial<Filter> = {}): Filter {
 
 export function makeFlash(overrides: Partial<Flash> = {}): Flash {
   return {
-    id: 'flash0min2800af',
+    id: "flash0min2800af",
     ...sync,
-    make: 'Minolta',
-    model: 'Program Flash 2800 AF',
+    make: "Minolta",
+    model: "Program Flash 2800 AF",
     guideNumberIso100M: 28,
-    powerLevels: ['Hi', 'Lo'],
-    headPositions: ['direct', 'bounce'],
+    powerLevels: ["Hi", "Lo"],
+    headPositions: ["direct", "bounce"],
     afIlluminator: true,
-    sync: '1/100',
-    notes: '',
+    sync: "1/100",
+    notes: "",
     ...overrides,
   };
 }
 
 export function makeFilmStock(overrides: Partial<FilmStock> = {}): FilmStock {
   return {
-    id: 'film0kodakgold2',
+    id: "film0kodakgold2",
     ...sync,
-    name: 'Kodak Gold 200',
-    maker: 'Kodak',
+    name: "Kodak Gold 200",
+    maker: "Kodak",
     iso: 200,
-    process: 'C41',
+    process: "C41",
     color: true,
     exposures: 36,
     dxCoded: true,
-    notes: '',
+    notes: "",
     ...overrides,
   };
 }
 
 export function makeRoll(overrides: Partial<Roll> = {}): Roll {
   return {
-    id: 'roll00000000001',
+    id: "roll00000000001",
     ...sync,
-    cameraId: 'cam0minolta7000',
-    filmStockId: 'film0kodakgold2',
+    cameraId: "cam0minolta7000",
+    filmStockId: "film0kodakgold2",
     isoSet: 200,
-    isoSource: 'DX',
+    isoSource: "DX",
     exposures: 36,
     pushPullEv: 0,
-    status: 'loaded',
+    status: "loaded",
     loadedAt: FIXTURE_NOW,
     unloadedAt: null,
     lab: null,
-    notes: '',
+    notes: "",
     ...overrides,
   };
 }
 
 export function makeFrame(overrides: Partial<Frame> = {}): Frame {
   return {
-    id: 'frame0000000001',
+    id: "frame0000000001",
     ...sync,
-    rollId: 'roll00000000001',
+    rollId: "roll00000000001",
     frameNo: 1,
     takenAt: FIXTURE_NOW,
     lensId: null,
@@ -177,18 +168,18 @@ export function makeFrame(overrides: Partial<Frame> = {}): Frame {
     light: null,
     subject: null,
     location: null,
-    notes: '',
+    notes: "",
     ...overrides,
   };
 }
 
 export function makeScan(overrides: Partial<Scan> = {}): Scan {
   return {
-    id: 'scan00000000001',
+    id: "scan00000000001",
     ...sync,
-    rollId: 'roll00000000001',
+    rollId: "roll00000000001",
     frameId: null,
-    fileName: 'img001.jpg',
+    fileName: "img001.jpg",
     sortIndex: 0,
     file: null,
     width: null,

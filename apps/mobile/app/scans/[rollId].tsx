@@ -1,8 +1,8 @@
-import { Stack, useLocalSearchParams } from 'expo-router';
-import { useTranslation } from 'react-i18next';
+import { Stack, useLocalSearchParams } from "expo-router";
+import { useTranslation } from "react-i18next";
 
-import { SCANS_NAMESPACE } from '../../src/features/scans/i18n';
-import { ScanImportScreen } from '../../src/features/scans/ScanImportScreen';
+import { SCANS_NAMESPACE } from "../../src/features/scans/i18n";
+import { ScanImportScreen } from "../../src/features/scans/ScanImportScreen";
 
 /** `/scans/<rollId>` – pick, review and upload the lab's scans of a roll. */
 export default function ScanImportRoute() {
@@ -11,8 +11,8 @@ export default function ScanImportRoute() {
 
   return (
     <>
-      <Stack.Screen options={{ title: t('title') }} />
-      <ScanImportScreen rollId={rollId ?? ''} />
+      <Stack.Screen options={{ title: t("title") }} />
+      <ScanImportScreen rollId={rollId ?? ""} />
     </>
   );
 }

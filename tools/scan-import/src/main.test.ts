@@ -1,23 +1,23 @@
-import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
-import { tmpdir } from 'node:os';
-import { join } from 'node:path';
+import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 
-import type { Frame, Id } from '@filmnotes/domain';
-import { makeFrame } from '@filmnotes/domain';
+import type { Frame, Id } from "@filmnotes/domain";
+import { makeFrame } from "@filmnotes/domain";
 
-import type { Deps, ImportClient, Io, PromptOptions } from './main';
-import { main } from './main';
-import { jpegBytes } from './testImages';
+import type { Deps, ImportClient, Io, PromptOptions } from "./main";
+import { main } from "./main";
+import { jpegBytes } from "./testImages";
 
-const SERVER = 'https://pb.example.com';
-const ROLL: Id = 'roll10000000000';
-const OWNER: Id = 'owner1000000000';
+const SERVER = "https://pb.example.com";
+const ROLL: Id = "roll10000000000";
+const OWNER: Id = "owner1000000000";
 
 let source: string;
 
 beforeEach(() => {
-  source = mkdtempSync(join(tmpdir(), 'scan-import-main-test-'));
-  for (const name of ['img1.jpg', 'img2.jpg', 'img3.jpg']) {
+  source = mkdtempSync(join(tmpdir(), "scan-import-main-test-"));
+  for (const name of ["img1.jpg", "img2.jpg", "img3.jpg"]) {
     writeFileSync(join(source, name), jpegBytes());
   }
 });
@@ -48,7 +48,7 @@ function recordIo(answers: string[] = []): Recorded {
       stderr: (text) => err.push(text),
       prompt: async (question, options) => {
         prompts.push({ question, options });
-        return queue.shift() ?? '';
+        return queue.shift() ?? "";
       },
     },
   };
@@ -64,7 +64,7 @@ interface Fake {
 function frames(count: number): Frame[] {
   return Array.from({ length: count }, (_, index) =>
     makeFrame({
-      id: `frame${String(index + 1).padStart(10, '0')}`,
+      id: `frame${String(index + 1).padStart(10, "0")}`,
       rollId: ROLL,
       frameNo: index + 1,
       notes: `frame ${index + 1} notes`,
@@ -120,80 +120,80 @@ function fakeDeps(
 }
 
 function argv(extra: string[] = []): string[] {
-  return ['--server', SERVER, '--email', 'me@example.com', '--roll', ROLL, ...extra, source];
+  return ["--server", SERVER, "--email", "me@example.com", "--roll", ROLL, ...extra, source];
 }
 
-describe('main', () => {
-  it('prints the plan and uploads after a confirmed prompt', async () => {
-    const io = recordIo(['y']);
+describe("main", () => {
+  it("prints the plan and uploads after a confirmed prompt", async () => {
+    const io = recordIo(["y"]);
     const fake = fakeDeps();
 
-    const code = await main(argv(['--password', 'secret']), io.io, fake.deps);
+    const code = await main(argv(["--password", "secret"]), io.io, fake.deps);
 
     expect(code).toBe(0);
     expect(fake.servers).toEqual([SERVER]);
-    expect(fake.logins).toEqual([{ email: 'me@example.com', password: 'secret' }]);
+    expect(fake.logins).toEqual([{ email: "me@example.com", password: "secret" }]);
     expect(io.prompts).toHaveLength(1);
     expect(io.prompts[0]!.question).toMatch(/upload/i);
-    const output = io.out.join('\n');
-    expect(output).toContain('img1.jpg');
-    expect(output).toContain('#1');
-    expect(output).toContain('frame 1 notes');
+    const output = io.out.join("\n");
+    expect(output).toContain("img1.jpg");
+    expect(output).toContain("#1");
+    expect(output).toContain("frame 1 notes");
     expect(fake.created.map((record) => record.fileName)).toEqual([
-      'img1.jpg',
-      'img2.jpg',
-      'img3.jpg',
+      "img1.jpg",
+      "img2.jpg",
+      "img3.jpg",
     ]);
     expect(fake.created.every((record) => record.owner === OWNER)).toBe(true);
     expect(output).toMatch(/Uploaded 3 of 3/);
   });
 
-  it('uploads nothing and exits with 1 when the prompt is declined', async () => {
-    const io = recordIo(['n']);
+  it("uploads nothing and exits with 1 when the prompt is declined", async () => {
+    const io = recordIo(["n"]);
     const fake = fakeDeps();
 
-    const code = await main(argv(['--password', 'secret']), io.io, fake.deps);
+    const code = await main(argv(["--password", "secret"]), io.io, fake.deps);
 
     expect(code).toBe(1);
     expect(fake.created).toEqual([]);
-    expect(io.out.join('\n')).toMatch(/aborted/i);
+    expect(io.out.join("\n")).toMatch(/aborted/i);
   });
 
-  it('treats an empty answer as no – stdin at its end must never upload', async () => {
+  it("treats an empty answer as no – stdin at its end must never upload", async () => {
     const io = recordIo([]);
     const fake = fakeDeps();
 
-    const code = await main(argv(['--password', 'secret']), io.io, fake.deps);
+    const code = await main(argv(["--password", "secret"]), io.io, fake.deps);
 
     expect(code).toBe(1);
     expect(fake.created).toEqual([]);
   });
 
-  it('does not ask with --yes', async () => {
+  it("does not ask with --yes", async () => {
     const io = recordIo();
     const fake = fakeDeps();
 
-    const code = await main(argv(['--password', 'secret', '--yes']), io.io, fake.deps);
+    const code = await main(argv(["--password", "secret", "--yes"]), io.io, fake.deps);
 
     expect(code).toBe(0);
     expect(io.prompts).toEqual([]);
     expect(fake.created).toHaveLength(3);
   });
 
-  it('never uploads with --dry-run', async () => {
+  it("never uploads with --dry-run", async () => {
     const io = recordIo();
     const fake = fakeDeps();
 
-    const code = await main(argv(['--password', 'secret', '--dry-run']), io.io, fake.deps);
+    const code = await main(argv(["--password", "secret", "--dry-run"]), io.io, fake.deps);
 
     expect(code).toBe(0);
     expect(io.prompts).toEqual([]);
     expect(fake.created).toEqual([]);
-    expect(io.out.join('\n')).toMatch(/dry run/i);
+    expect(io.out.join("\n")).toMatch(/dry run/i);
   });
 
-  it('asks for the password without echoing it', async () => {
-    const io = recordIo(['typed-password', 'y']);
+  it("asks for the password without echoing it", async () => {
+    const io = recordIo(["typed-password", "y"]);
     const fake = fakeDeps();
 
     const code = await main(argv(), io.io, fake.deps);
@@ -201,90 +201,94 @@ describe('main', () => {
     expect(code).toBe(0);
     expect(io.prompts[0]!.question).toMatch(/password/i);
     expect(io.prompts[0]!.options).toEqual({ hidden: true });
-    expect(fake.logins[0]!.password).toBe('typed-password');
-    expect(io.out.join('\n')).not.toContain('typed-password');
-    expect(io.err.join('\n')).not.toContain('typed-password');
+    expect(fake.logins[0]!.password).toBe("typed-password");
+    expect(io.out.join("\n")).not.toContain("typed-password");
+    expect(io.err.join("\n")).not.toContain("typed-password");
   });
 
-  it('reports a failed login without uploading', async () => {
+  it("reports a failed login without uploading", async () => {
     const io = recordIo();
-    const fake = fakeDeps({ loginError: 'Failed to authenticate.' });
+    const fake = fakeDeps({ loginError: "Failed to authenticate." });
 
-    const code = await main(argv(['--password', 'wrong', '--yes']), io.io, fake.deps);
+    const code = await main(argv(["--password", "wrong", "--yes"]), io.io, fake.deps);
 
     expect(code).toBe(1);
-    expect(io.err.join('\n')).toContain('Failed to authenticate.');
-    expect(io.err.join('\n')).not.toContain('wrong');
+    expect(io.err.join("\n")).toContain("Failed to authenticate.");
+    expect(io.err.join("\n")).not.toContain("wrong");
     expect(fake.created).toEqual([]);
   });
 
-  it('stops when the roll has no frames', async () => {
+  it("stops when the roll has no frames", async () => {
     const io = recordIo();
     const fake = fakeDeps({ frames: [] });
 
-    const code = await main(argv(['--password', 'secret', '--yes']), io.io, fake.deps);
+    const code = await main(argv(["--password", "secret", "--yes"]), io.io, fake.deps);
 
     expect(code).toBe(1);
-    expect(io.err.join('\n')).toMatch(new RegExp(ROLL));
+    expect(io.err.join("\n")).toMatch(new RegExp(ROLL));
     expect(fake.created).toEqual([]);
   });
 
-  it('stops when the source holds no images', async () => {
+  it("stops when the source holds no images", async () => {
     rmSync(source, { recursive: true, force: true });
     mkdirSync(source);
     const io = recordIo();
     const fake = fakeDeps();
 
-    const code = await main(argv(['--password', 'secret', '--yes']), io.io, fake.deps);
+    const code = await main(argv(["--password", "secret", "--yes"]), io.io, fake.deps);
 
     expect(code).toBe(1);
-    expect(io.err.join('\n')).toMatch(/no image/i);
+    expect(io.err.join("\n")).toMatch(/no image/i);
   });
 
-  it('exits with 1 when a single file failed', async () => {
+  it("exits with 1 when a single file failed", async () => {
     const io = recordIo();
-    const fake = fakeDeps({ failCreate: ['img2.jpg'] });
+    const fake = fakeDeps({ failCreate: ["img2.jpg"] });
 
-    const code = await main(argv(['--password', 'secret', '--yes']), io.io, fake.deps);
+    const code = await main(argv(["--password", "secret", "--yes"]), io.io, fake.deps);
 
     expect(code).toBe(1);
-    expect(io.out.join('\n')).toMatch(/Uploaded 2 of 3/);
-    expect(io.err.join('\n')).toContain('img2.jpg');
+    expect(io.out.join("\n")).toMatch(/Uploaded 2 of 3/);
+    expect(io.err.join("\n")).toContain("img2.jpg");
   });
 
-  it('answers a usage mistake with the usage text and exit code 2', async () => {
+  it("answers a usage mistake with the usage text and exit code 2", async () => {
     const io = recordIo();
     const fake = fakeDeps();
 
-    const code = await main(['--server', SERVER, '--email', 'me@example.com', source], io.io, fake.deps);
+    const code = await main(
+      ["--server", SERVER, "--email", "me@example.com", source],
+      io.io,
+      fake.deps,
+    );
 
     expect(code).toBe(2);
-    expect(io.err.join('\n')).toContain('--roll');
-    expect(io.err.join('\n')).toContain('Usage: filmnotes-import');
+    expect(io.err.join("\n")).toContain("--roll");
+    expect(io.err.join("\n")).toContain("Usage: filmnotes-import");
     expect(fake.servers).toEqual([]);
   });
 
-  it('prints the usage with --help and exits with 0', async () => {
+  it("prints the usage with --help and exits with 0", async () => {
     const io = recordIo();
     const fake = fakeDeps();
 
-    const code = await main(['--help'], io.io, fake.deps);
+    const code = await main(["--help"], io.io, fake.deps);
 
     expect(code).toBe(0);
-    expect(io.out.join('\n')).toContain('Usage: filmnotes-import');
+    expect(io.out.join("\n")).toContain("Usage: filmnotes-import");
     expect(fake.servers).toEqual([]);
   });
 
-  it('reads the password from FILMNOTES_PASSWORD', async () => {
+  it("reads the password from FILMNOTES_PASSWORD", async () => {
     const io = recordIo();
     const fake = fakeDeps();
     const previous = process.env.FILMNOTES_PASSWORD;
-    process.env.FILMNOTES_PASSWORD = 'from-env';
+    process.env.FILMNOTES_PASSWORD = "from-env";
     try {
-      const code = await main(argv(['--yes']), io.io, fake.deps);
+      const code = await main(argv(["--yes"]), io.io, fake.deps);
       expect(code).toBe(0);
       expect(io.prompts).toEqual([]);
-      expect(fake.logins[0]!.password).toBe('from-env');
+      expect(fake.logins[0]!.password).toBe("from-env");
     } finally {
       if (previous === undefined) delete process.env.FILMNOTES_PASSWORD;
       else process.env.FILMNOTES_PASSWORD = previous;

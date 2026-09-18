@@ -1,22 +1,22 @@
-import { getLocales } from 'expo-localization';
-import i18next, { type i18n as I18nInstance } from 'i18next';
-import { initReactI18next } from 'react-i18next';
+import { getLocales } from "expo-localization";
+import i18next, { type i18n as I18nInstance } from "i18next";
+import { initReactI18next } from "react-i18next";
 
-import de from './common.de.json';
-import en from './common.en.json';
+import de from "./common.de.json";
+import en from "./common.en.json";
 
 /** Languages the UI ships with; `de` is the default. */
-export const SUPPORTED_LANGUAGES = ['de', 'en'] as const;
+export const SUPPORTED_LANGUAGES = ["de", "en"] as const;
 export type AppLanguage = (typeof SUPPORTED_LANGUAGES)[number];
 
 /** What `Settings.locale` can hold: an explicit language or "follow the device". */
-export type LocaleSetting = 'system' | AppLanguage;
+export type LocaleSetting = "system" | AppLanguage;
 
-export const DEFAULT_LANGUAGE: AppLanguage = 'de';
-export const DEFAULT_NAMESPACE = 'common';
+export const DEFAULT_LANGUAGE: AppLanguage = "de";
+export const DEFAULT_NAMESPACE = "common";
 
 function isSupported(value: string | null | undefined): value is AppLanguage {
-  return value === 'de' || value === 'en';
+  return value === "de" || value === "en";
 }
 
 /** The device language, or the default when the device speaks something else. */
@@ -33,7 +33,7 @@ export function deviceLanguage(): AppLanguage {
 
 /** Turns the persisted locale setting into a concrete language. */
 export function resolveLanguage(locale: LocaleSetting): AppLanguage {
-  return locale === 'system' ? deviceLanguage() : locale;
+  return locale === "system" ? deviceLanguage() : locale;
 }
 
 void i18next.use(initReactI18next).init({
@@ -65,8 +65,8 @@ export function registerFeatureTranslations(
   namespace: string,
   resources: { de: object; en: object },
 ): void {
-  i18n.addResourceBundle('de', namespace, resources.de, true, true);
-  i18n.addResourceBundle('en', namespace, resources.en, true, true);
+  i18n.addResourceBundle("de", namespace, resources.de, true, true);
+  i18n.addResourceBundle("en", namespace, resources.en, true, true);
 }
 
 export default i18n;

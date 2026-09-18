@@ -8,12 +8,12 @@
  * One broken file must not cost the rest of the roll, so each file is uploaded on its own and a
  * failure is collected instead of thrown.
  */
-import { readFile } from 'node:fs/promises';
+import { readFile } from "node:fs/promises";
 
-import type { Id, ScanAssignment } from '@filmnotes/domain';
-import { newId } from '@filmnotes/domain';
+import type { Id, ScanAssignment } from "@filmnotes/domain";
+import { newId } from "@filmnotes/domain";
 
-import type { ImageFile } from './files';
+import type { ImageFile } from "./files";
 
 /** The collection of the `scans` records, narrowed to what the upload needs. */
 export interface ScanCollection {
@@ -37,9 +37,9 @@ export interface UploadSummary {
 }
 
 /** The PocketBase collection the scan records live in (see `PB_COLLECTION` in the domain). */
-const SCANS = 'scans';
+const SCANS = "scans";
 /** The file field of that collection. */
-const FILE_FIELD = 'file';
+const FILE_FIELD = "file";
 
 function messageOf(error: unknown): string {
   return error instanceof Error ? error.message : String(error);
@@ -57,7 +57,7 @@ async function softDelete(
   recordId: string | null,
   timestamp: string,
 ): Promise<string> {
-  if (recordId === null) return '';
+  if (recordId === null) return "";
   try {
     await pb.collection(SCANS).update(recordId, {
       id: recordId,
@@ -102,7 +102,7 @@ export async function uploadPlan(
       continue;
     }
 
-    const target = assignment.frameNo === null ? '(unassigned)' : `#${assignment.frameNo}`;
+    const target = assignment.frameNo === null ? "(unassigned)" : `#${assignment.frameNo}`;
     let recordId: string | null = null;
     let timestamp = new Date().toISOString();
     try {

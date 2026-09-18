@@ -11,22 +11,22 @@
  * The version defaults to PB_VERSION_DEFAULT below and can be overridden with `PB_VERSION`.
  * `backend/bin/` is git-ignored; the binary is never committed.
  */
-import { chmodSync, lstatSync, mkdirSync, rmSync, symlinkSync, writeFileSync } from 'node:fs';
-import { access, constants } from 'node:fs/promises';
-import { spawnSync } from 'node:child_process';
-import { dirname, join, resolve } from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { chmodSync, lstatSync, mkdirSync, rmSync, symlinkSync, writeFileSync } from "node:fs";
+import { access, constants } from "node:fs/promises";
+import { spawnSync } from "node:child_process";
+import { dirname, join, resolve } from "node:path";
+import { fileURLToPath } from "node:url";
 
-const PB_VERSION_DEFAULT = '0.40.4';
+const PB_VERSION_DEFAULT = "0.40.4";
 
-const backendDir = resolve(dirname(fileURLToPath(import.meta.url)), '..');
-const binDir = join(backendDir, 'bin');
-const binPath = join(binDir, 'pocketbase');
+const backendDir = resolve(dirname(fileURLToPath(import.meta.url)), "..");
+const binDir = join(backendDir, "bin");
+const binPath = join(binDir, "pocketbase");
 
 /** @returns {string} `darwin_arm64` | `darwin_amd64` | `linux_amd64` | `linux_arm64` | `windows_amd64` */
 function releaseTarget(platform = process.platform, arch = process.arch) {
-  const os = { darwin: 'darwin', linux: 'linux', win32: 'windows' }[platform];
-  const cpu = { arm64: 'arm64', x64: 'amd64' }[arch];
+  const os = { darwin: "darwin", linux: "linux", win32: "windows" }[platform];
+  const cpu = { arm64: "arm64", x64: "amd64" }[arch];
   if (!os || !cpu) {
     throw new Error(`unsupported platform/arch combination: ${platform}/${arch}`);
   }
@@ -54,21 +54,21 @@ function replaceWithSymlink(target) {
 }
 
 async function extractZip(zipPath) {
-  const unzip = spawnSync('unzip', ['-o', '-q', zipPath, 'pocketbase', '-d', binDir], {
-    stdio: 'inherit',
+  const unzip = spawnSync("unzip", ["-o", "-q", zipPath, "pocketbase", "-d", binDir], {
+    stdio: "inherit",
   });
-  if (unzip.status === 0) return 'unzip';
+  if (unzip.status === 0) return "unzip";
 
   // No `unzip` CLI (or it failed): fall back to the pure-JS extractor.
-  const { unzipSync } = await import('fflate');
-  const { readFileSync } = await import('node:fs');
+  const { unzipSync } = await import("fflate");
+  const { readFileSync } = await import("node:fs");
   const files = unzipSync(new Uint8Array(readFileSync(zipPath)), {
-    filter: (file) => file.name === 'pocketbase' || file.name === 'pocketbase.exe',
+    filter: (file) => file.name === "pocketbase" || file.name === "pocketbase.exe",
   });
   const entry = Object.keys(files)[0];
   if (!entry) throw new Error(`no pocketbase executable inside ${zipPath}`);
   writeFileSync(binPath, Buffer.from(files[entry]));
-  return 'fflate';
+  return "fflate";
 }
 
 async function main() {
@@ -88,7 +88,7 @@ async function main() {
   const zipPath = join(binDir, zipName);
 
   console.log(`pocketbase: downloading ${url}`);
-  const response = await fetch(url, { redirect: 'follow' });
+  const response = await fetch(url, { redirect: "follow" });
   if (!response.ok) {
     throw new Error(`download failed: ${response.status} ${response.statusText} for ${url}`);
   }

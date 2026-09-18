@@ -21,7 +21,12 @@ setup:
       user: "0"
       description: PocketBase binary for backend integration tests (no-op with the template)
   startup:
-    - command: ["sh", "-c", "mkdir -p /home/agent/.ssh && chmod 700 /home/agent/.ssh && chmod 600 /home/agent/.ssh/config"]
+    - command:
+        [
+          "sh",
+          "-c",
+          "mkdir -p /home/agent/.ssh && chmod 700 /home/agent/.ssh && chmod 600 /home/agent/.ssh/config",
+        ]
   files:
     # Mirrors ~/.gitconfig-github-xela1601 on the host. No GPG signing in the sandbox: the private key stays on the host.
     - path: /home/agent/.gitconfig
@@ -67,8 +72,8 @@ permissions:
       - "*.expo.dev"
       - nodejs.org
       - deb.debian.org
-      - ports.ubuntu.com      # arm64 (Apple Silicon)
-      - archive.ubuntu.com    # amd64
+      - ports.ubuntu.com # arm64 (Apple Silicon)
+      - archive.ubuntu.com # amd64
       - security.ubuntu.com
       - security.debian.org
       - mise.jdx.dev

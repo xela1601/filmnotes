@@ -7,22 +7,22 @@
  * to be answered before the next one opens. A frame that fails does not stop the run; it ends up
  * in a list under the result.
  */
-import type { Id, Roll } from '@filmnotes/domain';
-import { listExporters, shareExporter, wordPressExporter } from '@filmnotes/exporters';
-import { router } from 'expo-router';
-import { useMemo, useState } from 'react';
-import { useTranslation } from 'react-i18next';
-import { StyleSheet, Text, View } from 'react-native';
-import { useShallow } from 'zustand/react/shallow';
+import type { Id, Roll } from "@filmnotes/domain";
+import { listExporters, shareExporter, wordPressExporter } from "@filmnotes/exporters";
+import { router } from "expo-router";
+import { useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
+import { StyleSheet, Text, View } from "react-native";
+import { useShallow } from "zustand/react/shallow";
 
-import { exportErrorReason } from './exportMessages';
-import { isWordPressConfigured, pairExportableFrames } from './exportModel';
-import { EXPORT_NAMESPACE } from './i18n';
-import { useFrameExporter } from './useFrameExporter';
-import { useEntity, useSettings } from '../../store/hooks';
-import { selectFramesForRoll, selectScansForRoll } from '../../store/selectors';
-import { useStore } from '../../store/store';
-import { Button, EmptyState, Screen, Section, SwitchField, useTheme } from '../../ui';
+import { exportErrorReason } from "./exportMessages";
+import { isWordPressConfigured, pairExportableFrames } from "./exportModel";
+import { EXPORT_NAMESPACE } from "./i18n";
+import { useFrameExporter } from "./useFrameExporter";
+import { useEntity, useSettings } from "../../store/hooks";
+import { selectFramesForRoll, selectScansForRoll } from "../../store/selectors";
+import { useStore } from "../../store/store";
+import { Button, EmptyState, Screen, Section, SwitchField, useTheme } from "../../ui";
 
 /** One frame that could not be exported, with the message to show for it. */
 interface ExportFailure {
@@ -37,12 +37,12 @@ export interface ExportRollScreenProps {
 
 export function ExportRollScreen({ rollId }: ExportRollScreenProps) {
   const { t } = useTranslation(EXPORT_NAMESPACE);
-  const roll = useEntity('rolls', rollId);
+  const roll = useEntity("rolls", rollId);
 
   if (roll === undefined || roll.deleted !== null) {
     return (
       <Screen testID="export-roll">
-        <EmptyState title={t('rollNotFound')} testID="export-roll-not-found" />
+        <EmptyState title={t("rollNotFound")} testID="export-roll-not-found" />
       </Screen>
     );
   }
@@ -115,19 +115,19 @@ function ExportRoll({ roll }: { roll: Roll }) {
   if (exportable.length === 0) {
     return (
       <Screen testID="export-roll">
-        <EmptyState title={t('roll.noFrames')} testID="export-roll-no-frames" />
+        <EmptyState title={t("roll.noFrames")} testID="export-roll-no-frames" />
       </Screen>
     );
   }
 
   return (
     <Screen testID="export-roll">
-      <Section title={t('target')}>
+      <Section title={t("target")}>
         {exporters.map((exporter) => (
           <Button
             key={exporter.id}
             title={t(exporter.nameKey)}
-            variant={exporter.id === exporterId ? 'primary' : 'secondary'}
+            variant={exporter.id === exporterId ? "primary" : "secondary"}
             disabled={!available(exporter.id) || running}
             onPress={() => setExporterId(exporter.id)}
             testID={`export-target-${exporter.id}`}
@@ -136,19 +136,19 @@ function ExportRoll({ roll }: { roll: Roll }) {
         {!wordPressReady && (
           <>
             <Text testID="export-wordpress-hint" style={muted}>
-              {t('notConfigured')}
+              {t("notConfigured")}
             </Text>
             <Button
-              title={t('configure')}
+              title={t("configure")}
               variant="secondary"
-              onPress={() => router.push('/settings/wordpress')}
+              onPress={() => router.push("/settings/wordpress")}
               testID="export-configure-wordpress"
             />
           </>
         )}
       </Section>
 
-      <Section title={t('roll.frames')}>
+      <Section title={t("roll.frames")}>
         {exportable.map(({ frame, scan }) => (
           <SwitchField
             key={frame.id}
@@ -160,13 +160,13 @@ function ExportRoll({ roll }: { roll: Roll }) {
         ))}
         <View style={styles.row}>
           <Button
-            title={t('roll.selectAll')}
+            title={t("roll.selectAll")}
             variant="secondary"
             onPress={() => setSelected(exportable.map((entry) => entry.frame.id))}
             testID="export-select-all"
           />
           <Button
-            title={t('roll.selectNone')}
+            title={t("roll.selectNone")}
             variant="secondary"
             onPress={() => setSelected([])}
             testID="export-select-none"
@@ -176,25 +176,25 @@ function ExportRoll({ roll }: { roll: Roll }) {
 
       <View style={styles.actions}>
         <Button
-          title={t('roll.run', { count: selected.length })}
+          title={t("roll.run", { count: selected.length })}
           onPress={() => void run()}
           disabled={running || selected.length === 0 || !available(exporterId)}
           testID="export-roll-run"
         />
         {running && (
           <Text testID="export-progress" style={{ color: palette.text, fontSize: fontSize.md }}>
-            {t('roll.progress', { done, total })}
+            {t("roll.progress", { done, total })}
           </Text>
         )}
         {result !== null && (
           <Text testID="export-roll-result" style={{ color: palette.text, fontSize: fontSize.md }}>
-            {t('roll.done', { ok: result.ok, total: result.total })}
+            {t("roll.done", { ok: result.ok, total: result.total })}
           </Text>
         )}
         {failures.length > 0 && (
           <View style={styles.failures}>
             <Text style={{ color: palette.danger, fontSize: fontSize.sm }}>
-              {t('roll.failures')}
+              {t("roll.failures")}
             </Text>
             {failures.map((failure) => (
               <Text
@@ -202,7 +202,7 @@ function ExportRoll({ roll }: { roll: Roll }) {
                 testID={`export-failure-${failure.frameId}`}
                 style={{ color: palette.danger, fontSize: fontSize.sm }}
               >
-                {t('roll.failure', { frameNo: failure.frameNo, message: failure.message })}
+                {t("roll.failure", { frameNo: failure.frameNo, message: failure.message })}
               </Text>
             ))}
           </View>
@@ -213,7 +213,7 @@ function ExportRoll({ roll }: { roll: Roll }) {
 }
 
 const styles = StyleSheet.create({
-  row: { flexDirection: 'row', gap: 12, flexWrap: 'wrap' },
+  row: { flexDirection: "row", gap: 12, flexWrap: "wrap" },
   actions: { gap: 12 },
   failures: { gap: 4 },
 });

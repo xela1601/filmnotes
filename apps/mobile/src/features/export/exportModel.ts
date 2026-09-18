@@ -5,30 +5,26 @@
  * interesting part – which caption a frame produces, which WordPress config the settings add up
  * to – is unit-tested without rendering anything.
  */
-import { buildCaption, type ExportLog, type Frame, type Id, type Scan } from '@filmnotes/domain';
+import { buildCaption, type ExportLog, type Frame, type Id, type Scan } from "@filmnotes/domain";
 import {
   wordPressConfigSchema,
   type ExportImage,
   type ExportInput,
   type WordPressConfig,
-} from '@filmnotes/exporters';
+} from "@filmnotes/exporters";
 
-import { resolveLanguage } from '../../i18n';
+import { resolveLanguage } from "../../i18n";
 import {
   selectActive,
   selectEquipmentForCaption,
   selectFramesForRoll,
   selectScansForRoll,
   type CaptionEquipment,
-} from '../../store/selectors';
-import type { AppState, Settings } from '../../store/store';
+} from "../../store/selectors";
+import type { AppState, Settings } from "../../store/store";
 
 /** The caption of a frame, built with the template, hashtags and locale from the settings. */
-function captionWith(
-  settings: Settings,
-  frame: Frame,
-  equipment: CaptionEquipment,
-): string {
+function captionWith(settings: Settings, frame: Frame, equipment: CaptionEquipment): string {
   return buildCaption({
     frame,
     roll: equipment.roll,
@@ -96,13 +92,13 @@ export function wordPressConfigFor(
   settings: Settings,
   appPassword: string | null,
 ): WordPressConfig | null {
-  if (appPassword === null || appPassword === '') return null;
+  if (appPassword === null || appPassword === "") return null;
 
   const candidate = {
-    siteUrl: settings.wordpressSiteUrl ?? '',
-    username: settings.wordpressUsername ?? '',
+    siteUrl: settings.wordpressSiteUrl ?? "",
+    username: settings.wordpressUsername ?? "",
     appPassword,
-    status: 'draft',
+    status: "draft",
     categoryIds: [],
     tagIds: [],
   };
@@ -121,7 +117,7 @@ export function selectScanForFrame(state: AppState, frame: Frame): Scan | null {
 
 /** Past exports of a frame, most recent first. */
 export function selectExportLogsForFrame(state: AppState, frameId: Id): ExportLog[] {
-  return selectActive(state, 'exportLogs')
+  return selectActive(state, "exportLogs")
     .filter((log) => log.frameId === frameId)
     .sort((a, b) => b.exportedAt.localeCompare(a.exportedAt));
 }
@@ -150,5 +146,8 @@ export function pairExportableFrames(frames: Frame[], scans: Scan[]): Exportable
 
 /** The frames of a roll a roll export offers, in frame order. */
 export function selectExportableFrames(state: AppState, rollId: Id): ExportableFrame[] {
-  return pairExportableFrames(selectFramesForRoll(state, rollId), selectScansForRoll(state, rollId));
+  return pairExportableFrames(
+    selectFramesForRoll(state, rollId),
+    selectScansForRoll(state, rollId),
+  );
 }

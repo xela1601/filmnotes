@@ -9,6 +9,7 @@
 **Interfaces consumed:** `useStore`, selectors, `ui/*`, `registerFeatureTranslations` (T-005); `newFrame`, `nextFrameNo`, `newId` (T-002/T-001); `FilmStock`, `Camera` presets are already in the store (seeded).
 
 **Interfaces produced:**
+
 ```ts
 // src/features/rolls/rollForm.ts  (pure)
 interface RollFormValues { cameraId: Id | null; filmStockId: Id | null; isoSet: number | null; isoSource: IsoSource; exposures: 24 | 36; pushPullEv: number; loadedAt: ISODateTime; lab: string; notes: string }

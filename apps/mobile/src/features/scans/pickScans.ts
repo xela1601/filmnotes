@@ -5,11 +5,11 @@
  * both go through the same interface and end up as a list of `PickedFile`s the review
  * screen shows and the uploader posts (spec §3.3).
  */
-import * as DocumentPicker from 'expo-document-picker';
-import { Directory, File, Paths } from 'expo-file-system';
-import { unzipSync } from 'fflate';
-import { Platform } from 'react-native';
-import { naturalCompare } from '@filmnotes/domain';
+import * as DocumentPicker from "expo-document-picker";
+import { Directory, File, Paths } from "expo-file-system";
+import { unzipSync } from "fflate";
+import { Platform } from "react-native";
+import { naturalCompare } from "@filmnotes/domain";
 
 /**
  * One file ready to be reviewed and uploaded.
@@ -34,30 +34,30 @@ export interface PickedFile {
  * not a scan (`readme.txt`, a contact sheet PDF, the `__MACOSX` bookkeeping).
  */
 const IMAGE_TYPES: Record<string, string> = {
-  jpg: 'image/jpeg',
-  jpeg: 'image/jpeg',
-  png: 'image/png',
-  tif: 'image/tiff',
-  tiff: 'image/tiff',
-  webp: 'image/webp',
-  heic: 'image/heic',
-  heif: 'image/heif',
+  jpg: "image/jpeg",
+  jpeg: "image/jpeg",
+  png: "image/png",
+  tif: "image/tiff",
+  tiff: "image/tiff",
+  webp: "image/webp",
+  heic: "image/heic",
+  heif: "image/heif",
 };
 
 /** Sub-directory of the cache the unzipped entries are written to. */
-const CACHE_FOLDER = 'filmnotes-scans';
+const CACHE_FOLDER = "filmnotes-scans";
 
-const FALLBACK_MIME_TYPE = 'application/octet-stream';
+const FALLBACK_MIME_TYPE = "application/octet-stream";
 
 /** The last path segment of a ZIP entry or picker asset name. */
 function baseName(path: string): string {
-  const segments = path.split('/');
+  const segments = path.split("/");
   return segments[segments.length - 1] ?? path;
 }
 
 /** The MIME type for a file name, or `null` when it is not an image we accept. */
 function imageTypeOf(name: string): string | null {
-  const dot = name.lastIndexOf('.');
+  const dot = name.lastIndexOf(".");
   if (dot <= 0) return null;
   return IMAGE_TYPES[name.slice(dot + 1).toLowerCase()] ?? null;
 }
@@ -67,14 +67,12 @@ function imageTypeOf(name: string): string | null {
  * creates. Those entries carry the same names as the images and would double the import.
  */
 function isMacOsMetadata(path: string): boolean {
-  return path.split('/').some((segment) => segment === '__MACOSX' || segment.startsWith('._'));
+  return path.split("/").some((segment) => segment === "__MACOSX" || segment.startsWith("._"));
 }
 
 /** True for a file the user picked as a ZIP archive rather than a single image. */
 export function isZip(file: PickedFile): boolean {
-  return (
-    file.name.toLowerCase().endsWith('.zip') || file.mimeType.toLowerCase().includes('zip')
-  );
+  return file.name.toLowerCase().endsWith(".zip") || file.mimeType.toLowerCase().includes("zip");
 }
 
 function toPickedFile(asset: DocumentPicker.DocumentPickerAsset): PickedFile {
@@ -97,7 +95,7 @@ function toPickedFile(asset: DocumentPicker.DocumentPickerAsset): PickedFile {
  */
 export async function pickScanFiles(): Promise<PickedFile[]> {
   const result = await DocumentPicker.getDocumentAsync({
-    type: ['image/*', 'application/zip'],
+    type: ["image/*", "application/zip"],
     multiple: true,
     copyToCacheDirectory: true,
   });
@@ -113,10 +111,10 @@ async function readBytes(file: PickedFile): Promise<Uint8Array> {
 
 function objectUrl(blob: Blob): string {
   // Not every runtime that reports itself as web has it (jsdom without the URL shim).
-  if (typeof URL !== 'undefined' && typeof URL.createObjectURL === 'function') {
+  if (typeof URL !== "undefined" && typeof URL.createObjectURL === "function") {
     return URL.createObjectURL(blob);
   }
-  return '';
+  return "";
 }
 
 /**
@@ -126,13 +124,8 @@ function objectUrl(blob: Blob): string {
  * `index` only disambiguates the file on disk – two directories inside one archive may
  * well hold an `1.jpg` each, and their `name` stays what the lab called them.
  */
-function materialize(
-  name: string,
-  mimeType: string,
-  bytes: Uint8Array,
-  index: number,
-): PickedFile {
-  if (Platform.OS === 'web') {
+function materialize(name: string, mimeType: string, bytes: Uint8Array, index: number): PickedFile {
+  if (Platform.OS === "web") {
     const blob = new Blob([bytes as BlobPart], { type: mimeType });
     return { name, uri: objectUrl(blob), mimeType, size: bytes.length, blob };
   }
@@ -167,7 +160,5 @@ export async function expandZip(file: PickedFile): Promise<PickedFile[]> {
   }
   images.sort((a, b) => naturalCompare(a.name, b.name));
 
-  return images.map((entry, index) =>
-    materialize(entry.name, entry.mimeType, entry.bytes, index),
-  );
+  return images.map((entry, index) => materialize(entry.name, entry.mimeType, entry.bytes, index));
 }

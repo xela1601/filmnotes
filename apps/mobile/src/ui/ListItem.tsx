@@ -1,7 +1,7 @@
-import type { ReactNode } from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import type { ReactNode } from "react";
+import { Pressable, StyleSheet, Text, View } from "react-native";
 
-import { useTheme } from './theme';
+import { useTheme } from "./theme";
 
 export interface ListItemProps {
   title: string;
@@ -17,7 +17,7 @@ export function ListItem({ title, subtitle, right, onPress, testID }: ListItemPr
   return (
     <Pressable
       testID={testID}
-      accessibilityRole={onPress === undefined ? undefined : 'button'}
+      accessibilityRole={onPress === undefined ? undefined : "button"}
       disabled={onPress === undefined}
       onPress={onPress}
       style={[styles.row, { borderColor: palette.border }]}
@@ -36,12 +36,12 @@ export function ListItem({ title, subtitle, right, onPress, testID }: ListItemPr
 const styles = StyleSheet.create({
   row: {
     minHeight: 56,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
     gap: 12,
     borderBottomWidth: StyleSheet.hairlineWidth,
   },
   texts: { flexShrink: 1, gap: 2 },
-  title: { fontWeight: '600' },
+  title: { fontWeight: "600" },
 });

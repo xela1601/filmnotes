@@ -79,7 +79,7 @@ packages/domain/src/index.ts
 ```js
 /** Runs every workspace's own jest config as a project. */
 module.exports = {
-  projects: ['<rootDir>/packages/*', '<rootDir>/apps/*', '<rootDir>/tools/*'],
+  projects: ["<rootDir>/packages/*", "<rootDir>/apps/*", "<rootDir>/tools/*"],
 };
 ```
 
@@ -107,6 +107,7 @@ backend/test/pb_data_*/
 - [ ] **Step 5: packages/domain package files**
 
 `packages/domain/package.json`
+
 ```json
 {
   "name": "@filmnotes/domain",
@@ -119,34 +120,41 @@ backend/test/pb_data_*/
 ```
 
 `packages/domain/tsconfig.json`
+
 ```json
-{ "extends": "../../tsconfig.base.json", "compilerOptions": { "rootDir": "src", "outDir": "dist", "composite": true }, "include": ["src"] }
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": { "rootDir": "src", "outDir": "dist", "composite": true },
+  "include": ["src"]
+}
 ```
 
 `packages/domain/jest.config.js`
+
 ```js
 module.exports = {
-  displayName: 'domain',
-  preset: 'ts-jest',
-  testEnvironment: 'node',
-  roots: ['<rootDir>/src'],
+  displayName: "domain",
+  preset: "ts-jest",
+  testEnvironment: "node",
+  roots: ["<rootDir>/src"],
 };
 ```
 
 - [ ] **Step 6: Write the failing test for `newId`**
 
 `packages/domain/src/id.test.ts`
-```ts
-import { newId, ID_PATTERN } from './id';
 
-describe('newId', () => {
-  it('returns 15 lowercase alphanumeric characters (PocketBase id format)', () => {
+```ts
+import { newId, ID_PATTERN } from "./id";
+
+describe("newId", () => {
+  it("returns 15 lowercase alphanumeric characters (PocketBase id format)", () => {
     const id = newId();
     expect(id).toMatch(ID_PATTERN);
     expect(id).toHaveLength(15);
   });
 
-  it('is unique across many calls', () => {
+  it("is unique across many calls", () => {
     const ids = new Set(Array.from({ length: 5000 }, () => newId()));
     expect(ids.size).toBe(5000);
   });
@@ -161,7 +169,7 @@ describe('newId', () => {
 /** PocketBase's default record id format: 15 lowercase alphanumerics. */
 export const ID_PATTERN = /^[a-z0-9]{15}$/;
 
-const ALPHABET = 'abcdefghijklmnopqrstuvwxyz0123456789';
+const ALPHABET = "abcdefghijklmnopqrstuvwxyz0123456789";
 
 function randomBytes(length: number): Uint8Array {
   const bytes = new Uint8Array(length);
@@ -172,7 +180,7 @@ function randomBytes(length: number): Uint8Array {
 
 export function newId(): string {
   const bytes = randomBytes(15);
-  let id = '';
+  let id = "";
   for (const byte of bytes) id += ALPHABET[byte % ALPHABET.length];
   return id;
 }
@@ -198,16 +206,16 @@ export interface SyncedRecord {
   owner: Id | null;
 }
 
-export type ExposureMode = 'P' | 'A' | 'S' | 'M';
-export type FocusMode = 'AF' | 'M';
-export type AfResult = 'green' | 'red_blink' | 'manual';
-export type DriveMode = 'S' | 'C' | 'ST';
-export type FlashHead = 'direct' | 'bounce';
-export type Support = 'handheld' | 'braced' | 'tripod' | 'beanbag';
-export type AfCompatibility = 'yes' | 'no' | 'limited';
-export type FilmProcess = 'C41' | 'BW' | 'E6';
-export type RollStatus = 'loaded' | 'shot' | 'at_lab' | 'developed' | 'archived';
-export type IsoSource = 'DX' | 'manual';
+export type ExposureMode = "P" | "A" | "S" | "M";
+export type FocusMode = "AF" | "M";
+export type AfResult = "green" | "red_blink" | "manual";
+export type DriveMode = "S" | "C" | "ST";
+export type FlashHead = "direct" | "bounce";
+export type Support = "handheld" | "braced" | "tripod" | "beanbag";
+export type AfCompatibility = "yes" | "no" | "limited";
+export type FilmProcess = "C41" | "BW" | "E6";
+export type RollStatus = "loaded" | "shot" | "at_lab" | "developed" | "archived";
+export type IsoSource = "DX" | "manual";
 
 /**
  * Shutter speed as displayed on the camera:
@@ -234,7 +242,7 @@ export interface Camera extends SyncedRecord {
   model: string;
   aliases: string[];
   year: number | null;
-  format: string;          // "135"
+  format: string; // "135"
   mount: string | null;
   exposureModes: ExposureMode[];
   /** Whole-stop speeds selectable in S/M, including "bulb" if supported. */
@@ -258,8 +266,8 @@ export interface Lens extends SyncedRecord {
   model: string;
   focalMinMm: number;
   focalMaxMm: number;
-  maxAperture: number;     // widest, e.g. 1.7
-  minAperture: number;     // smallest, e.g. 22
+  maxAperture: number; // widest, e.g. 1.7
+  minAperture: number; // smallest, e.g. 22
   apertureValues: number[];
   filterThreadMm: number | null;
   minFocusM: number | null;
@@ -287,7 +295,7 @@ export interface Flash extends SyncedRecord {
   make: string;
   model: string;
   guideNumberIso100M: number | null;
-  powerLevels: string[];      // ["Hi", "Lo"]
+  powerLevels: string[]; // ["Hi", "Lo"]
   headPositions: FlashHead[];
   afIlluminator: boolean;
   sync: ShutterSpeed | null;
@@ -348,8 +356,8 @@ export interface Frame extends SyncedRecord {
   lensHood: boolean;
   support: Support | null;
   beepWarning: boolean;
-  light: string | null;      // sun, cloudy, shade, indoor_window, indoor_artificial, night, backlight, snow_beach – free
-  subject: string | null;    // portrait, landscape, street, sport, macro, group, night, other – free
+  light: string | null; // sun, cloudy, shade, indoor_window, indoor_artificial, night, backlight, snow_beach – free
+  subject: string | null; // portrait, landscape, street, sport, macro, group, night, other – free
   location: FrameLocation | null;
   notes: string;
 }
@@ -368,29 +376,50 @@ export interface Scan extends SyncedRecord {
 
 export interface ExportLog extends SyncedRecord {
   frameId: Id;
-  target: string;            // 'wordpress' | 'share' | future ids
+  target: string; // 'wordpress' | 'share' | future ids
   externalId: string | null;
   url: string | null;
   exportedAt: ISODateTime;
 }
 
 export type CollectionName =
-  | 'cameras' | 'lenses' | 'filters' | 'flashes' | 'filmStocks'
-  | 'rolls' | 'frames' | 'scans' | 'exportLogs';
+  | "cameras"
+  | "lenses"
+  | "filters"
+  | "flashes"
+  | "filmStocks"
+  | "rolls"
+  | "frames"
+  | "scans"
+  | "exportLogs";
 
 export interface EntityMap {
-  cameras: Camera; lenses: Lens; filters: Filter; flashes: Flash; filmStocks: FilmStock;
-  rolls: Roll; frames: Frame; scans: Scan; exportLogs: ExportLog;
+  cameras: Camera;
+  lenses: Lens;
+  filters: Filter;
+  flashes: Flash;
+  filmStocks: FilmStock;
+  rolls: Roll;
+  frames: Frame;
+  scans: Scan;
+  exportLogs: ExportLog;
 }
 export type EntityOf<K extends CollectionName> = EntityMap[K];
 
 /** Maps store collection names to PocketBase collection names. */
 export const PB_COLLECTION: Record<CollectionName, string> = {
-  cameras: 'cameras', lenses: 'lenses', filters: 'filters', flashes: 'flashes', filmStocks: 'film_stocks',
-  rolls: 'rolls', frames: 'frames', scans: 'scans', exportLogs: 'export_logs',
+  cameras: "cameras",
+  lenses: "lenses",
+  filters: "filters",
+  flashes: "flashes",
+  filmStocks: "film_stocks",
+  rolls: "rolls",
+  frames: "frames",
+  scans: "scans",
+  exportLogs: "export_logs",
 };
 
-export type IssueLevel = 'error' | 'warning' | 'info';
+export type IssueLevel = "error" | "warning" | "info";
 export interface ValidationIssue {
   level: IssueLevel;
   /** stable code, doubles as i18n key suffix: validation.<code> */
@@ -414,8 +443,8 @@ export interface FrameContext {
 - [ ] **Step 11: `index.ts`**
 
 ```ts
-export * from './types';
-export * from './id';
+export * from "./types";
+export * from "./id";
 ```
 
 - [ ] **Step 12: CLAUDE.md (repo root)**

@@ -9,6 +9,7 @@
 **Interfaces consumed:** store (`upsert`, `softDelete`, `useActive`), ui kit, i18n (T-005); `newId` (T-001).
 
 **Interfaces produced:**
+
 ```ts
 // src/features/equipment/descriptors.ts
 export type EquipmentType = 'cameras' | 'lenses' | 'filters' | 'flashes' | 'filmStocks';

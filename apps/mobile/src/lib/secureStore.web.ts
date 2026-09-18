@@ -4,9 +4,9 @@
  * expo-secure-store has no web backend, so the browser keeps the secrets in
  * localStorage. Metro picks this file automatically for `platform === 'web'`.
  */
-export type SecretKey = 'serverPassword' | 'serverToken' | 'wordpressAppPassword';
+export type SecretKey = "serverPassword" | "serverToken" | "wordpressAppPassword";
 
-const PREFIX = 'filmnotes.secret.';
+const PREFIX = "filmnotes.secret.";
 
 function storage(): Storage | null {
   try {

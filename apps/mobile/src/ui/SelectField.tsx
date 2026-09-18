@@ -1,8 +1,8 @@
-import { useState } from 'react';
-import { Modal, Pressable, StyleSheet, Text, View } from 'react-native';
+import { useState } from "react";
+import { Modal, Pressable, StyleSheet, Text, View } from "react-native";
 
-import { FieldLabel } from './FieldLabel';
-import { useTheme } from './theme';
+import { FieldLabel } from "./FieldLabel";
+import { useTheme } from "./theme";
 
 export interface SelectOption<T> {
   value: T;
@@ -80,8 +80,13 @@ export function SelectField<T extends string | number>({
         onPress={() => setPickerOpen(true)}
         style={[styles.trigger, { borderColor: palette.border }]}
       >
-        <Text style={{ color: selected === null ? palette.textMuted : palette.text, fontSize: fontSize.md }}>
-          {selected?.label ?? '–'}
+        <Text
+          style={{
+            color: selected === null ? palette.textMuted : palette.text,
+            fontSize: fontSize.md,
+          }}
+        >
+          {selected?.label ?? "–"}
         </Text>
       </Pressable>
       <Modal visible={pickerOpen} animationType="slide" onRequestClose={() => setPickerOpen(false)}>
@@ -131,13 +136,11 @@ function Segment({ label, active, onPress, testID }: OptionProps) {
         styles.segment,
         {
           borderColor: palette.border,
-          backgroundColor: active ? palette.primary : 'transparent',
+          backgroundColor: active ? palette.primary : "transparent",
         },
       ]}
     >
-      <Text
-        style={{ color: active ? palette.onPrimary : palette.text, fontSize: fontSize.md }}
-      >
+      <Text style={{ color: active ? palette.onPrimary : palette.text, fontSize: fontSize.md }}>
         {label}
       </Text>
     </Pressable>
@@ -158,7 +161,7 @@ function ModalOption({ label, active, onPress, testID }: OptionProps) {
         style={{
           color: active ? palette.primary : palette.text,
           fontSize: fontSize.md,
-          fontWeight: active ? '700' : '400',
+          fontWeight: active ? "700" : "400",
         }}
       >
         {label}
@@ -169,28 +172,28 @@ function ModalOption({ label, active, onPress, testID }: OptionProps) {
 
 const styles = StyleSheet.create({
   field: { gap: 4 },
-  segments: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
+  segments: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
   segment: {
     minHeight: 44,
     minWidth: 48,
     paddingHorizontal: 12,
     borderWidth: StyleSheet.hairlineWidth,
     borderRadius: 6,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
   },
   trigger: {
     minHeight: 44,
-    justifyContent: 'center',
+    justifyContent: "center",
     paddingHorizontal: 12,
     borderWidth: StyleSheet.hairlineWidth,
     borderRadius: 6,
   },
   modal: { flex: 1, padding: 16, gap: 8 },
-  modalTitle: { fontWeight: '700', marginBottom: 8 },
+  modalTitle: { fontWeight: "700", marginBottom: 8 },
   modalOption: {
     minHeight: 48,
-    justifyContent: 'center',
+    justifyContent: "center",
     borderBottomWidth: StyleSheet.hairlineWidth,
   },
 });

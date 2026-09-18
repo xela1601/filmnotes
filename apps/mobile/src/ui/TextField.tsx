@@ -1,7 +1,7 @@
-import { StyleSheet, TextInput, View } from 'react-native';
+import { StyleSheet, TextInput, View } from "react-native";
 
-import { FieldLabel } from './FieldLabel';
-import { useTheme } from './theme';
+import { FieldLabel } from "./FieldLabel";
+import { useTheme } from "./theme";
 
 export interface TextFieldProps {
   label: string;
@@ -35,8 +35,8 @@ export function TextField({
         onChangeText={onChangeText}
         multiline={multiline}
         secureTextEntry={secret}
-        autoComplete={secret ? 'current-password' : undefined}
-        autoCapitalize={secret ? 'none' : undefined}
+        autoComplete={secret ? "current-password" : undefined}
+        autoCapitalize={secret ? "none" : undefined}
         autoCorrect={secret ? false : undefined}
         placeholder={placeholder}
         placeholderTextColor={palette.textMuted}
@@ -53,5 +53,5 @@ export function TextField({
 const styles = StyleSheet.create({
   field: { gap: 4 },
   input: { borderWidth: StyleSheet.hairlineWidth, borderRadius: 6, padding: 12, minHeight: 44 },
-  multiline: { minHeight: 88, textAlignVertical: 'top' },
+  multiline: { minHeight: 88, textAlignVertical: "top" },
 });

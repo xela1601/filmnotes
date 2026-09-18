@@ -1,8 +1,8 @@
-import type { IssueLevel, ValidationIssue } from '@filmnotes/domain';
-import { useTranslation } from 'react-i18next';
-import { StyleSheet, Text, View } from 'react-native';
+import type { IssueLevel, ValidationIssue } from "@filmnotes/domain";
+import { useTranslation } from "react-i18next";
+import { StyleSheet, Text, View } from "react-native";
 
-import { useTheme } from './theme';
+import { useTheme } from "./theme";
 
 export interface IssueListProps {
   issues: ValidationIssue[];
@@ -17,14 +17,14 @@ export function IssueList({ issues, testID }: IssueListProps) {
   if (issues.length === 0) return null;
 
   const colorFor = (level: IssueLevel): string =>
-    level === 'error' ? palette.danger : level === 'warning' ? palette.warning : palette.info;
+    level === "error" ? palette.danger : level === "warning" ? palette.warning : palette.info;
 
   return (
     <View testID={testID} style={styles.list}>
       {issues.map((issue, index) => (
         <Text
           // Codes can repeat per field (e.g. several mismatching filters), so include the index.
-          key={`${issue.code}-${issue.field ?? 'none'}-${index}`}
+          key={`${issue.code}-${issue.field ?? "none"}-${index}`}
           testID={testID === undefined ? undefined : `${testID}-${issue.code}`}
           style={[styles.issue, { color: colorFor(issue.level), fontSize: fontSize.sm }]}
         >
@@ -37,5 +37,5 @@ export function IssueList({ issues, testID }: IssueListProps) {
 
 const styles = StyleSheet.create({
   list: { gap: 4 },
-  issue: { fontWeight: '500' },
+  issue: { fontWeight: "500" },
 });

@@ -10,5 +10,5 @@
  * `npm run build -w @filmnotes/scan-import` (`tsc -b`) still type-checks the workspace and emits
  * declarations; it just is not what the binary runs.
  */
-require('tsx/cjs');
-require('../src/cli.ts');
+require("tsx/cjs");
+require("../src/cli.ts");

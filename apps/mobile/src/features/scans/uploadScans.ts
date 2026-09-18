@@ -11,12 +11,12 @@
  * the rest of the roll. The names that did not make it come back in `failed`, and running
  * the import again for those is a plain repeat.
  */
-import { newId, PB_COLLECTION, naturalCompare } from '@filmnotes/domain';
-import type { Id, ISODateTime, Scan, ScanAssignment } from '@filmnotes/domain';
+import { newId, PB_COLLECTION, naturalCompare } from "@filmnotes/domain";
+import type { Id, ISODateTime, Scan, ScanAssignment } from "@filmnotes/domain";
 
-import type { PickedFile } from './pickScans';
-import type { SyncClient, UploadFile } from '../../sync/client';
-import { toRemote } from '../../sync/mapping';
+import type { PickedFile } from "./pickScans";
+import type { SyncClient, UploadFile } from "../../sync/client";
+import { toRemote } from "../../sync/mapping";
 
 export interface UploadScansDeps {
   client: SyncClient;
@@ -27,7 +27,7 @@ export interface UploadScansDeps {
   /** The reviewed mapping, by `sortIndex` of the natural file order. */
   assignments: ScanAssignment[];
   /** The store's `upsert`, narrowed to what this module writes. */
-  upsert: (collection: 'scans', record: Scan) => void;
+  upsert: (collection: "scans", record: Scan) => void;
   now: () => ISODateTime;
 }
 
@@ -38,7 +38,7 @@ export interface UploadScansResult {
 }
 
 /** The file field of the `scans` collection. */
-const FILE_FIELD = 'file';
+const FILE_FIELD = "file";
 
 /** Either form `SyncClient.uploadFile` accepts: the web Blob or the local file. */
 function asUpload(file: PickedFile): UploadFile {
@@ -82,19 +82,14 @@ export async function uploadScans(deps: UploadScansDeps): Promise<UploadScansRes
     };
 
     try {
-      await deps.client.create(collection, toRemote('scans', scan, deps.ownerId));
-      const remote = await deps.client.uploadFile(
-        collection,
-        scan.id,
-        FILE_FIELD,
-        asUpload(file),
-      );
+      await deps.client.create(collection, toRemote("scans", scan, deps.ownerId));
+      const remote = await deps.client.uploadFile(collection, scan.id, FILE_FIELD, asUpload(file));
       // PocketBase renames an uploaded file (it appends a random suffix), and that name
       // is what the file URL needs.
       const stored = remote[FILE_FIELD];
-      deps.upsert('scans', {
+      deps.upsert("scans", {
         ...scan,
-        file: typeof stored === 'string' && stored !== '' ? stored : file.name,
+        file: typeof stored === "string" && stored !== "" ? stored : file.name,
       });
       uploaded += 1;
     } catch {

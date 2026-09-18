@@ -6,10 +6,10 @@
  * (`matchScansToFrames`, `shiftAssignments`); this module only adds the explicit pick,
  * which needs a frame lookup and therefore the roll's frames.
  */
-import { matchScansToFrames, shiftAssignments } from '@filmnotes/domain';
-import type { Frame, Id, ScanAssignment } from '@filmnotes/domain';
+import { matchScansToFrames, shiftAssignments } from "@filmnotes/domain";
+import type { Frame, Id, ScanAssignment } from "@filmnotes/domain";
 
-import type { PickedFile } from './pickScans';
+import type { PickedFile } from "./pickScans";
 
 /** The initial proposal: the n-th file in natural name order onto the n-th frame. */
 export function buildAssignments(files: PickedFile[], frames: Frame[]): ScanAssignment[] {
@@ -49,7 +49,7 @@ export function assignTo(
   const target =
     frameId === null
       ? null
-      : frames.find((frame) => frame.id === frameId && frame.deleted === null) ?? null;
+      : (frames.find((frame) => frame.id === frameId && frame.deleted === null) ?? null);
   if (frameId !== null && target === null) return assignments;
 
   return assignments.map((assignment) => {

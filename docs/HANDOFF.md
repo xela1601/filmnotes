@@ -26,6 +26,7 @@ npm --version
 git --version
 unzip -v | head -1  # optional, used by backend fetch script
 ```
+
 Docker is **not** available inside the sandbox; the backend is tested with the PocketBase binary.
 The sandbox provides it at `$FILMNOTES_PB_BIN` (`/opt/pocketbase/pocketbase`); T-004's fetch script
 must use that path when the variable is set and only download otherwise.
@@ -43,6 +44,7 @@ git config user.email           # must print github@alexander-schreiner.de – i
 git add prompt.md Minolta_7000_AF_Preset.md docs .claude .npmrc sandbox sbxenv.yaml
 git commit -m "docs: project brief, design spec, ticket plan and sandbox setup"
 ```
+
 Commit trailer for every commit: `Co-Authored-By: Claude <noreply@anthropic.com>` (use the model
 name the session reports).
 
@@ -74,6 +76,7 @@ Wave order and dependencies are in `docs/tickets/README.md`. Wave 1 = T-002, T-0
 in parallel. Wave 2 = T-006, T-007, T-008, T-010. Wave 3 = T-009, T-011, T-012, T-013, then T-014.
 
 Rules for the agents (copy into every prompt):
+
 - Only edit paths under your ticket's **Owns**. Never edit root config or another ticket's files.
 - Failing test first. Root `npm test` green before reporting done.
 - If a needed interface from another ticket is missing in your worktree (because that ticket is not

@@ -1,8 +1,8 @@
-import type { CollectionName, EntityOf, Id } from '@filmnotes/domain';
-import { useShallow } from 'zustand/react/shallow';
+import type { CollectionName, EntityOf, Id } from "@filmnotes/domain";
+import { useShallow } from "zustand/react/shallow";
 
-import { selectActive } from './selectors';
-import { useStore, type Settings } from './store';
+import { selectActive } from "./selectors";
+import { useStore, type Settings } from "./store";
 
 /** A single record by id; `undefined` while it does not exist (or `id` is null). */
 export function useEntity<K extends CollectionName>(

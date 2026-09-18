@@ -9,6 +9,7 @@
 **Interfaces consumed:** `matchScansToFrames`, `shiftAssignments`, `ScanAssignment` (T-002); `SyncClient.uploadFile/create/fileUrl` via `createPocketBaseClient` (T-008); store `upsert('scans', …)`, `selectScansForRoll`, `selectFramesForRoll` (T-005).
 
 **Interfaces produced:**
+
 ```ts
 // src/features/scans/pickScans.ts
 export interface PickedFile { name: string; uri: string; mimeType: string; size: number; blob?: Blob }
@@ -36,6 +37,7 @@ src/features/scans/useScanThumb.ts
 src/features/scans/ScanImportScreen.tsx, ScanImportScreen.test.tsx
 app/scans/[rollId].tsx → <ScanImportScreen/>
 ```
+
 Dependencies (add to `apps/mobile/package.json`, use `npx expo install` for expo ones): `expo-document-picker`, `expo-file-system`, `expo-image`, `fflate`.
 
 ## Steps

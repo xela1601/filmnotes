@@ -9,6 +9,7 @@
 **Interfaces consumed:** `matchScansToFrames`, `ScanAssignment`, `newId` (domain); PocketBase REST via the `pocketbase` SDK (Node ≥ 20 has `fetch`/`FormData`/`Blob`).
 
 **Interfaces produced:**
+
 ```ts
 // src/args.ts      parseArgs(argv): { server: string; email: string; password: string | undefined; roll: string; source: string; yes: boolean; dryRun: boolean }  // password also from env FILMNOTES_PASSWORD
 // src/files.ts     listImageFiles(source: string): Promise<{ name: string; path: string; mimeType: string }[]>   // folder (recursive, jpg/jpeg/png/tif/tiff/webp) or .zip (extract to a temp dir with fflate)

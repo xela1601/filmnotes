@@ -8,23 +8,26 @@
  * Everything the run needs is passed in – state, store writer, clock and `fetch` – so the whole
  * function is testable with a fake exporter and without a network.
  */
-import { newId, type CollectionName, type EntityOf, type Frame, type ISODateTime } from '@filmnotes/domain';
+import {
+  newId,
+  type CollectionName,
+  type EntityOf,
+  type Frame,
+  type ISODateTime,
+} from "@filmnotes/domain";
 import {
   getExporter,
   type ExportImage,
   type ExportResult,
   type SharePayload,
-} from '@filmnotes/exporters';
+} from "@filmnotes/exporters";
 
-import { exportInputFor } from './exportModel';
-import type { AppState } from '../../store/store';
+import { exportInputFor } from "./exportModel";
+import type { AppState } from "../../store/store";
 
 /** Why an export could not even be attempted; doubles as the i18n key `errors.<problem>`. */
 export type ExportProblem =
-  | 'unknownExporter'
-  | 'incompleteFrame'
-  | 'imageRequired'
-  | 'invalidConfig';
+  "unknownExporter" | "incompleteFrame" | "imageRequired" | "invalidConfig";
 
 /** An export that was refused before the exporter ran – nothing was sent anywhere. */
 export class ExportPreconditionError extends Error {
@@ -32,7 +35,7 @@ export class ExportPreconditionError extends Error {
 
   constructor(problem: ExportProblem) {
     super(`export refused: ${problem}`);
-    this.name = 'ExportPreconditionError';
+    this.name = "ExportPreconditionError";
     this.problem = problem;
   }
 }
@@ -60,16 +63,16 @@ export interface RunFrameExportDeps {
 
 export async function runFrameExport(deps: RunFrameExportDeps): Promise<ExportResult> {
   const exporter = getExporter(deps.exporterId);
-  if (exporter === undefined) throw new ExportPreconditionError('unknownExporter');
+  if (exporter === undefined) throw new ExportPreconditionError("unknownExporter");
 
   const input = exportInputFor(deps.state, deps.frame, deps.image, deps.caption);
-  if (input === null) throw new ExportPreconditionError('incompleteFrame');
+  if (input === null) throw new ExportPreconditionError("incompleteFrame");
   if (exporter.requiresImage && input.image === null) {
-    throw new ExportPreconditionError('imageRequired');
+    throw new ExportPreconditionError("imageRequired");
   }
 
   const config = exporter.configSchema.safeParse(deps.config);
-  if (!config.success) throw new ExportPreconditionError('invalidConfig');
+  if (!config.success) throw new ExportPreconditionError("invalidConfig");
 
   const result = await exporter.exportFrame(input, config.data, { fetch: deps.fetch });
   if (result.sharePayload !== null && deps.deliver !== undefined) {
@@ -77,7 +80,7 @@ export async function runFrameExport(deps: RunFrameExportDeps): Promise<ExportRe
   }
 
   const at = deps.now();
-  deps.upsert('exportLogs', {
+  deps.upsert("exportLogs", {
     id: newId(),
     created: at,
     updated: at,

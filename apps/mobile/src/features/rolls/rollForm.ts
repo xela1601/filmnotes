@@ -5,7 +5,15 @@
  * only then turns the values into a `Roll`. Everything here is free of React and of
  * the store, so the rules are unit-tested without rendering anything.
  */
-import { newId, type Camera, type FilmStock, type ISODateTime, type Id, type IsoSource, type Roll } from '@filmnotes/domain';
+import {
+  newId,
+  type Camera,
+  type FilmStock,
+  type ISODateTime,
+  type Id,
+  type IsoSource,
+  type Roll,
+} from "@filmnotes/domain";
 
 /** Film speeds the form accepts – wider than any real stock, narrow enough to catch typos. */
 export const ISO_MIN = 6;
@@ -28,7 +36,7 @@ export interface RollFormValues {
 }
 
 /** Error code per field; doubles as the i18n key suffix `errors.<code>`. */
-export type RollFormErrors = Partial<Record<keyof RollFormValues, 'required' | 'iso_range'>>;
+export type RollFormErrors = Partial<Record<keyof RollFormValues, "required" | "iso_range">>;
 
 /**
  * A fresh form: the first camera, no film stock yet, a full roll read by DX.
@@ -46,12 +54,12 @@ export function defaultRollForm(
     cameraId: cameras[0]?.id ?? null,
     filmStockId: null,
     isoSet: null,
-    isoSource: 'DX',
+    isoSource: "DX",
     exposures: 36,
     pushPullEv: 0,
     loadedAt: now,
-    lab: '',
-    notes: '',
+    lab: "",
+    notes: "",
   };
 }
 
@@ -68,14 +76,14 @@ export function applyFilmStock(values: RollFormValues, stock: FilmStock): RollFo
 export function validateRollForm(values: RollFormValues): RollFormErrors {
   const errors: RollFormErrors = {};
 
-  if (values.cameraId === null) errors.cameraId = 'required';
-  if (values.filmStockId === null) errors.filmStockId = 'required';
+  if (values.cameraId === null) errors.cameraId = "required";
+  if (values.filmStockId === null) errors.filmStockId = "required";
   if (values.isoSet === null) {
-    errors.isoSet = 'required';
+    errors.isoSet = "required";
   } else if (values.isoSet < ISO_MIN || values.isoSet > ISO_MAX) {
-    errors.isoSet = 'iso_range';
+    errors.isoSet = "iso_range";
   }
-  if (values.loadedAt === '') errors.loadedAt = 'required';
+  if (values.loadedAt === "") errors.loadedAt = "required";
 
   return errors;
 }
@@ -97,17 +105,17 @@ export function rollFromForm(
     updated: now,
     deleted: existing?.deleted ?? null,
     owner: existing?.owner ?? null,
-    cameraId: values.cameraId ?? '',
-    filmStockId: values.filmStockId ?? '',
+    cameraId: values.cameraId ?? "",
+    filmStockId: values.filmStockId ?? "",
     isoSet: values.isoSet ?? 0,
     isoSource: values.isoSource,
     exposures: values.exposures,
     pushPullEv: values.pushPullEv,
     // The status is advanced on the roll detail screen, never in the form.
-    status: existing?.status ?? 'loaded',
+    status: existing?.status ?? "loaded",
     loadedAt: values.loadedAt,
     unloadedAt: existing?.unloadedAt ?? null,
-    lab: lab === '' ? null : lab,
+    lab: lab === "" ? null : lab,
     notes: values.notes,
   };
 }
@@ -122,7 +130,7 @@ export function formFromRoll(roll: Roll): RollFormValues {
     exposures: roll.exposures,
     pushPullEv: roll.pushPullEv,
     loadedAt: roll.loadedAt,
-    lab: roll.lab ?? '',
+    lab: roll.lab ?? "",
     notes: roll.notes,
   };
 }

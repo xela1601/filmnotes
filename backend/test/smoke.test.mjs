@@ -5,8 +5,8 @@
  * Skipped (not failed) when `backend/bin/pocketbase` is missing - see the hint below.
  * Run with `npm test -w @filmnotes/backend`.
  */
-import test from 'node:test';
-import assert from 'node:assert/strict';
+import test from "node:test";
+import assert from "node:assert/strict";
 
 import {
   ONE_PIXEL_PNG,
@@ -17,29 +17,29 @@ import {
   login,
   loginSuperuser,
   startPocketBase,
-} from './helpers.mjs';
+} from "./helpers.mjs";
 
 const EXPECTED_COLLECTIONS = [
-  'cameras',
-  'lenses',
-  'filters',
-  'flashes',
-  'film_stocks',
-  'rolls',
-  'frames',
-  'scans',
-  'export_logs',
+  "cameras",
+  "lenses",
+  "filters",
+  "flashes",
+  "film_stocks",
+  "rolls",
+  "frames",
+  "scans",
+  "export_logs",
 ];
 
 // 15 chars, exactly the shape newId() produces - PocketBase rejects anything longer.
-const ROLL_ID = 'roll0smoketest1';
-const USER_A = { email: 'owner-a@filmnotes.test', password: 'smoke-user-pw-123' };
-const USER_B = { email: 'owner-b@filmnotes.test', password: 'smoke-user-pw-456' };
+const ROLL_ID = "roll0smoketest1";
+const USER_A = { email: "owner-a@filmnotes.test", password: "smoke-user-pw-123" };
+const USER_B = { email: "owner-b@filmnotes.test", password: "smoke-user-pw-456" };
 
 if (!hasPocketBase()) {
   test.skip(`PocketBase smoke test: ${MISSING_BINARY_HINT}`, () => {});
 } else {
-  test('PocketBase smoke test', async (t) => {
+  test("PocketBase smoke test", async (t) => {
     const pb = await startPocketBase();
     t.after(() => pb.stop());
 
@@ -48,10 +48,10 @@ if (!hasPocketBase()) {
     await createUser(pb.url, superuserToken, USER_B.email, USER_B.password);
     const sessionA = await login(pb.url, USER_A.email, USER_A.password);
     const sessionB = await login(pb.url, USER_B.email, USER_B.password);
-    assert.equal(sessionA.user.id, a.id, 'login returns the created user');
+    assert.equal(sessionA.user.id, a.id, "login returns the created user");
 
-    await t.test('1. all 9 collections exist', async () => {
-      const { status, body } = await api(pb.url, '/api/collections?perPage=200', {
+    await t.test("1. all 9 collections exist", async () => {
+      const { status, body } = await api(pb.url, "/api/collections?perPage=200", {
         token: superuserToken,
       });
       assert.equal(status, 200);
@@ -61,48 +61,48 @@ if (!hasPocketBase()) {
       }
     });
 
-    await t.test('2. a user creates a roll with a client-generated id', async () => {
-      const { status, body } = await api(pb.url, '/api/collections/rolls/records', {
+    await t.test("2. a user creates a roll with a client-generated id", async () => {
+      const { status, body } = await api(pb.url, "/api/collections/rolls/records", {
         token: sessionA.token,
-        method: 'POST',
+        method: "POST",
         body: {
           id: ROLL_ID,
-          cameraId: 'cam0smoketest01',
-          filmStockId: 'film0smoketest1',
+          cameraId: "cam0smoketest01",
+          filmStockId: "film0smoketest1",
           isoSet: 200,
-          isoSource: 'DX',
+          isoSource: "DX",
           exposures: 36,
           pushPullEv: 0,
-          status: 'loaded',
-          loadedAt: '2026-09-18T10:00:00.000Z',
-          lab: 'DM',
-          notes: 'smoke test roll',
-          clientUpdated: '2026-09-18T10:00:00.000Z',
+          status: "loaded",
+          loadedAt: "2026-09-18T10:00:00.000Z",
+          lab: "DM",
+          notes: "smoke test roll",
+          clientUpdated: "2026-09-18T10:00:00.000Z",
           owner: sessionA.user.id,
         },
       });
       assert.equal(status, 200, JSON.stringify(body));
-      assert.equal(body.id, ROLL_ID, 'the client id is kept');
+      assert.equal(body.id, ROLL_ID, "the client id is kept");
       assert.equal(body.owner, sessionA.user.id);
     });
 
-    await t.test('3. a frame references the roll and is filterable by rollId', async () => {
-      const created = await api(pb.url, '/api/collections/frames/records', {
+    await t.test("3. a frame references the roll and is filterable by rollId", async () => {
+      const created = await api(pb.url, "/api/collections/frames/records", {
         token: sessionA.token,
-        method: 'POST',
+        method: "POST",
         body: {
           rollId: ROLL_ID,
           frameNo: 1,
-          takenAt: '2026-09-18T11:00:00.000Z',
-          exposureMode: 'A',
-          shutterSpeed: '1/125',
+          takenAt: "2026-09-18T11:00:00.000Z",
+          exposureMode: "A",
+          shutterSpeed: "1/125",
           aperture: 5.6,
           exposureCompensationEv: 0,
           programShift: false,
           aeLock: false,
           filterIds: [],
           lensHood: true,
-          notes: 'smoke test frame',
+          notes: "smoke test frame",
           owner: sessionA.user.id,
         },
       });
@@ -117,10 +117,10 @@ if (!hasPocketBase()) {
       assert.equal(listed.body.items[0].rollId, ROLL_ID);
     });
 
-    await t.test('4. rolls are invisible to other users and to anonymous callers', async () => {
-      const other = await api(pb.url, '/api/collections/rolls/records', { token: sessionB.token });
+    await t.test("4. rolls are invisible to other users and to anonymous callers", async () => {
+      const other = await api(pb.url, "/api/collections/rolls/records", { token: sessionB.token });
       assert.equal(other.status, 200);
-      assert.equal(other.body.totalItems, 0, 'the second user must not see foreign rolls');
+      assert.equal(other.body.totalItems, 0, "the second user must not see foreign rolls");
 
       const otherView = await api(pb.url, `/api/collections/rolls/records/${ROLL_ID}`, {
         token: sessionB.token,
@@ -132,9 +132,9 @@ if (!hasPocketBase()) {
 
       // PocketBase applies a list rule as a query filter, so an anonymous list is answered
       // with 200 and an empty page rather than 401/403; only a leak would be a failure.
-      const anonymousList = await api(pb.url, '/api/collections/rolls/records');
+      const anonymousList = await api(pb.url, "/api/collections/rolls/records");
       if (anonymousList.status === 200) {
-        assert.equal(anonymousList.body.totalItems, 0, 'anonymous list must not leak records');
+        assert.equal(anonymousList.body.totalItems, 0, "anonymous list must not leak records");
       } else {
         assert.ok(
           anonymousList.status === 401 || anonymousList.status === 403,
@@ -150,9 +150,9 @@ if (!hasPocketBase()) {
         `anonymous view should be rejected, got ${anonymousView.status}`,
       );
 
-      const anonymousCreate = await api(pb.url, '/api/collections/rolls/records', {
-        method: 'POST',
-        body: { cameraId: 'cam0smoketest01', filmStockId: 'film0smoketest1' },
+      const anonymousCreate = await api(pb.url, "/api/collections/rolls/records", {
+        method: "POST",
+        body: { cameraId: "cam0smoketest01", filmStockId: "film0smoketest1" },
       });
       assert.ok(
         anonymousCreate.status === 400 ||
@@ -162,12 +162,12 @@ if (!hasPocketBase()) {
       );
 
       // The create rule must also stop an authenticated user from claiming a foreign owner.
-      const spoofed = await api(pb.url, '/api/collections/rolls/records', {
+      const spoofed = await api(pb.url, "/api/collections/rolls/records", {
         token: sessionB.token,
-        method: 'POST',
+        method: "POST",
         body: {
-          cameraId: 'cam0smoketest01',
-          filmStockId: 'film0smoketest1',
+          cameraId: "cam0smoketest01",
+          filmStockId: "film0smoketest1",
           owner: sessionA.user.id,
         },
       });
@@ -177,22 +177,22 @@ if (!hasPocketBase()) {
       );
     });
 
-    await t.test('5. scans accept an image upload and serve a thumbnail', async () => {
+    await t.test("5. scans accept an image upload and serve a thumbnail", async () => {
       const form = new FormData();
-      form.set('rollId', ROLL_ID);
-      form.set('fileName', 'smoke-0001.png');
-      form.set('sortIndex', '1');
-      form.set('importedAt', '2026-09-18T12:00:00.000Z');
-      form.set('owner', sessionA.user.id);
-      form.set('file', new Blob([ONE_PIXEL_PNG], { type: 'image/png' }), 'smoke-0001.png');
+      form.set("rollId", ROLL_ID);
+      form.set("fileName", "smoke-0001.png");
+      form.set("sortIndex", "1");
+      form.set("importedAt", "2026-09-18T12:00:00.000Z");
+      form.set("owner", sessionA.user.id);
+      form.set("file", new Blob([ONE_PIXEL_PNG], { type: "image/png" }), "smoke-0001.png");
 
-      const created = await api(pb.url, '/api/collections/scans/records', {
+      const created = await api(pb.url, "/api/collections/scans/records", {
         token: sessionA.token,
-        method: 'POST',
+        method: "POST",
         body: form,
       });
       assert.equal(created.status, 200, JSON.stringify(created.body));
-      assert.ok(created.body.file, 'the response carries the stored file name');
+      assert.ok(created.body.file, "the response carries the stored file name");
 
       const fileUrl = `${pb.url}/api/files/scans/${created.body.id}/${created.body.file}?thumb=200x200`;
       const thumb = await fetch(fileUrl);

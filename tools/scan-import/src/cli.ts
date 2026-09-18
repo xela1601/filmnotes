@@ -5,12 +5,12 @@
  * Run it through the `filmnotes-import` bin (`bin/filmnotes-import.cjs`, which registers tsx)
  * or directly with `npx tsx src/cli.ts …`.
  */
-import { createInterface } from 'node:readline';
-import type { Interface } from 'node:readline';
+import { createInterface } from "node:readline";
+import type { Interface } from "node:readline";
 
-import type { Io, PromptOptions } from './main';
-import { main } from './main';
-import { createPocketBaseClient } from './pb';
+import type { Io, PromptOptions } from "./main";
+import { main } from "./main";
+import { createPocketBaseClient } from "./pb";
 
 /** The readline internals used to suppress the echo of a hidden answer. */
 interface MutableInterface {
@@ -47,9 +47,9 @@ async function nextPipedLine(): Promise<string> {
   if (pipedLines === null) {
     const chunks: Buffer[] = [];
     for await (const chunk of process.stdin) chunks.push(chunk as Buffer);
-    pipedLines = Buffer.concat(chunks).toString('utf8').split('\n');
+    pipedLines = Buffer.concat(chunks).toString("utf8").split("\n");
   }
-  return pipedLines.shift() ?? '';
+  return pipedLines.shift() ?? "";
 }
 
 /** Asks on a terminal, suppressing the echo for a hidden answer (the password). */
@@ -64,11 +64,11 @@ async function askInteractively(question: string, options?: PromptOptions): Prom
   }
   try {
     const answer = await new Promise<string>((resolve) => {
-      rl.once('close', () => resolve(''));
+      rl.once("close", () => resolve(""));
       rl.question(question, resolve);
     });
     // The user's own Enter ends the line, except when the echo was suppressed.
-    if (options?.hidden === true) process.stdout.write('\n');
+    if (options?.hidden === true) process.stdout.write("\n");
     return answer;
   } finally {
     internals._writeToOutput = echo;
@@ -83,7 +83,7 @@ async function ask(question: string, options?: PromptOptions): Promise<string> {
   if (interactive) return askInteractively(question, options);
   process.stdout.write(question);
   const answer = await nextPipedLine();
-  process.stdout.write('\n');
+  process.stdout.write("\n");
   return answer;
 }
 

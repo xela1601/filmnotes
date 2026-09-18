@@ -1,6 +1,6 @@
-import { StyleSheet, Switch, Text, View } from 'react-native';
+import { StyleSheet, Switch, Text, View } from "react-native";
 
-import { useTheme } from './theme';
+import { useTheme } from "./theme";
 
 export interface SwitchFieldProps {
   label: string;
@@ -27,6 +27,6 @@ export function SwitchField({ label, value, onChange, testID }: SwitchFieldProps
 }
 
 const styles = StyleSheet.create({
-  row: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 12 },
+  row: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: 12 },
   label: { flexShrink: 1 },
 });

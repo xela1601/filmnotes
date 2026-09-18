@@ -2,7 +2,7 @@
 
 **Wave:** 1
 **Depends on:** T-001
-**Owns:** `packages/domain/src/**` except `types.ts`, `id.ts`, `index.ts` (you may only *append* exports to `index.ts`).
+**Owns:** `packages/domain/src/**` except `types.ts`, `id.ts`, `index.ts` (you may only _append_ exports to `index.ts`).
 
 **Goal:** Framework-free, fully unit-tested functions for shutter-speed math, aperture/shutter option lists, frame validation (spec §3.2 rules 1–10), frame defaults, natural-sort scan matching and caption building.
 
@@ -78,34 +78,35 @@ packages/domain/src/index.ts  (append exports)
   - `nextFrameNo([])` → 1; with frames 1,2,3 → 4; with 1,3 → 4 (max+1, gaps are left alone).
   - `newFrame` with `previous: null` copies `camera.defaultsForNewFrame` (mode, drive, focus, lensId, filterIds, flashId, support, comp, shift, aeLock), sets `takenAt: now`, `created/updated: now`, `frameNo`, `rollId`, `notes: ''`, `id` matching `ID_PATTERN`, all other fields null/false/[].
   - `newFrame` with `previous` carries over from previous: `lensId, focalLengthMm, filterIds, flashId, flashHead, flashPower, exposureMode, focusMode, driveMode, support, lensHood, light`; does **not** copy `shutterSpeed, aperture, notes, location, takenAt, afResult, flashOk, beepWarning, subject, exposureCompensationEv (reset to camera default), programShift, aeLock`.
-  Implement, commit `feat(domain): new frame defaults`.
+    Implement, commit `feat(domain): new frame defaults`.
 
 - [ ] **Step 9: validation.test.ts** – one `it` per rule, each asserting the exact issue `{level, code, field}`; also an "all good" frame returns `[]`. Codes (use exactly):
 
-| # | code | level | field | condition |
-|---|---|---|---|---|
-| 1 | `bulb_only_in_m` | error | shutterSpeed | shutter `bulb` and mode not in `camera.bulbOnlyInModes` |
-| 2 | `aperture_not_on_lens` | error | aperture | lens set and aperture not in `lens.apertureValues` |
-| 3 | `filter_thread_mismatch` | error | filterIds | any filter `threadMm !== lens.filterThreadMm` (params: `{filter: model, filterThread, lensThread}`) |
-| 4 | `polarizer_blocks_af` | warning | focusMode | focusMode `AF` and any filter with `afCompatible === 'no'` |
-| 5 | `flash_forces_sync_speed` | info | shutterSpeed | flash set, mode `M`, shutter faster than `camera.flashSync` (params `{sync}`) |
-| 6 | `compensation_ignored_in_m` | info | exposureCompensationEv | comp ≠ 0 and mode in `camera.exposureCompensation.notInModes` |
-| 7 | `handheld_shake_risk` | warning | shutterSpeed | support `handheld` (or null), lens with `handheldMinShutter`, shutter slower than it (params `{limit}`) |
-| 8 | `focal_length_out_of_range` | error | focalLengthMm | lens set and focal outside `[focalMinMm, focalMaxMm]` |
-| 9a | `frame_no_out_of_range` | error | frameNo | frameNo < 1 or > roll.exposures |
-| 9b | `frame_no_duplicate` | error | frameNo | another sibling (different id, not deleted) has same frameNo |
-| 10 | `shutter_not_available` | error | shutterSpeed | shutter not in `shutterSpeedsForMode(camera, mode)` (skip if shutter null) |
+| #   | code                        | level   | field                  | condition                                                                                               |
+| --- | --------------------------- | ------- | ---------------------- | ------------------------------------------------------------------------------------------------------- |
+| 1   | `bulb_only_in_m`            | error   | shutterSpeed           | shutter `bulb` and mode not in `camera.bulbOnlyInModes`                                                 |
+| 2   | `aperture_not_on_lens`      | error   | aperture               | lens set and aperture not in `lens.apertureValues`                                                      |
+| 3   | `filter_thread_mismatch`    | error   | filterIds              | any filter `threadMm !== lens.filterThreadMm` (params: `{filter: model, filterThread, lensThread}`)     |
+| 4   | `polarizer_blocks_af`       | warning | focusMode              | focusMode `AF` and any filter with `afCompatible === 'no'`                                              |
+| 5   | `flash_forces_sync_speed`   | info    | shutterSpeed           | flash set, mode `M`, shutter faster than `camera.flashSync` (params `{sync}`)                           |
+| 6   | `compensation_ignored_in_m` | info    | exposureCompensationEv | comp ≠ 0 and mode in `camera.exposureCompensation.notInModes`                                           |
+| 7   | `handheld_shake_risk`       | warning | shutterSpeed           | support `handheld` (or null), lens with `handheldMinShutter`, shutter slower than it (params `{limit}`) |
+| 8   | `focal_length_out_of_range` | error   | focalLengthMm          | lens set and focal outside `[focalMinMm, focalMaxMm]`                                                   |
+| 9a  | `frame_no_out_of_range`     | error   | frameNo                | frameNo < 1 or > roll.exposures                                                                         |
+| 9b  | `frame_no_duplicate`        | error   | frameNo                | another sibling (different id, not deleted) has same frameNo                                            |
+| 10  | `shutter_not_available`     | error   | shutterSpeed           | shutter not in `shutterSpeedsForMode(camera, mode)` (skip if shutter null)                              |
 
-  Implement `validation.ts` as one small function per rule collected in an array, commit `feat(domain): frame validation rules`.
+Implement `validation.ts` as one small function per rule collected in an array, commit `feat(domain): frame validation rules`.
 
 - [ ] **Step 10: scanMatching.test.ts**
   - `naturalCompare('img2.jpg','img10.jpg') < 0`, case-insensitive, `'000001.jpg' < '000002.jpg'`.
   - `matchScansToFrames(['b10.jpg','b2.jpg','b1.jpg'], frames 1..3)` → sortIndex 0..2 assigned to frameNo 1,2,3 in natural order (b1,b2,b10).
   - more scans than frames → surplus `frameId: null, frameNo: null`; fewer scans → only first n frames used; deleted frames ignored; frames sorted by frameNo regardless of input order.
   - `shiftAssignments(list, frames, fromSortIndex: 1, direction: 1)`: every assignment with sortIndex ≥ 1 moves to the next frameNo (last one becomes unassigned if no frame left); `direction: -1` moves back, but never below frameNo of the previous assignment (no duplicates: if the target frame is taken, the shift is a no-op and the input is returned unchanged).
-  Implement, commit `feat(domain): scan to frame matching`.
+    Implement, commit `feat(domain): scan to frame matching`.
 
 - [ ] **Step 11: caption.test.ts** – `DEFAULT_CAPTION_TEMPLATE` is
+
   ```
   {{filmStock}} · {{camera}} · {{lens}}{{#focal}} @ {{focal}}mm{{/focal}}
   {{#exposure}}{{exposure}}{{/exposure}}{{#filters}} · {{filters}}{{/filters}}
@@ -113,6 +114,7 @@ packages/domain/src/index.ts  (append exports)
   {{notes}}
   {{hashtags}}
   ```
+
   Implement a tiny mustache-like renderer supporting `{{key}}` and `{{#key}}…{{/key}}` (section rendered only when key non-empty) – do not add a dependency. Variables: `filmStock` (`"Kodak Gold 200"`), `camera` (`"Minolta 7000 AF"`), `lens` (`"Minolta AF Zoom 35-70mm f/4"` or `''`), `focal`, `exposure` (`"f/5.6 · 1/125 · P"` – only parts present), `filters` (models joined with `", "`), `location` (`location.name`), `date` (`takenAt` formatted `YYYY-MM-DD` for `en`, `DD.MM.YYYY` for `de`), `notes`, `hashtags` (`#analog #35mm …` from input, default `['#analog', '#35mm', '#filmphotography']` + film maker slug e.g. `#kodakgold200`). Collapse ≥ 3 newlines to 2 and trim. Tests: full frame renders all lines; frame without lens/location omits those parts; custom template works. Commit `feat(domain): caption builder`.
 
 - [ ] **Step 12: append to `index.ts`**: `export * from './shutter'; … './aperture'; './frameDefaults'; './validation'; './scanMatching'; './caption'; './fixtures';` – run root `npm test`, commit `chore(domain): export public API`.

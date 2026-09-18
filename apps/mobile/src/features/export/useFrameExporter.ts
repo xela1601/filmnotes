@@ -9,19 +9,24 @@
  * closure: the roll screen exports a dozen frames in a row and each run has to see the
  * `ExportLog` the previous one wrote.
  */
-import type { Frame } from '@filmnotes/domain';
-import { shareExporter, wordPressExporter, type ExportImage, type ExportResult } from '@filmnotes/exporters';
-import { useCallback } from 'react';
+import type { Frame } from "@filmnotes/domain";
+import {
+  shareExporter,
+  wordPressExporter,
+  type ExportImage,
+  type ExportResult,
+} from "@filmnotes/exporters";
+import { useCallback } from "react";
 
-import { selectScanForFrame, wordPressConfigFor } from './exportModel';
-import { loadScanImage } from './loadScanImage';
-import { runFrameExport } from './runExport';
-import { shareOut } from './shareOut';
-import * as clock from '../../lib/clock';
-import { getSecret } from '../../lib/secureStore';
-import { createPocketBaseClient } from '../../sync/client';
-import type { AppState } from '../../store/store';
-import { useStore } from '../../store/store';
+import { selectScanForFrame, wordPressConfigFor } from "./exportModel";
+import { loadScanImage } from "./loadScanImage";
+import { runFrameExport } from "./runExport";
+import { shareOut } from "./shareOut";
+import * as clock from "../../lib/clock";
+import { getSecret } from "../../lib/secureStore";
+import { createPocketBaseClient } from "../../sync/client";
+import type { AppState } from "../../store/store";
+import { useStore } from "../../store/store";
 
 export interface FrameExportRequest {
   frame: Frame;
@@ -34,7 +39,7 @@ export interface FrameExportRequest {
 /** The stored settings of a target. Only WordPress needs any, and its password is a secret. */
 async function configFor(exporterId: string, state: AppState): Promise<unknown> {
   if (exporterId !== wordPressExporter.id) return {};
-  return wordPressConfigFor(state.settings, await getSecret('wordpressAppPassword'));
+  return wordPressConfigFor(state.settings, await getSecret("wordpressAppPassword"));
 }
 
 /**
@@ -51,7 +56,7 @@ async function imageFor(
   const serverUrl = state.settings.serverUrl;
   if (scan === null || scan.file === null || serverUrl === null) return null;
 
-  const size = exporterId === shareExporter.id ? '1600' : 'full';
+  const size = exporterId === shareExporter.id ? "1600" : "full";
   return loadScanImage(createPocketBaseClient(serverUrl), scan, size);
 }
 

@@ -8,24 +8,24 @@
  * Import needs a configured server, because the image files are stored there and never on
  * the device; without one the screen explains that and links to the server settings.
  */
-import { naturalCompare } from '@filmnotes/domain';
-import type { Frame, Id, Roll, RollStatus, ScanAssignment } from '@filmnotes/domain';
-import { Image } from 'expo-image';
-import { router } from 'expo-router';
-import { useMemo, useState } from 'react';
-import { useTranslation } from 'react-i18next';
-import { StyleSheet, Text, View } from 'react-native';
-import { useShallow } from 'zustand/react/shallow';
+import { naturalCompare } from "@filmnotes/domain";
+import type { Frame, Id, Roll, RollStatus, ScanAssignment } from "@filmnotes/domain";
+import { Image } from "expo-image";
+import { router } from "expo-router";
+import { useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
+import { StyleSheet, Text, View } from "react-native";
+import { useShallow } from "zustand/react/shallow";
 
-import { SCANS_NAMESPACE } from './i18n';
-import { assignTo, buildAssignments, moveAssignment } from './importModel';
-import { expandZip, isZip, pickScanFiles, type PickedFile } from './pickScans';
-import { openServerSession } from './session';
-import { uploadScans, type UploadScansResult } from './uploadScans';
-import { now } from '../../lib/clock';
-import { useEntity } from '../../store/hooks';
-import { selectFramesForRoll } from '../../store/selectors';
-import { useStore } from '../../store/store';
+import { SCANS_NAMESPACE } from "./i18n";
+import { assignTo, buildAssignments, moveAssignment } from "./importModel";
+import { expandZip, isZip, pickScanFiles, type PickedFile } from "./pickScans";
+import { openServerSession } from "./session";
+import { uploadScans, type UploadScansResult } from "./uploadScans";
+import { now } from "../../lib/clock";
+import { useEntity } from "../../store/hooks";
+import { selectFramesForRoll } from "../../store/selectors";
+import { useStore } from "../../store/store";
 import {
   Button,
   EmptyState,
@@ -34,10 +34,10 @@ import {
   SelectField,
   useTheme,
   type SelectOption,
-} from '../../ui';
+} from "../../ui";
 
 /** Scans arriving means the lab is done, so these states move on to `developed`. */
-const AWAITING_SCANS: RollStatus[] = ['shot', 'at_lab'];
+const AWAITING_SCANS: RollStatus[] = ["shot", "at_lab"];
 
 export interface ScanImportScreenProps {
   rollId: Id;
@@ -45,12 +45,12 @@ export interface ScanImportScreenProps {
 
 export function ScanImportScreen({ rollId }: ScanImportScreenProps) {
   const { t } = useTranslation(SCANS_NAMESPACE);
-  const roll = useEntity('rolls', rollId);
+  const roll = useEntity("rolls", rollId);
 
   if (roll === undefined || roll.deleted !== null) {
     return (
       <Screen testID="scan-import">
-        <EmptyState title={t('notFound')} hint={t('notFoundHint')} testID="scan-import-not-found" />
+        <EmptyState title={t("notFound")} hint={t("notFoundHint")} testID="scan-import-not-found" />
       </Screen>
     );
   }
@@ -105,7 +105,7 @@ function ScanImport({ roll }: { roll: Roll }) {
       setResult(null);
       setAdvanced(false);
     } catch {
-      setError(t('pickFailed'));
+      setError(t("pickFailed"));
     } finally {
       setBusy(false);
     }
@@ -117,7 +117,7 @@ function ScanImport({ roll }: { roll: Roll }) {
     try {
       const session = await openServerSession();
       if (session === null) {
-        setError(t('needCredentials'));
+        setError(t("needCredentials"));
         return;
       }
 
@@ -133,11 +133,11 @@ function ScanImport({ roll }: { roll: Roll }) {
       setResult(outcome);
 
       if (outcome.uploaded > 0 && AWAITING_SCANS.includes(roll.status)) {
-        upsert('rolls', { ...roll, status: 'developed' });
+        upsert("rolls", { ...roll, status: "developed" });
         setAdvanced(true);
       }
     } catch {
-      setError(t('uploadFailed'));
+      setError(t("uploadFailed"));
     } finally {
       setBusy(false);
     }
@@ -147,13 +147,13 @@ function ScanImport({ roll }: { roll: Roll }) {
     return (
       <Screen testID="scan-import">
         <EmptyState
-          title={t('needServer')}
-          hint={t('needServerHint')}
+          title={t("needServer")}
+          hint={t("needServerHint")}
           testID="scan-import-need-server"
         />
         <Button
-          title={t('openServerSettings')}
-          onPress={() => router.push('/settings/server')}
+          title={t("openServerSettings")}
+          onPress={() => router.push("/settings/server")}
           testID="scan-import-server-link"
         />
       </Screen>
@@ -165,16 +165,12 @@ function ScanImport({ roll }: { roll: Roll }) {
   return (
     <Screen testID="scan-import">
       {frames.length === 0 && (
-        <EmptyState
-          title={t('noFrames')}
-          hint={t('noFramesHint')}
-          testID="scan-import-no-frames"
-        />
+        <EmptyState title={t("noFrames")} hint={t("noFramesHint")} testID="scan-import-no-frames" />
       )}
 
-      <Section title={t('sections.files')}>
+      <Section title={t("sections.files")}>
         {rows.length === 0 ? (
-          <EmptyState title={t('empty')} hint={t('emptyHint')} testID="scan-import-empty" />
+          <EmptyState title={t("empty")} hint={t("emptyHint")} testID="scan-import-empty" />
         ) : (
           rows.map(({ assignment, file }) => (
             <ScanRow
@@ -196,7 +192,7 @@ function ScanImport({ roll }: { roll: Roll }) {
           ))
         )}
         <Button
-          title={rows.length === 0 ? t('pick') : t('pickAgain')}
+          title={rows.length === 0 ? t("pick") : t("pickAgain")}
           onPress={() => void pick()}
           disabled={busy}
           testID="scan-import-pick"
@@ -204,12 +200,12 @@ function ScanImport({ roll }: { roll: Roll }) {
       </Section>
 
       {rows.length > 0 && (
-        <Section title={t('sections.upload')}>
+        <Section title={t("sections.upload")}>
           <Text testID="scan-import-count" style={muted}>
-            {t('fileCount', { count: rows.length })}
+            {t("fileCount", { count: rows.length })}
           </Text>
           <Button
-            title={busy ? t('uploading') : t('upload')}
+            title={busy ? t("uploading") : t("upload")}
             onPress={() => void upload()}
             disabled={busy}
             testID="scan-import-upload"
@@ -220,19 +216,19 @@ function ScanImport({ roll }: { roll: Roll }) {
                 testID="scan-import-result"
                 style={{ color: palette.text, fontSize: fontSize.md }}
               >
-                {t('result', { uploaded: result.uploaded, total: rows.length })}
+                {t("result", { uploaded: result.uploaded, total: rows.length })}
               </Text>
               {result.failed.length > 0 && (
                 <Text
                   testID="scan-import-failed"
                   style={{ color: palette.danger, fontSize: fontSize.sm }}
                 >
-                  {t('resultFailed', { files: result.failed.join(', ') })}
+                  {t("resultFailed", { files: result.failed.join(", ") })}
                 </Text>
               )}
               {advanced && (
                 <Text testID="scan-import-status" style={muted}>
-                  {t('statusAdvanced')}
+                  {t("statusAdvanced")}
                 </Text>
               )}
             </View>
@@ -241,10 +237,7 @@ function ScanImport({ roll }: { roll: Roll }) {
       )}
 
       {error !== null && (
-        <Text
-          testID="scan-import-error"
-          style={{ color: palette.danger, fontSize: fontSize.sm }}
-        >
+        <Text testID="scan-import-error" style={{ color: palette.danger, fontSize: fontSize.sm }}>
           {error}
         </Text>
       )}
@@ -269,14 +262,14 @@ function ScanRow({ file, assignment, frames, onMove, onAssign }: ScanRowProps) {
   const frame = frames.find((candidate) => candidate.id === assignment.frameId);
   const summary =
     frame === undefined
-      ? t('unassigned')
-      : [t('assignedTo', { frameNo: frame.frameNo }), frame.notes]
-          .filter((part) => part !== '')
-          .join(' · ');
+      ? t("unassigned")
+      : [t("assignedTo", { frameNo: frame.frameNo }), frame.notes]
+          .filter((part) => part !== "")
+          .join(" · ");
 
   const options: SelectOption<string>[] = frames.map((candidate) => ({
     value: candidate.id,
-    label: t('frameOption', { frameNo: candidate.frameNo }),
+    label: t("frameOption", { frameNo: candidate.frameNo }),
   }));
 
   return (
@@ -303,7 +296,7 @@ function ScanRow({ file, assignment, frames, onMove, onAssign }: ScanRowProps) {
           {summary}
         </Text>
         <SelectField
-          label={t('frameField')}
+          label={t("frameField")}
           value={assignment.frameId}
           options={options}
           onChange={onAssign}
@@ -313,19 +306,19 @@ function ScanRow({ file, assignment, frames, onMove, onAssign }: ScanRowProps) {
       </View>
       <View style={styles.controls}>
         <Button
-          title={t('controls.up')}
+          title={t("controls.up")}
           variant="secondary"
           onPress={() => onMove(-1)}
           testID={`${testID}-up`}
         />
         <Button
-          title={t('controls.down')}
+          title={t("controls.down")}
           variant="secondary"
           onPress={() => onMove(1)}
           testID={`${testID}-down`}
         />
         <Button
-          title={t('controls.unassign')}
+          title={t("controls.unassign")}
           variant="secondary"
           onPress={() => onAssign(null)}
           testID={`${testID}-unassign`}
@@ -337,14 +330,14 @@ function ScanRow({ file, assignment, frames, onMove, onAssign }: ScanRowProps) {
 
 const styles = StyleSheet.create({
   row: {
-    flexDirection: 'row',
+    flexDirection: "row",
     gap: 12,
     paddingBottom: 12,
     borderBottomWidth: StyleSheet.hairlineWidth,
   },
   thumb: { width: 72, height: 72, borderRadius: 6 },
   body: { flex: 1, gap: 4 },
-  name: { fontWeight: '600' },
+  name: { fontWeight: "600" },
   controls: { gap: 4 },
   summary: { gap: 4 },
 });

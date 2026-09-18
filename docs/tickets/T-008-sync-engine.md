@@ -9,6 +9,7 @@
 **Interfaces consumed:** store (`outbox`, `applyRemote`, `removeFromOutbox`, `setLastSyncAt`, settings), `secureStore`, `PB_COLLECTION` (T-001), backend field conventions (`owner`, `deleted`, `clientUpdated`, camelCase fields; see T-004 table).
 
 **Interfaces produced:**
+
 ```ts
 // src/sync/client.ts – thin, mockable wrapper around the `pocketbase` SDK
 export interface RemoteRecord { id: Id; [field: string]: unknown }
@@ -51,6 +52,7 @@ src/sync/i18n.ts (+ sync.de.json, sync.en.json)
 src/sync/ServerSettingsScreen.tsx, ServerSettingsScreen.test.tsx
 app/settings/server.tsx → <ServerSettingsScreen/>
 ```
+
 Dependency: `pocketbase` (JS SDK ≥ 0.26) in `apps/mobile/package.json`.
 
 ## Steps
@@ -64,8 +66,8 @@ Dependency: `pocketbase` (JS SDK ≥ 0.26) in `apps/mobile/package.json`.
   5. first sync against empty server uploads seeded equipment (cameras > 0 afterwards), second sync does not re-upload.
   6. a failing `update` (throws) is collected in `errors`, other entries still processed, failed entry stays in outbox.
   7. `setLastSyncAt` called with a timestamp ≤ the start time.
-  Implement `engine.ts`, commit `feat(app): sync engine with last-write-wins`.
-- [ ] **Step 3: client.ts** – implement over `pocketbase` SDK (`pb.collection(name).getFullList({ filter: since ? \`updated > "${since}"\` : '' , sort: 'updated' })`, `create`, `update`, `authWithPassword`, `authRefresh`, `pb.files.getURL`). Upload via `FormData` (`{ uri, name, type }` on native, `Blob` on web). No unit test beyond a construction smoke test (SDK is mocked in useSync tests). Commit `feat(app): PocketBase client adapter`.
+     Implement `engine.ts`, commit `feat(app): sync engine with last-write-wins`.
+- [ ] **Step 3: client.ts** – implement over `pocketbase` SDK (`pb.collection(name).getFullList({ filter: since ? \`updated > "${since}"\` : '' , sort: 'updated' })`, `create`, `update`, `authWithPassword`, `authRefresh`, `pb.files.getURL`). Upload via `FormData` (`{ uri, name, type }`on native,`Blob`on web). No unit test beyond a construction smoke test (SDK is mocked in useSync tests). Commit`feat(app): PocketBase client adapter`.
 - [ ] **Step 4: useSync.test.ts** – `no_server` when `settings.serverUrl` null; `syncNow` runs engine with token from `secureStore` and stores result; AppState foreground triggers sync at most once per 60 s (mock timers). Implement, commit `feat(app): sync hook with foreground auto-sync`.
 - [ ] **Step 5: ServerSettingsScreen.test.tsx** – fields URL, email, password; "Connect" calls `authWithPassword`, stores token + email + URL (`secureStore` mocked), shows "connected as <email>"; "Disconnect" clears; "Sync now" shows result summary `pushed/pulled`; last sync time displayed. Implement + translations (`sync.de.json`: `server: "Server"`, `connect: "Verbinden"`, `syncNow: "Jetzt synchronisieren"`, `lastSync: "Zuletzt: {{time}}"`, …). Commit `feat(app): server settings and manual sync`.
 

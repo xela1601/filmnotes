@@ -9,15 +9,15 @@
  * PocketBase renders the thumbnail itself from the `thumb` query parameter, so nothing is
  * resized or cached on the device; `expo-image` caches the URL.
  */
-import { PB_COLLECTION } from '@filmnotes/domain';
-import type { Id, Scan } from '@filmnotes/domain';
-import { useMemo } from 'react';
+import { PB_COLLECTION } from "@filmnotes/domain";
+import type { Id, Scan } from "@filmnotes/domain";
+import { useMemo } from "react";
 
-import { createPocketBaseClient } from '../../sync/client';
-import { useStore, type AppState } from '../../store/store';
+import { createPocketBaseClient } from "../../sync/client";
+import { useStore, type AppState } from "../../store/store";
 
 /** The size PocketBase renders the preview at; wide enough for a list row on a tablet. */
-export const SCAN_THUMB_SIZE = '200x200';
+export const SCAN_THUMB_SIZE = "200x200";
 
 /**
  * The uploaded scan of a frame, or `null`.

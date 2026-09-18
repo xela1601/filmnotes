@@ -7,6 +7,7 @@
 **Goal:** Framework-free exporter interface with two implementations: WordPress (REST API, draft post with uploaded media) and Share package (caption text + image payload for the OS share sheet). New targets are added by implementing `Exporter` and registering it.
 
 **Interfaces produced:**
+
 ```ts
 // src/types.ts
 export interface ExportImage { bytes: Uint8Array; mimeType: string; fileName: string }
@@ -48,7 +49,7 @@ packages/exporters/src/types.ts, registry.ts, registry.test.ts, share.ts, share.
   3. non-2xx → throws `WordPressError` with status and body message.
   4. `siteUrl` trailing slash is normalised.
   5. `buildPostHtml` contains `<figure>` when media url given, a `<table>` with rows for film, camera, lens, focal, aperture, shutter, mode, filters, location, date (only present ones), and notes wrapped in `<p>` with line breaks → `<br>`; HTML-escapes `<`, `&`, `"`.
-  Implement, commit `feat(exporters): WordPress draft post exporter`.
+     Implement, commit `feat(exporters): WordPress draft post exporter`.
 - [ ] **Step 5: index.ts** registers both exporters on import and re-exports everything. Root `npm test` green. Commit `chore(exporters): public API`.
 
 **Done when:** tests green, `tsc` clean, no React Native or Expo imports in this package.

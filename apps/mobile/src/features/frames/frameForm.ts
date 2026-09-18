@@ -5,7 +5,7 @@
  * stays a thin composition: which fields the exposure mode leaves to the photographer, which
  * focal lengths and filters the mounted lens offers, and what changes when the lens is swapped.
  */
-import type { ExposureMode, Filter, Frame, Id, Lens } from '@filmnotes/domain';
+import type { ExposureMode, Filter, Frame, Id, Lens } from "@filmnotes/domain";
 
 /** Which exposure fields the photographer dials in himself in a given mode. */
 export interface EditableFields {
@@ -29,13 +29,13 @@ export interface EditableFields {
  */
 export function editableFields(mode: ExposureMode | null): EditableFields {
   switch (mode) {
-    case 'P':
+    case "P":
       return { shutter: false, aperture: false, programShift: true, compensation: true };
-    case 'A':
+    case "A":
       return { shutter: false, aperture: true, programShift: false, compensation: true };
-    case 'S':
+    case "S":
       return { shutter: true, aperture: false, programShift: false, compensation: true };
-    case 'M':
+    case "M":
       return { shutter: true, aperture: true, programShift: false, compensation: false };
     default:
       return { shutter: true, aperture: true, programShift: false, compensation: true };
@@ -80,7 +80,8 @@ export function filterOptions(filters: Filter[], lens: Lens | null): Filter[] {
 export function applyLensChange(frame: Frame, lens: Lens | null, allFilters: Filter[]): Frame {
   const fitting = filterOptions(allFilters, lens);
   const fittingIds = new Set(fitting.map((filter) => filter.id));
-  const kept = lens === null ? [...frame.filterIds] : frame.filterIds.filter((id) => fittingIds.has(id));
+  const kept =
+    lens === null ? [...frame.filterIds] : frame.filterIds.filter((id) => fittingIds.has(id));
   const filterIds: Id[] = [...kept];
   for (const id of lens?.defaultFilterIds ?? []) {
     if (!filterIds.includes(id) && fittingIds.has(id)) filterIds.push(id);
@@ -97,24 +98,24 @@ export function applyLensChange(frame: Frame, lens: Lens | null, allFilters: Fil
 
 /** Light situations offered for `Frame.light` (the field itself stays free text). */
 export const LIGHT_OPTIONS: string[] = [
-  'sun',
-  'cloudy',
-  'shade',
-  'indoor_window',
-  'indoor_artificial',
-  'night',
-  'backlight',
-  'snow_beach',
+  "sun",
+  "cloudy",
+  "shade",
+  "indoor_window",
+  "indoor_artificial",
+  "night",
+  "backlight",
+  "snow_beach",
 ];
 
 /** Subject kinds offered for `Frame.subject` (the field itself stays free text). */
 export const SUBJECT_OPTIONS: string[] = [
-  'portrait',
-  'landscape',
-  'street',
-  'sport',
-  'macro',
-  'group',
-  'night',
-  'other',
+  "portrait",
+  "landscape",
+  "street",
+  "sport",
+  "macro",
+  "group",
+  "night",
+  "other",
 ];

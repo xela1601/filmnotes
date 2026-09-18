@@ -5,9 +5,9 @@
  * the camera's quote mark (`"2\""`), a half stop (`"1\"5"` = 1.5 s, `"0\"7"` = 0.7 s) or `"bulb"`.
  * Everything in this module treats `"bulb"` as the slowest possible speed (an open shutter).
  */
-import type { Camera, ExposureMode, ShutterSpeed } from './types';
+import type { Camera, ExposureMode, ShutterSpeed } from "./types";
 
-const BULB = 'bulb';
+const BULB = "bulb";
 
 /** `"1/125"`, also tolerates decimal numerator/denominator. */
 const FRACTION_PATTERN = /^(\d+(?:\.\d+)?)\/(\d+(?:\.\d+)?)$/;
@@ -27,7 +27,7 @@ export function isBulb(value: ShutterSpeed | null): boolean {
  */
 export function parseShutterSpeed(value: ShutterSpeed): number | null {
   const text = value.trim();
-  if (text === '' || isBulb(text)) return null;
+  if (text === "" || isBulb(text)) return null;
 
   const fraction = FRACTION_PATTERN.exec(text);
   if (fraction) {
@@ -39,8 +39,8 @@ export function parseShutterSpeed(value: ShutterSpeed): number | null {
 
   const quoted = QUOTED_SECONDS_PATTERN.exec(text);
   if (quoted) {
-    const whole = quoted[1] ?? '0';
-    const tenths = quoted[2] === undefined || quoted[2] === '' ? '0' : quoted[2];
+    const whole = quoted[1] ?? "0";
+    const tenths = quoted[2] === undefined || quoted[2] === "" ? "0" : quoted[2];
     return Number(`${whole}.${tenths}`);
   }
 
@@ -56,10 +56,43 @@ export function parseShutterSpeed(value: ShutterSpeed): number | null {
  * `parseShutterSpeed` for every value a camera shows.
  */
 const LADDER: readonly ShutterSpeed[] = [
-  '1/8000', '1/6000', '1/4000', '1/3000', '1/2000', '1/1500', '1/1000', '1/750',
-  '1/500', '1/350', '1/250', '1/180', '1/125', '1/90', '1/60', '1/45',
-  '1/30', '1/20', '1/15', '1/10', '1/8', '1/6', '1/4', '1/3', '1/2',
-  '0"7', '1"', '1"5', '2"', '3"', '4"', '6"', '8"', '12"', '15"', '20"', '30"',
+  "1/8000",
+  "1/6000",
+  "1/4000",
+  "1/3000",
+  "1/2000",
+  "1/1500",
+  "1/1000",
+  "1/750",
+  "1/500",
+  "1/350",
+  "1/250",
+  "1/180",
+  "1/125",
+  "1/90",
+  "1/60",
+  "1/45",
+  "1/30",
+  "1/20",
+  "1/15",
+  "1/10",
+  "1/8",
+  "1/6",
+  "1/4",
+  "1/3",
+  "1/2",
+  '0"7',
+  '1"',
+  '1"5',
+  '2"',
+  '3"',
+  '4"',
+  '6"',
+  '8"',
+  '12"',
+  '15"',
+  '20"',
+  '30"',
 ];
 
 interface LadderEntry {
@@ -140,7 +173,7 @@ export function isBulbAllowedInMode(camera: Camera, mode: ExposureMode | null): 
  * which the UI treats like P) additionally get the half stops the camera picks automatically.
  */
 export function shutterSpeedsForMode(camera: Camera, mode: ExposureMode | null): ShutterSpeed[] {
-  const manualOnly = mode === 'S' || mode === 'M';
+  const manualOnly = mode === "S" || mode === "M";
   const candidates = manualOnly
     ? camera.shutterSpeedsManual
     : [...camera.shutterSpeedsManual, ...camera.shutterSpeedsAutoExtra];

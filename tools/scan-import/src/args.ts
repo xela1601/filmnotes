@@ -27,15 +27,15 @@ export interface Args {
 export class ArgumentError extends Error {
   constructor(message: string) {
     super(message);
-    this.name = 'ArgumentError';
+    this.name = "ArgumentError";
   }
 }
 
 /** The environment variable that carries the password, so it never shows up in the process list. */
-export const PASSWORD_ENV = 'FILMNOTES_PASSWORD';
+export const PASSWORD_ENV = "FILMNOTES_PASSWORD";
 
 /** Options that take a value. */
-const VALUE_FLAGS = ['--server', '--email', '--password', '--roll'] as const;
+const VALUE_FLAGS = ["--server", "--email", "--password", "--roll"] as const;
 type ValueFlag = (typeof VALUE_FLAGS)[number];
 
 function isValueFlag(candidate: string): candidate is ValueFlag {
@@ -79,17 +79,17 @@ export function parseArgs(
   for (let index = 0; index < argv.length; index += 1) {
     const token = argv[index] as string;
 
-    if (token === '-y' || token === '--yes') {
+    if (token === "-y" || token === "--yes") {
       yes = true;
       continue;
     }
-    if (token === '--dry-run') {
+    if (token === "--dry-run") {
       dryRun = true;
       continue;
     }
 
-    if (token.startsWith('--') && token.includes('=')) {
-      const separator = token.indexOf('=');
+    if (token.startsWith("--") && token.includes("=")) {
+      const separator = token.indexOf("=");
       const flag = token.slice(0, separator);
       if (!isValueFlag(flag)) throw new ArgumentError(`unknown option ${flag}`);
       values.set(flag, token.slice(separator + 1));
@@ -98,7 +98,7 @@ export function parseArgs(
 
     if (isValueFlag(token)) {
       const value = argv[index + 1];
-      if (value === undefined || value.startsWith('-')) {
+      if (value === undefined || value.startsWith("-")) {
         throw new ArgumentError(`${token} needs a value`);
       }
       values.set(token, value);
@@ -106,34 +106,34 @@ export function parseArgs(
       continue;
     }
 
-    if (token.startsWith('-')) throw new ArgumentError(`unknown option ${token}`);
+    if (token.startsWith("-")) throw new ArgumentError(`unknown option ${token}`);
     positional.push(token);
   }
 
   const required = (flag: ValueFlag): string => {
     const value = values.get(flag);
-    if (value === undefined || value === '') throw new ArgumentError(`${flag} is required`);
+    if (value === undefined || value === "") throw new ArgumentError(`${flag} is required`);
     return value;
   };
 
-  const server = required('--server');
-  const email = required('--email');
-  const roll = required('--roll');
+  const server = required("--server");
+  const email = required("--email");
+  const roll = required("--roll");
 
   if (positional.length === 0) {
-    throw new ArgumentError('the source folder or zip file is missing');
+    throw new ArgumentError("the source folder or zip file is missing");
   }
   if (positional.length > 1) {
     throw new ArgumentError(`expected exactly one source, got ${positional.length}`);
   }
 
   const fromEnv = env[PASSWORD_ENV];
-  const password = values.get('--password') ?? (fromEnv === '' ? undefined : fromEnv);
+  const password = values.get("--password") ?? (fromEnv === "" ? undefined : fromEnv);
 
   return { server, email, password, roll, source: positional[0] as string, yes, dryRun };
 }
 
 /** True when the argument list only asks for the usage text. */
 export function wantsHelp(argv: string[]): boolean {
-  return argv.includes('-h') || argv.includes('--help');
+  return argv.includes("-h") || argv.includes("--help");
 }

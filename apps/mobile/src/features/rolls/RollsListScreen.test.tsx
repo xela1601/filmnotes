@@ -1,45 +1,42 @@
-import { fireEvent, render, screen } from '@testing-library/react-native';
-import { router } from 'expo-router';
+import { fireEvent, render, screen } from "@testing-library/react-native";
+import { router } from "expo-router";
 
-import { i18n } from '../../i18n';
-import { useStore } from '../../store/store';
-import { FIXTURE_NOW, makeFrame, makeRoll } from '../../testing/fixtures';
-import { RollsListScreen } from './RollsListScreen';
+import { i18n } from "../../i18n";
+import { useStore } from "../../store/store";
+import { FIXTURE_NOW, makeFrame, makeRoll } from "../../testing/fixtures";
+import { RollsListScreen } from "./RollsListScreen";
 
-jest.mock('expo-router', () => ({
+jest.mock("expo-router", () => ({
   router: { push: jest.fn(), replace: jest.fn(), back: jest.fn() },
 }));
 
-const OLDER = 'roll00000000001';
-const NEWER = 'roll00000000002';
+const OLDER = "roll00000000001";
+const NEWER = "roll00000000002";
 
 function twoRolls(): void {
   const { upsert } = useStore.getState();
-  upsert('rolls', makeRoll({ id: OLDER, loadedAt: '2026-08-01T09:00:00.000Z' }));
-  upsert(
-    'rolls',
-    makeRoll({ id: NEWER, loadedAt: '2026-09-18T09:00:00.000Z', status: 'at_lab' }),
-  );
-  upsert('frames', makeFrame({ id: 'frame0000000001', rollId: NEWER, frameNo: 1 }));
-  upsert('frames', makeFrame({ id: 'frame0000000002', rollId: NEWER, frameNo: 2 }));
+  upsert("rolls", makeRoll({ id: OLDER, loadedAt: "2026-08-01T09:00:00.000Z" }));
+  upsert("rolls", makeRoll({ id: NEWER, loadedAt: "2026-09-18T09:00:00.000Z", status: "at_lab" }));
+  upsert("frames", makeFrame({ id: "frame0000000001", rollId: NEWER, frameNo: 1 }));
+  upsert("frames", makeFrame({ id: "frame0000000002", rollId: NEWER, frameNo: 2 }));
 }
 
-describe('RollsListScreen', () => {
+describe("RollsListScreen", () => {
   beforeEach(async () => {
     jest.clearAllMocks();
     useStore.getState().resetAll();
     useStore.getState().seedPresets(FIXTURE_NOW);
-    await i18n.changeLanguage('de');
+    await i18n.changeLanguage("de");
   });
 
-  it('explains what to do while no roll exists', () => {
+  it("explains what to do while no roll exists", () => {
     render(<RollsListScreen />);
 
-    expect(screen.getByText(i18n.t('rolls:empty'))).toBeOnTheScreen();
-    expect(screen.getByText(i18n.t('rolls:emptyHint'))).toBeOnTheScreen();
+    expect(screen.getByText(i18n.t("rolls:empty"))).toBeOnTheScreen();
+    expect(screen.getByText(i18n.t("rolls:emptyHint"))).toBeOnTheScreen();
   });
 
-  it('lists the rolls newest first with status and progress', () => {
+  it("lists the rolls newest first with status and progress", () => {
     twoRolls();
 
     render(<RollsListScreen />);
@@ -49,17 +46,15 @@ describe('RollsListScreen', () => {
       `roll-item-${NEWER}`,
       `roll-item-${OLDER}`,
     ]);
-    expect(screen.getByText('Kodak Gold 200 · 2026-09-18')).toBeOnTheScreen();
+    expect(screen.getByText("Kodak Gold 200 · 2026-09-18")).toBeOnTheScreen();
     expect(screen.getByTestId(`roll-item-${NEWER}-status`)).toHaveTextContent(
-      i18n.t('rolls:status.at_lab'),
+      i18n.t("rolls:status.at_lab"),
     );
-    expect(
-      screen.getByText(i18n.t('rolls:progress', { shot: 2, total: 36 })),
-    ).toBeOnTheScreen();
-    expect(screen.getByText(i18n.t('rolls:progress', { shot: 0, total: 36 }))).toBeOnTheScreen();
+    expect(screen.getByText(i18n.t("rolls:progress", { shot: 2, total: 36 }))).toBeOnTheScreen();
+    expect(screen.getByText(i18n.t("rolls:progress", { shot: 0, total: 36 }))).toBeOnTheScreen();
   });
 
-  it('opens a roll', () => {
+  it("opens a roll", () => {
     twoRolls();
 
     render(<RollsListScreen />);
@@ -68,17 +63,17 @@ describe('RollsListScreen', () => {
     expect(router.push).toHaveBeenCalledWith(`/rolls/${OLDER}`);
   });
 
-  it('starts a new roll from the header action', () => {
+  it("starts a new roll from the header action", () => {
     render(<RollsListScreen />);
 
-    fireEvent.press(screen.getByTestId('rolls-new'));
+    fireEvent.press(screen.getByTestId("rolls-new"));
 
-    expect(router.push).toHaveBeenCalledWith('/rolls/new');
+    expect(router.push).toHaveBeenCalledWith("/rolls/new");
   });
 
-  it('hides archived rolls that were deleted', () => {
+  it("hides archived rolls that were deleted", () => {
     twoRolls();
-    useStore.getState().softDelete('rolls', OLDER);
+    useStore.getState().softDelete("rolls", OLDER);
 
     render(<RollsListScreen />);
 

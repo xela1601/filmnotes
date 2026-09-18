@@ -1,8 +1,8 @@
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, Text, View } from "react-native";
 
-import { FieldLabel } from './FieldLabel';
-import type { SelectOption } from './SelectField';
-import { useTheme } from './theme';
+import { FieldLabel } from "./FieldLabel";
+import type { SelectOption } from "./SelectField";
+import { useTheme } from "./theme";
 
 export interface MultiSelectFieldProps<T> {
   label: string;
@@ -43,7 +43,7 @@ export function MultiSelectField<T extends string | number>({
                 styles.chip,
                 {
                   borderColor: palette.border,
-                  backgroundColor: active ? palette.primary : 'transparent',
+                  backgroundColor: active ? palette.primary : "transparent",
                 },
               ]}
             >
@@ -62,13 +62,13 @@ export function MultiSelectField<T extends string | number>({
 
 const styles = StyleSheet.create({
   field: { gap: 4 },
-  chips: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
+  chips: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
   chip: {
     minHeight: 44,
     paddingHorizontal: 12,
     borderWidth: StyleSheet.hairlineWidth,
     borderRadius: 6,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
   },
 });

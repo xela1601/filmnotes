@@ -1,7 +1,7 @@
-import * as SecureStore from 'expo-secure-store';
+import * as SecureStore from "expo-secure-store";
 
 /** Secrets that never go into the persisted store. */
-export type SecretKey = 'serverPassword' | 'serverToken' | 'wordpressAppPassword';
+export type SecretKey = "serverPassword" | "serverToken" | "wordpressAppPassword";
 
 export async function getSecret(key: SecretKey): Promise<string | null> {
   return SecureStore.getItemAsync(key);

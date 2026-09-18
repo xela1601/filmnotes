@@ -1,8 +1,8 @@
-import type { ReactNode } from 'react';
-import { ScrollView, StyleSheet, Text, View } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import type { ReactNode } from "react";
+import { ScrollView, StyleSheet, Text, View } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-import { useTheme } from './theme';
+import { useTheme } from "./theme";
 
 export interface ScreenProps {
   title?: string;
@@ -46,7 +46,10 @@ export function Screen({ title, scroll = true, children, testID }: ScreenProps) 
   }
 
   return (
-    <View testID={testID} style={[styles.flex, styles.container, padding, { backgroundColor: palette.background }]}>
+    <View
+      testID={testID}
+      style={[styles.flex, styles.container, padding, { backgroundColor: palette.background }]}
+    >
       {content}
     </View>
   );
@@ -55,5 +58,5 @@ export function Screen({ title, scroll = true, children, testID }: ScreenProps) 
 const styles = StyleSheet.create({
   flex: { flex: 1 },
   container: { gap: 16 },
-  title: { fontWeight: '700' },
+  title: { fontWeight: "700" },
 });

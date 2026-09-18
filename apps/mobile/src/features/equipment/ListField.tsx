@@ -6,12 +6,12 @@
  * (aliases, aperture values, shutter speeds, power levels …). The values are kept as
  * the record holds them, so the editor can write the array straight back.
  */
-import { useState } from 'react';
-import { useTranslation } from 'react-i18next';
-import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
+import { useState } from "react";
+import { useTranslation } from "react-i18next";
+import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 
-import { Button, FieldLabel, useTheme } from '../../ui';
-import './i18n';
+import { Button, FieldLabel, useTheme } from "../../ui";
+import "./i18n";
 
 export interface ListFieldProps {
   label: string;
@@ -23,22 +23,22 @@ export interface ListFieldProps {
 }
 
 export function ListField({ label, values, onChange, numeric = false, testID }: ListFieldProps) {
-  const { t } = useTranslation('equipment');
+  const { t } = useTranslation("equipment");
   const { palette, fontSize } = useTheme();
-  const [draft, setDraft] = useState('');
+  const [draft, setDraft] = useState("");
 
   const add = () => {
     const text = draft.trim();
-    if (text === '') return;
+    if (text === "") return;
 
     if (numeric) {
-      const parsed = Number(text.replace(',', '.'));
+      const parsed = Number(text.replace(",", "."));
       if (!Number.isFinite(parsed)) return;
       onChange([...values, parsed]);
     } else {
       onChange([...values, text]);
     }
-    setDraft('');
+    setDraft("");
   };
 
   const removeAt = (index: number) => {
@@ -51,7 +51,7 @@ export function ListField({ label, values, onChange, numeric = false, testID }: 
 
       {values.length === 0 ? (
         <Text style={{ color: palette.textMuted, fontSize: fontSize.sm }}>
-          {t('lists.emptyValue')}
+          {t("lists.emptyValue")}
         </Text>
       ) : (
         <View style={styles.chips}>
@@ -61,9 +61,12 @@ export function ListField({ label, values, onChange, numeric = false, testID }: 
               key={`${String(value)}-${index}`}
               testID={testID === undefined ? undefined : `${testID}-remove-${index}`}
               accessibilityRole="button"
-              accessibilityLabel={t('lists.remove', { value: String(value) })}
+              accessibilityLabel={t("lists.remove", { value: String(value) })}
               onPress={() => removeAt(index)}
-              style={[styles.chip, { borderColor: palette.border, backgroundColor: palette.surface }]}
+              style={[
+                styles.chip,
+                { borderColor: palette.border, backgroundColor: palette.surface },
+              ]}
             >
               <Text style={{ color: palette.text, fontSize: fontSize.md }}>
                 {`${String(value)} ×`}
@@ -80,14 +83,14 @@ export function ListField({ label, values, onChange, numeric = false, testID }: 
           value={draft}
           onChangeText={setDraft}
           onSubmitEditing={add}
-          keyboardType={numeric ? 'numeric' : 'default'}
+          keyboardType={numeric ? "numeric" : "default"}
           style={[
             styles.input,
             { color: palette.text, borderColor: palette.border, fontSize: fontSize.md },
           ]}
         />
         <Button
-          title={t('lists.add')}
+          title={t("lists.add")}
           variant="secondary"
           onPress={add}
           testID={testID === undefined ? undefined : `${testID}-add`}
@@ -99,16 +102,16 @@ export function ListField({ label, values, onChange, numeric = false, testID }: 
 
 const styles = StyleSheet.create({
   field: { gap: 8 },
-  chips: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
+  chips: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
   chip: {
     minHeight: 44,
     paddingHorizontal: 12,
     borderWidth: StyleSheet.hairlineWidth,
     borderRadius: 6,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
   },
-  row: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  row: { flexDirection: "row", alignItems: "center", gap: 8 },
   input: {
     flex: 1,
     borderWidth: StyleSheet.hairlineWidth,

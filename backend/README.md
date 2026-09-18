@@ -23,13 +23,13 @@ backend/
 
 Conventions that apply to all of them:
 
-| field | meaning |
-|---|---|
-| `id` | PocketBase's 15-char id; clients generate it with `newId()` and send it on create, so records exist offline before they are uploaded |
-| `owner` | relation to `users`, cascade delete; the only real relation in the schema |
-| `deleted` | soft-delete marker, `null` while the record is alive, so deletions can sync |
-| `clientUpdated` | the client's own `updated` timestamp, used for last-write-wins; PocketBase's `updated` stays server time |
-| `created` / `updated` | PocketBase autodate fields (server time) |
+| field                 | meaning                                                                                                                              |
+| --------------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
+| `id`                  | PocketBase's 15-char id; clients generate it with `newId()` and send it on create, so records exist offline before they are uploaded |
+| `owner`               | relation to `users`, cascade delete; the only real relation in the schema                                                            |
+| `deleted`             | soft-delete marker, `null` while the record is alive, so deletions can sync                                                          |
+| `clientUpdated`       | the client's own `updated` timestamp, used for last-write-wins; PocketBase's `updated` stays server time                             |
+| `created` / `updated` | PocketBase autodate fields (server time)                                                                                             |
 
 References between our own records (`cameraId`, `rollId`, `lensId`, `filterIds`, …) are plain
 text ids, **not** PocketBase relations: an offline-created frame must be able to point at an

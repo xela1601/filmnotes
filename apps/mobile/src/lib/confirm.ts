@@ -1,4 +1,4 @@
-import { Alert, Platform } from 'react-native';
+import { Alert, Platform } from "react-native";
 
 /**
  * Asks for confirmation of a destructive action.
@@ -15,13 +15,13 @@ export function confirmDestructive(options: {
 }): void {
   const { title, message, confirmLabel, cancelLabel, onConfirm } = options;
 
-  if (Platform.OS === 'web') {
+  if (Platform.OS === "web") {
     if (globalThis.confirm?.(`${title}\n\n${message}`) === true) onConfirm();
     return;
   }
 
   Alert.alert(title, message, [
-    { text: cancelLabel, style: 'cancel' },
-    { text: confirmLabel, style: 'destructive', onPress: onConfirm },
+    { text: cancelLabel, style: "cancel" },
+    { text: confirmLabel, style: "destructive", onPress: onConfirm },
   ]);
 }

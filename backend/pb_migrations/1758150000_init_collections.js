@@ -22,218 +22,218 @@ const OWNER_RULE = '@request.auth.id != "" && owner = @request.auth.id';
 const CREATE_RULE =
   '@request.auth.id != "" && owner = @request.auth.id && @request.body.owner = @request.auth.id';
 
-const text = (name, extra) => ({ name, type: 'text', ...extra });
-const num = (name, extra) => ({ name, type: 'number', ...extra });
-const bool = (name) => ({ name, type: 'bool' });
-const date = (name) => ({ name, type: 'date' });
-const json = (name) => ({ name, type: 'json', maxSize: 2000000 });
-const select = (name, values) => ({ name, type: 'select', maxSelect: 1, values });
+const text = (name, extra) => ({ name, type: "text", ...extra });
+const num = (name, extra) => ({ name, type: "number", ...extra });
+const bool = (name) => ({ name, type: "bool" });
+const date = (name) => ({ name, type: "date" });
+const json = (name) => ({ name, type: "json", maxSize: 2000000 });
+const select = (name, values) => ({ name, type: "select", maxSelect: 1, values });
 
 /** Collections in creation order; the down migration deletes them in reverse. */
 const COLLECTIONS = [
   {
-    name: 'cameras',
+    name: "cameras",
     fields: [
-      text('make', { required: true }),
-      text('model', { required: true }),
-      json('aliases'),
-      num('year'),
-      text('format'),
-      text('mount'),
-      json('exposureModes'),
-      json('shutterSpeedsManual'),
-      json('shutterSpeedsAutoExtra'),
-      json('bulbOnlyInModes'),
-      json('exposureCompensation'),
-      json('iso'),
-      json('focusModes'),
-      json('driveModes'),
-      text('flashSync'),
-      text('metering'),
-      text('notes'),
-      json('conditionNotes'),
-      json('defaultsForNewFrame'),
+      text("make", { required: true }),
+      text("model", { required: true }),
+      json("aliases"),
+      num("year"),
+      text("format"),
+      text("mount"),
+      json("exposureModes"),
+      json("shutterSpeedsManual"),
+      json("shutterSpeedsAutoExtra"),
+      json("bulbOnlyInModes"),
+      json("exposureCompensation"),
+      json("iso"),
+      json("focusModes"),
+      json("driveModes"),
+      text("flashSync"),
+      text("metering"),
+      text("notes"),
+      json("conditionNotes"),
+      json("defaultsForNewFrame"),
     ],
   },
   {
-    name: 'lenses',
+    name: "lenses",
     fields: [
-      text('make', { required: true }),
-      text('model', { required: true }),
-      num('focalMinMm'),
-      num('focalMaxMm'),
-      num('maxAperture'),
-      num('minAperture'),
-      json('apertureValues'),
-      num('filterThreadMm'),
-      num('minFocusM'),
-      text('macroNote'),
-      num('weightG'),
-      json('defaultFilterIds'),
-      text('handheldMinShutter'),
-      bool('hasHood'),
+      text("make", { required: true }),
+      text("model", { required: true }),
+      num("focalMinMm"),
+      num("focalMaxMm"),
+      num("maxAperture"),
+      num("minAperture"),
+      json("apertureValues"),
+      num("filterThreadMm"),
+      num("minFocusM"),
+      text("macroNote"),
+      num("weightG"),
+      json("defaultFilterIds"),
+      text("handheldMinShutter"),
+      bool("hasHood"),
     ],
   },
   {
-    name: 'filters',
+    name: "filters",
     fields: [
-      text('make', { required: true }),
-      text('model', { required: true }),
-      num('threadMm'),
-      text('type'),
-      num('exposureFactorEv'),
-      select('afCompatible', ['yes', 'no', 'limited']),
-      text('warning'),
-      text('mountedOnLensId'),
+      text("make", { required: true }),
+      text("model", { required: true }),
+      num("threadMm"),
+      text("type"),
+      num("exposureFactorEv"),
+      select("afCompatible", ["yes", "no", "limited"]),
+      text("warning"),
+      text("mountedOnLensId"),
     ],
   },
   {
-    name: 'flashes',
+    name: "flashes",
     fields: [
-      text('make', { required: true }),
-      text('model', { required: true }),
-      num('guideNumberIso100M'),
-      json('powerLevels'),
-      json('headPositions'),
-      bool('afIlluminator'),
-      text('sync'),
-      text('notes'),
+      text("make", { required: true }),
+      text("model", { required: true }),
+      num("guideNumberIso100M"),
+      json("powerLevels"),
+      json("headPositions"),
+      bool("afIlluminator"),
+      text("sync"),
+      text("notes"),
     ],
   },
   {
-    name: 'film_stocks',
+    name: "film_stocks",
     fields: [
-      text('name', { required: true }),
-      text('maker'),
-      num('iso'),
-      select('process', ['C41', 'BW', 'E6']),
-      bool('color'),
-      num('exposures'),
-      bool('dxCoded'),
-      text('notes'),
+      text("name", { required: true }),
+      text("maker"),
+      num("iso"),
+      select("process", ["C41", "BW", "E6"]),
+      bool("color"),
+      num("exposures"),
+      bool("dxCoded"),
+      text("notes"),
     ],
   },
   {
-    name: 'rolls',
+    name: "rolls",
     fields: [
-      text('cameraId', { required: true }),
-      text('filmStockId', { required: true }),
-      num('isoSet'),
-      select('isoSource', ['DX', 'manual']),
-      num('exposures'),
-      num('pushPullEv'),
-      select('status', ['loaded', 'shot', 'at_lab', 'developed', 'archived']),
-      date('loadedAt'),
-      date('unloadedAt'),
-      text('lab'),
-      text('notes'),
+      text("cameraId", { required: true }),
+      text("filmStockId", { required: true }),
+      num("isoSet"),
+      select("isoSource", ["DX", "manual"]),
+      num("exposures"),
+      num("pushPullEv"),
+      select("status", ["loaded", "shot", "at_lab", "developed", "archived"]),
+      date("loadedAt"),
+      date("unloadedAt"),
+      text("lab"),
+      text("notes"),
     ],
   },
   {
-    name: 'frames',
+    name: "frames",
     fields: [
-      text('rollId', { required: true }),
-      num('frameNo'),
-      date('takenAt'),
-      text('lensId'),
-      num('focalLengthMm'),
-      text('exposureMode'),
-      text('shutterSpeed'),
-      num('aperture'),
-      num('exposureCompensationEv'),
-      bool('programShift'),
-      bool('aeLock'),
-      text('focusMode'),
-      text('afResult'),
-      text('driveMode'),
-      text('flashId'),
-      text('flashHead'),
-      text('flashPower'),
-      bool('flashOk'),
-      json('filterIds'),
-      bool('lensHood'),
-      text('support'),
-      bool('beepWarning'),
-      text('light'),
-      text('subject'),
-      json('location'),
-      text('notes'),
+      text("rollId", { required: true }),
+      num("frameNo"),
+      date("takenAt"),
+      text("lensId"),
+      num("focalLengthMm"),
+      text("exposureMode"),
+      text("shutterSpeed"),
+      num("aperture"),
+      num("exposureCompensationEv"),
+      bool("programShift"),
+      bool("aeLock"),
+      text("focusMode"),
+      text("afResult"),
+      text("driveMode"),
+      text("flashId"),
+      text("flashHead"),
+      text("flashPower"),
+      bool("flashOk"),
+      json("filterIds"),
+      bool("lensHood"),
+      text("support"),
+      bool("beepWarning"),
+      text("light"),
+      text("subject"),
+      json("location"),
+      text("notes"),
     ],
-    extraIndexes: [['rollId']],
+    extraIndexes: [["rollId"]],
   },
   {
-    name: 'scans',
+    name: "scans",
     fields: [
-      text('rollId', { required: true }),
-      text('frameId'),
-      text('fileName', { required: true }),
-      num('sortIndex'),
+      text("rollId", { required: true }),
+      text("frameId"),
+      text("fileName", { required: true }),
+      num("sortIndex"),
       {
-        name: 'file',
-        type: 'file',
+        name: "file",
+        type: "file",
         maxSelect: 1,
         maxSize: 52428800, // 50 MB, lab scans of 135 frames stay well below that
-        mimeTypes: ['image/jpeg', 'image/png', 'image/tiff', 'image/webp'],
-        thumbs: ['200x200', '800x0'],
+        mimeTypes: ["image/jpeg", "image/png", "image/tiff", "image/webp"],
+        thumbs: ["200x200", "800x0"],
       },
-      num('width'),
-      num('height'),
-      date('importedAt'),
+      num("width"),
+      num("height"),
+      date("importedAt"),
     ],
-    extraIndexes: [['rollId'], ['frameId']],
+    extraIndexes: [["rollId"], ["frameId"]],
   },
   {
-    name: 'export_logs',
+    name: "export_logs",
     fields: [
-      text('frameId', { required: true }),
-      text('target', { required: true }),
-      text('externalId'),
-      text('url'),
-      date('exportedAt'),
+      text("frameId", { required: true }),
+      text("target", { required: true }),
+      text("externalId"),
+      text("url"),
+      date("exportedAt"),
     ],
-    extraIndexes: [['frameId']],
+    extraIndexes: [["frameId"]],
   },
 ];
 
 /** Sync bookkeeping every collection carries, appended after the domain fields. */
 function syncFields(usersCollectionId) {
   return [
-    date('deleted'),
-    date('clientUpdated'),
+    date("deleted"),
+    date("clientUpdated"),
     {
-      name: 'owner',
-      type: 'relation',
+      name: "owner",
+      type: "relation",
       collectionId: usersCollectionId,
       maxSelect: 1,
       cascadeDelete: true,
     },
-    { name: 'created', type: 'autodate', onCreate: true, onUpdate: false },
-    { name: 'updated', type: 'autodate', onCreate: true, onUpdate: true },
+    { name: "created", type: "autodate", onCreate: true, onUpdate: false },
+    { name: "updated", type: "autodate", onCreate: true, onUpdate: true },
   ];
 }
 
 function indexStatements(name, extraIndexes) {
-  return [['owner'], ...(extraIndexes || [])].map(
+  return [["owner"], ...(extraIndexes || [])].map(
     (columns) =>
-      'CREATE INDEX `idx_' +
+      "CREATE INDEX `idx_" +
       name +
-      '_' +
-      columns.join('_') +
-      '` ON `' +
+      "_" +
+      columns.join("_") +
+      "` ON `" +
       name +
-      '` (' +
-      columns.map((column) => '`' + column + '`').join(', ') +
-      ')',
+      "` (" +
+      columns.map((column) => "`" + column + "`").join(", ") +
+      ")",
   );
 }
 
 migrate(
   (app) => {
-    const users = app.findCollectionByNameOrId('users');
+    const users = app.findCollectionByNameOrId("users");
 
     for (const spec of COLLECTIONS) {
       const collection = new Collection({
-        type: 'base',
+        type: "base",
         name: spec.name,
         fields: [...spec.fields, ...syncFields(users.id)],
         listRule: OWNER_RULE,

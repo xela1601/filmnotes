@@ -1,9 +1,9 @@
 /**
  * Shared, translated wording of the export screens.
  */
-import type { TFunction } from 'i18next';
+import type { TFunction } from "i18next";
 
-import { ExportPreconditionError } from './runExport';
+import { ExportPreconditionError } from "./runExport";
 
 /**
  * The bare reason an export failed: a refused precondition has its own translated text, everything
@@ -19,7 +19,7 @@ export function exportErrorReason(t: TFunction, error: unknown): string {
 /** The same reason as a full sentence, for a screen that exports one frame. */
 export function exportErrorMessage(t: TFunction, error: unknown): string {
   if (error instanceof ExportPreconditionError) return t(`errors.${error.problem}`);
-  return t('errors.failed', { message: exportErrorReason(t, error) });
+  return t("errors.failed", { message: exportErrorReason(t, error) });
 }
 
 /** An `ExportLog.target` as the UI names it; an unknown target keeps its id. */

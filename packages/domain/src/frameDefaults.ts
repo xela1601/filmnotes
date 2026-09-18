@@ -6,8 +6,8 @@
  * filters, flash, modes, support. The exposure itself (times, aperture, notes, location) is
  * always empty: it is what the photographer is about to record.
  */
-import { newId } from './id';
-import type { Camera, Frame, Id, ISODateTime } from './types';
+import { newId } from "./id";
+import type { Camera, Frame, Id, ISODateTime } from "./types";
 
 export interface NewFrameInput {
   rollId: Id;
@@ -30,35 +30,36 @@ export function newFrame(input: NewFrameInput): Frame {
   const { rollId, frameNo, camera, previous, now } = input;
   const defaults = camera.defaultsForNewFrame;
   /** Everything that stays mounted/dialled in on the camera between two shots. */
-  const carriedOver = previous === null
-    ? {
-        lensId: defaults.lensId,
-        focalLengthMm: null,
-        filterIds: defaults.filterIds,
-        flashId: defaults.flashId,
-        flashHead: null,
-        flashPower: null,
-        exposureMode: defaults.exposureMode,
-        focusMode: defaults.focusMode,
-        driveMode: defaults.driveMode,
-        support: defaults.support,
-        lensHood: false,
-        light: null,
-      }
-    : {
-        lensId: previous.lensId,
-        focalLengthMm: previous.focalLengthMm,
-        filterIds: previous.filterIds,
-        flashId: previous.flashId,
-        flashHead: previous.flashHead,
-        flashPower: previous.flashPower,
-        exposureMode: previous.exposureMode,
-        focusMode: previous.focusMode,
-        driveMode: previous.driveMode,
-        support: previous.support,
-        lensHood: previous.lensHood,
-        light: previous.light,
-      };
+  const carriedOver =
+    previous === null
+      ? {
+          lensId: defaults.lensId,
+          focalLengthMm: null,
+          filterIds: defaults.filterIds,
+          flashId: defaults.flashId,
+          flashHead: null,
+          flashPower: null,
+          exposureMode: defaults.exposureMode,
+          focusMode: defaults.focusMode,
+          driveMode: defaults.driveMode,
+          support: defaults.support,
+          lensHood: false,
+          light: null,
+        }
+      : {
+          lensId: previous.lensId,
+          focalLengthMm: previous.focalLengthMm,
+          filterIds: previous.filterIds,
+          flashId: previous.flashId,
+          flashHead: previous.flashHead,
+          flashPower: previous.flashPower,
+          exposureMode: previous.exposureMode,
+          focusMode: previous.focusMode,
+          driveMode: previous.driveMode,
+          support: previous.support,
+          lensHood: previous.lensHood,
+          light: previous.light,
+        };
 
   return {
     id: newId(),
@@ -91,6 +92,6 @@ export function newFrame(input: NewFrameInput): Frame {
     light: carriedOver.light,
     subject: null,
     location: null,
-    notes: '',
+    notes: "",
   };
 }

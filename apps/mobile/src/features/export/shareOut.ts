@@ -10,21 +10,21 @@
  *
  * The web implementation is `shareOut.web.ts`; Metro picks it for `platform === 'web'`.
  */
-import type { SharePayload } from '@filmnotes/exporters';
-import * as Clipboard from 'expo-clipboard';
-import { File, Paths } from 'expo-file-system';
-import * as Sharing from 'expo-sharing';
-import { Share } from 'react-native';
+import type { SharePayload } from "@filmnotes/exporters";
+import * as Clipboard from "expo-clipboard";
+import { File, Paths } from "expo-file-system";
+import * as Sharing from "expo-sharing";
+import { Share } from "react-native";
 
 /** The cache file the image is shared from; it is overwritten by every export. */
-const SHARE_FILE_PREFIX = 'filmnotes-share-';
+const SHARE_FILE_PREFIX = "filmnotes-share-";
 
 /** Apple's uniform type identifiers for the formats a lab scan arrives in. */
 const UTI_BY_MIME_TYPE: Record<string, string> = {
-  'image/jpeg': 'public.jpeg',
-  'image/png': 'public.png',
-  'image/tiff': 'public.tiff',
-  'image/webp': 'org.webmproject.webp',
+  "image/jpeg": "public.jpeg",
+  "image/png": "public.png",
+  "image/tiff": "public.tiff",
+  "image/webp": "org.webmproject.webp",
 };
 
 /**
@@ -32,16 +32,16 @@ const UTI_BY_MIME_TYPE: Record<string, string> = {
  * anything, and a path separator in them would point the write somewhere else entirely.
  */
 function safeFileName(fileName: string): string {
-  const cleaned = fileName.replace(/[^A-Za-z0-9._-]/g, '_');
-  return cleaned === '' || cleaned.startsWith('.') ? `scan${cleaned}` : cleaned;
+  const cleaned = fileName.replace(/[^A-Za-z0-9._-]/g, "_");
+  return cleaned === "" || cleaned.startsWith(".") ? `scan${cleaned}` : cleaned;
 }
 
 export async function shareOut(payload: SharePayload): Promise<void> {
-  if (payload.text !== '') await Clipboard.setStringAsync(payload.text);
+  if (payload.text !== "") await Clipboard.setStringAsync(payload.text);
 
   if (payload.image === null || !(await Sharing.isAvailableAsync())) {
     // Nothing to share as a file – let the OS share the caption as text.
-    if (payload.text !== '') await Share.share({ message: payload.text });
+    if (payload.text !== "") await Share.share({ message: payload.text });
     return;
   }
 
@@ -52,7 +52,7 @@ export async function shareOut(payload: SharePayload): Promise<void> {
 
   await Sharing.shareAsync(file.uri, {
     mimeType: payload.image.mimeType,
-    dialogTitle: payload.text === '' ? undefined : payload.text,
+    dialogTitle: payload.text === "" ? undefined : payload.text,
     UTI: UTI_BY_MIME_TYPE[payload.image.mimeType],
   });
 }

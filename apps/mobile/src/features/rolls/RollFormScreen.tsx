@@ -4,15 +4,15 @@
  * The screen is a thin shell around `rollForm.ts`: it holds the form values, renders
  * one field per value and writes the record to the store when the values validate.
  */
-import type { FilmStock, Id, IsoSource, Roll } from '@filmnotes/domain';
-import { router } from 'expo-router';
-import { useState } from 'react';
-import { useTranslation } from 'react-i18next';
-import { StyleSheet, Text, View } from 'react-native';
+import type { FilmStock, Id, IsoSource, Roll } from "@filmnotes/domain";
+import { router } from "expo-router";
+import { useState } from "react";
+import { useTranslation } from "react-i18next";
+import { StyleSheet, Text, View } from "react-native";
 
-import { useActive, useEntity } from '../../store/hooks';
-import { useStore } from '../../store/store';
-import { now } from '../../lib/clock';
+import { useActive, useEntity } from "../../store/hooks";
+import { useStore } from "../../store/store";
+import { now } from "../../lib/clock";
 import {
   Button,
   EmptyState,
@@ -23,8 +23,8 @@ import {
   TextField,
   useTheme,
   type SelectOption,
-} from '../../ui';
-import './i18n';
+} from "../../ui";
+import "./i18n";
 import {
   applyFilmStock,
   dateInputFromIso,
@@ -36,46 +36,46 @@ import {
   type Exposures,
   type RollFormErrors,
   type RollFormValues,
-} from './rollForm';
+} from "./rollForm";
 
 /** Film stocks are picked in two groups, because that is how they sit in the fridge. */
-type FilmType = 'color' | 'bw';
+type FilmType = "color" | "bw";
 
 /** Push/pull is dialled in whole stops, two either way is already extreme. */
 const PUSH_PULL_MIN = -3;
 const PUSH_PULL_MAX = 3;
 
 export interface RollFormProps {
-  mode: 'create' | 'edit';
+  mode: "create" | "edit";
   /** The roll to edit; ignored in create mode. */
   rollId?: Id;
 }
 
 export function RollForm({ mode, rollId }: RollFormProps) {
-  const { t } = useTranslation('rolls');
-  const existing = useEntity('rolls', mode === 'edit' ? rollId ?? null : null) ?? null;
+  const { t } = useTranslation("rolls");
+  const existing = useEntity("rolls", mode === "edit" ? (rollId ?? null) : null) ?? null;
 
-  if (mode === 'edit' && existing === null) {
+  if (mode === "edit" && existing === null) {
     return (
       <Screen testID="roll-form">
-        <EmptyState title={t('notFound')} hint={t('notFoundHint')} testID="roll-form-not-found" />
+        <EmptyState title={t("notFound")} hint={t("notFoundHint")} testID="roll-form-not-found" />
       </Screen>
     );
   }
 
   // Remounts once the roll to edit is known, so the fields start from its values.
-  return <RollFormFields key={existing?.id ?? 'new'} existing={existing} />;
+  return <RollFormFields key={existing?.id ?? "new"} existing={existing} />;
 }
 
 function filmTypeOf(stock: FilmStock | undefined): FilmType {
-  return stock !== undefined && !stock.color ? 'bw' : 'color';
+  return stock !== undefined && !stock.color ? "bw" : "color";
 }
 
 function RollFormFields({ existing }: { existing: Roll | null }) {
-  const { t } = useTranslation('rolls');
+  const { t } = useTranslation("rolls");
   const { palette, fontSize } = useTheme();
-  const cameras = useActive('cameras');
-  const filmStocks = useActive('filmStocks');
+  const cameras = useActive("cameras");
+  const filmStocks = useActive("filmStocks");
   const upsert = useStore((state) => state.upsert);
 
   const [values, setValues] = useState<RollFormValues>(() =>
@@ -97,8 +97,8 @@ function RollFormFields({ existing }: { existing: Roll | null }) {
   }));
 
   const filmTypeOptions: SelectOption<FilmType>[] = [
-    { value: 'color', label: t('filmTypes.color') },
-    { value: 'bw', label: t('filmTypes.bw') },
+    { value: "color", label: t("filmTypes.color") },
+    { value: "bw", label: t("filmTypes.bw") },
   ];
 
   const stocksOfType = filmStocks
@@ -111,17 +111,17 @@ function RollFormFields({ existing }: { existing: Roll | null }) {
   }));
 
   const isoSourceOptions: SelectOption<IsoSource>[] = [
-    { value: 'DX', label: t('isoSources.DX') },
-    { value: 'manual', label: t('isoSources.manual') },
+    { value: "DX", label: t("isoSources.DX") },
+    { value: "manual", label: t("isoSources.manual") },
   ];
 
   const exposureOptions: SelectOption<Exposures>[] = [
-    { value: 24, label: '24' },
-    { value: 36, label: '36' },
+    { value: 24, label: "24" },
+    { value: 36, label: "36" },
   ];
 
   const changeFilmType = (next: FilmType | null) => {
-    const type = next ?? 'color';
+    const type = next ?? "color";
     setFilmType(type);
     // The previous stock belongs to the other group, so the choice starts over.
     const selected = filmStocks.find((stock) => stock.id === values.filmStockId);
@@ -139,7 +139,7 @@ function RollFormFields({ existing }: { existing: Roll | null }) {
 
   const changeDate = (text: string) => {
     setDateInput(text);
-    patch({ loadedAt: isoFromDateInput(text) ?? '' });
+    patch({ loadedAt: isoFromDateInput(text) ?? "" });
   };
 
   const save = () => {
@@ -148,7 +148,7 @@ function RollFormFields({ existing }: { existing: Roll | null }) {
     if (Object.keys(found).length > 0) return;
 
     const roll = rollFromForm(values, existing, now());
-    upsert('rolls', roll);
+    upsert("rolls", roll);
     router.replace(`/rolls/${roll.id}`);
   };
 
@@ -166,21 +166,21 @@ function RollFormFields({ existing }: { existing: Roll | null }) {
   };
 
   return (
-    <Screen title={existing === null ? t('new') : t('edit')} testID="roll-form">
-      <Section title={t('sections.film')}>
+    <Screen title={existing === null ? t("new") : t("edit")} testID="roll-form">
+      <Section title={t("sections.film")}>
         <View>
           <SelectField
-            label={t('fields.camera')}
+            label={t("fields.camera")}
             value={values.cameraId}
             options={cameraOptions}
             onChange={(next) => patch({ cameraId: next })}
             testID="roll-form-camera"
           />
-          {error('cameraId')}
+          {error("cameraId")}
         </View>
 
         <SelectField
-          label={t('fields.filmType')}
+          label={t("fields.filmType")}
           value={filmType}
           options={filmTypeOptions}
           onChange={changeFilmType}
@@ -189,35 +189,35 @@ function RollFormFields({ existing }: { existing: Roll | null }) {
 
         <View>
           <SelectField
-            label={t('fields.filmStock')}
+            label={t("fields.filmStock")}
             value={values.filmStockId}
             options={filmStockOptions}
             onChange={changeFilmStock}
             testID="roll-form-film-stock"
           />
-          {error('filmStockId')}
+          {error("filmStockId")}
         </View>
 
         <View>
           <NumberField
-            label={t('fields.iso')}
+            label={t("fields.iso")}
             value={values.isoSet}
             onChange={(next) => patch({ isoSet: next })}
             testID="roll-form-iso"
           />
-          {error('isoSet')}
+          {error("isoSet")}
         </View>
 
         <SelectField
-          label={t('fields.isoSource')}
+          label={t("fields.isoSource")}
           value={values.isoSource}
           options={isoSourceOptions}
-          onChange={(next) => patch({ isoSource: next ?? 'DX' })}
+          onChange={(next) => patch({ isoSource: next ?? "DX" })}
           testID="roll-form-iso-source"
         />
 
         <SelectField
-          label={t('fields.exposures')}
+          label={t("fields.exposures")}
           value={values.exposures}
           options={exposureOptions}
           onChange={(next) => patch({ exposures: next ?? 36 })}
@@ -225,7 +225,7 @@ function RollFormFields({ existing }: { existing: Roll | null }) {
         />
 
         <NumberField
-          label={t('fields.pushPull')}
+          label={t("fields.pushPull")}
           value={values.pushPullEv}
           onChange={(next) => patch({ pushPullEv: next ?? 0 })}
           step={1}
@@ -235,27 +235,27 @@ function RollFormFields({ existing }: { existing: Roll | null }) {
         />
       </Section>
 
-      <Section title={t('sections.development')}>
+      <Section title={t("sections.development")}>
         <View>
           <TextField
-            label={t('fields.loadedAt')}
+            label={t("fields.loadedAt")}
             value={dateInput}
             onChangeText={changeDate}
             placeholder="YYYY-MM-DD"
             testID="roll-form-loaded-at"
           />
-          {error('loadedAt')}
+          {error("loadedAt")}
         </View>
 
         <TextField
-          label={t('fields.lab')}
+          label={t("fields.lab")}
           value={values.lab}
           onChangeText={(lab) => patch({ lab })}
           testID="roll-form-lab"
         />
 
         <TextField
-          label={t('fields.notes')}
+          label={t("fields.notes")}
           value={values.notes}
           onChangeText={(notes) => patch({ notes })}
           multiline
@@ -263,9 +263,9 @@ function RollFormFields({ existing }: { existing: Roll | null }) {
         />
       </Section>
 
-      <Button title={t('actions.save', { ns: 'common' })} onPress={save} testID="roll-form-save" />
+      <Button title={t("actions.save", { ns: "common" })} onPress={save} testID="roll-form-save" />
       <Button
-        title={t('actions.cancel', { ns: 'common' })}
+        title={t("actions.cancel", { ns: "common" })}
         variant="secondary"
         onPress={() => router.back()}
         testID="roll-form-cancel"
@@ -275,5 +275,5 @@ function RollFormFields({ existing }: { existing: Roll | null }) {
 }
 
 const styles = StyleSheet.create({
-  error: { fontWeight: '600', marginTop: 4 },
+  error: { fontWeight: "600", marginTop: 4 },
 });

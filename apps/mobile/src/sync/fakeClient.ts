@@ -13,9 +13,9 @@
  *
  * This file is test infrastructure; it is deliberately not exported from the feature.
  */
-import type { Id } from '@filmnotes/domain';
+import type { Id } from "@filmnotes/domain";
 
-import type { RemoteRecord, SyncClient, UploadFile } from './client';
+import type { RemoteRecord, SyncClient, UploadFile } from "./client";
 
 /** A thrown error that carries a PocketBase HTTP status. */
 class FakeResponseError extends Error {
@@ -24,7 +24,7 @@ class FakeResponseError extends Error {
     message: string,
   ) {
     super(message);
-    this.name = 'FakeResponseError';
+    this.name = "FakeResponseError";
   }
 }
 
@@ -53,7 +53,7 @@ export class FakeSyncClient implements SyncClient {
   readonly tokens = new Map<string, Id>();
 
   constructor(options: FakeSyncClientOptions = {}) {
-    this.serverClock = Date.parse(options.serverNow ?? '2026-09-18T12:00:00.000Z');
+    this.serverClock = Date.parse(options.serverNow ?? "2026-09-18T12:00:00.000Z");
     this.users = options.users ?? {};
   }
 
@@ -94,7 +94,7 @@ export class FakeSyncClient implements SyncClient {
   async authWithPassword(email: string, password: string): Promise<{ token: string; userId: Id }> {
     const user = this.users[email];
     if (user === undefined || user.password !== password) {
-      throw new FakeResponseError(400, 'Failed to authenticate.');
+      throw new FakeResponseError(400, "Failed to authenticate.");
     }
     const token = `token-${user.userId}`;
     this.tokens.set(token, user.userId);
@@ -165,7 +165,7 @@ export class FakeSyncClient implements SyncClient {
   }
 
   fileUrl(collection: string, id: Id, fileName: string, thumb?: string): string {
-    const query = thumb === undefined ? '' : `?thumb=${thumb}`;
+    const query = thumb === undefined ? "" : `?thumb=${thumb}`;
     return `https://fake.test/api/files/${collection}/${id}/${fileName}${query}`;
   }
 }

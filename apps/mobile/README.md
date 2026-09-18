@@ -71,9 +71,9 @@ German is the default, English is second; the initial language comes from
 namespace at module load:
 
 ```ts
-registerFeatureTranslations('rolls', { de, en });
+registerFeatureTranslations("rolls", { de, en });
 // …then in the components:
-const { t } = useTranslation('rolls');
+const { t } = useTranslation("rolls");
 ```
 
 Validation issues from `@filmnotes/domain` are translated in the `common` namespace under
@@ -98,6 +98,6 @@ depends on real measurement belongs on a device or in a browser.
   Version 14 is not usable yet: it depends on `test-renderer`, whose `react-reconciler`
   requires react `^19.3.0` while Expo SDK 57 pins react `19.2.3`, which makes npm install
   a second copy of React.
-- Tests for route files live in `tests/`, not next to the route: expo-router turns *every*
+- Tests for route files live in `tests/`, not next to the route: expo-router turns _every_
   file under `app/` into a route, so `app/(tabs)/settings.test.tsx` would become a
   `/settings.test` screen.

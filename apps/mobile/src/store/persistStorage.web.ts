@@ -1,4 +1,4 @@
-import type { StateStorage } from 'zustand/middleware';
+import type { StateStorage } from "zustand/middleware";
 
 /**
  * Persisted storage for the web build.

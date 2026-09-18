@@ -5,11 +5,11 @@
  * first, the stored password as a fallback (which refreshes the token) – so they live
  * here instead of in either feature.
  */
-import type { Id } from '@filmnotes/domain';
+import type { Id } from "@filmnotes/domain";
 
-import { createPocketBaseClient, type SyncClient } from './client';
-import { getSecret, setSecret } from '../lib/secureStore';
-import { useStore } from '../store/store';
+import { createPocketBaseClient, type SyncClient } from "./client";
+import { getSecret, setSecret } from "../lib/secureStore";
+import { useStore } from "../store/store";
 
 export interface ServerSession {
   client: SyncClient;
@@ -22,18 +22,18 @@ export interface ServerSession {
  * decides whether that is an error or simply "offline".
  */
 export async function authenticate(client: SyncClient, email: string | null): Promise<Id | null> {
-  const token = await getSecret('serverToken');
+  const token = await getSecret("serverToken");
   if (token !== null) {
     const auth = await client.authWithToken(token);
     if (auth !== null) return auth.userId;
   }
 
-  const password = await getSecret('serverPassword');
+  const password = await getSecret("serverPassword");
   if (email === null || password === null) return null;
 
   const auth = await client.authWithPassword(email, password);
   // The token the login just handed out replaces the expired one.
-  await setSecret('serverToken', auth.token);
+  await setSecret("serverToken", auth.token);
   return auth.userId;
 }
 

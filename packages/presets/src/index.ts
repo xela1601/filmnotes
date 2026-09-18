@@ -16,17 +16,17 @@ import type {
   ISODateTime,
   Lens,
   SyncedRecord,
-} from '@filmnotes/domain';
-import minoltaKit from '../data/minolta-7000af-kit.json';
-import filmStockCatalogue from '../data/film-stocks.json';
+} from "@filmnotes/domain";
+import minoltaKit from "../data/minolta-7000af-kit.json";
+import filmStockCatalogue from "../data/film-stocks.json";
 import {
   filmStockPresetsSchema,
   presetBundleSchema,
   type PresetBundle,
   type PresetRecord,
-} from './schema';
+} from "./schema";
 
-export * from './schema';
+export * from "./schema";
 
 /** Seed data for every collection that is shipped with the app. */
 export interface SeedRecords {
@@ -68,10 +68,18 @@ export function materialize<T extends SyncedRecord>(
 export function seedRecords(now: ISODateTime, owner: Id | null = null): SeedRecords {
   const bundles = loadEquipmentPresets();
   return {
-    cameras: bundles.flatMap((bundle) => bundle.cameras.map((record) => materialize<Camera>(record, now, owner))),
-    lenses: bundles.flatMap((bundle) => bundle.lenses.map((record) => materialize<Lens>(record, now, owner))),
-    filters: bundles.flatMap((bundle) => bundle.filters.map((record) => materialize<Filter>(record, now, owner))),
-    flashes: bundles.flatMap((bundle) => bundle.flashes.map((record) => materialize<Flash>(record, now, owner))),
+    cameras: bundles.flatMap((bundle) =>
+      bundle.cameras.map((record) => materialize<Camera>(record, now, owner)),
+    ),
+    lenses: bundles.flatMap((bundle) =>
+      bundle.lenses.map((record) => materialize<Lens>(record, now, owner)),
+    ),
+    filters: bundles.flatMap((bundle) =>
+      bundle.filters.map((record) => materialize<Filter>(record, now, owner)),
+    ),
+    flashes: bundles.flatMap((bundle) =>
+      bundle.flashes.map((record) => materialize<Flash>(record, now, owner)),
+    ),
     filmStocks: loadFilmStockPresets().map((record) => materialize<FilmStock>(record, now, owner)),
   };
 }

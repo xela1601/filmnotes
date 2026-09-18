@@ -1,6 +1,6 @@
-import { StyleSheet, Text } from 'react-native';
+import { StyleSheet, Text } from "react-native";
 
-import { useTheme } from './theme';
+import { useTheme } from "./theme";
 
 /** Shared label above a form field. */
 export function FieldLabel({ children }: { children: string }) {
@@ -13,5 +13,5 @@ export function FieldLabel({ children }: { children: string }) {
 }
 
 const styles = StyleSheet.create({
-  label: { fontWeight: '600' },
+  label: { fontWeight: "600" },
 });

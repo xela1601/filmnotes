@@ -6,9 +6,9 @@
  * intact in the CommonJS output. That also keeps the SDK out of the unit tests: `main` takes its
  * client from `deps`, and only `cli.ts` ever reaches this module.
  */
-import type { Frame, Id, ISODateTime } from '@filmnotes/domain';
+import type { Frame, Id, ISODateTime } from "@filmnotes/domain";
 
-import type { ImportClient } from './main';
+import type { ImportClient } from "./main";
 
 /** A record as PocketBase returns it: unset text/date fields are `''`, unset json is `null`. */
 interface RemoteRecord {
@@ -17,8 +17,8 @@ interface RemoteRecord {
 }
 
 /** The auth collection the single app user lives in (see `backend/README.md`). */
-const USERS_COLLECTION = 'users';
-const FRAMES_COLLECTION = 'frames';
+const USERS_COLLECTION = "users";
+const FRAMES_COLLECTION = "frames";
 
 const TIMEZONE = /(?:Z|[+-]\d{2}:?\d{2})$/;
 
@@ -27,19 +27,19 @@ const TIMEZONE = /(?:Z|[+-]\d{2}:?\d{2})$/;
  * `apps/mobile/src/sync/mapping.ts` does. `''` (the value of an unset date field) becomes `null`.
  */
 function asDate(value: unknown): ISODateTime | null {
-  if (typeof value !== 'string' || value === '') return null;
-  let text = value.replace(' ', 'T');
-  if (!TIMEZONE.test(text)) text += 'Z';
+  if (typeof value !== "string" || value === "") return null;
+  let text = value.replace(" ", "T");
+  if (!TIMEZONE.test(text)) text += "Z";
   const parsed = new Date(text);
   return Number.isNaN(parsed.getTime()) ? null : parsed.toISOString();
 }
 
 function asText(value: unknown): string {
-  return typeof value === 'string' ? value : '';
+  return typeof value === "string" ? value : "";
 }
 
 function asNumber(value: unknown): number {
-  if (typeof value === 'number' && Number.isFinite(value)) return value;
+  if (typeof value === "number" && Number.isFinite(value)) return value;
   const parsed = Number(value);
   return Number.isFinite(parsed) ? parsed : 0;
 }
@@ -56,10 +56,10 @@ function asNumber(value: unknown): number {
 function frameFromRecord(record: RemoteRecord): Frame {
   return {
     id: record.id,
-    created: asDate(record.created) ?? '',
-    updated: asDate(record.clientUpdated) ?? asDate(record.updated) ?? '',
+    created: asDate(record.created) ?? "",
+    updated: asDate(record.clientUpdated) ?? asDate(record.updated) ?? "",
     deleted: asDate(record.deleted),
-    owner: asText(record.owner) === '' ? null : asText(record.owner),
+    owner: asText(record.owner) === "" ? null : asText(record.owner),
     rollId: asText(record.rollId),
     frameNo: asNumber(record.frameNo),
     notes: asText(record.notes),
@@ -97,7 +97,7 @@ function frameFromRecord(record: RemoteRecord): Frame {
  * the pending one.
  */
 export async function createPocketBaseClient(server: string): Promise<ImportClient> {
-  const { default: PocketBase } = await import('pocketbase');
+  const { default: PocketBase } = await import("pocketbase");
   const pb = new PocketBase(server);
   pb.autoCancellation(false);
 
@@ -114,8 +114,8 @@ export async function createPocketBaseClient(server: string): Promise<ImportClie
       // against its own `YYYY-MM-DD HH:mm:ss.SSSZ` form, so a filter built from an ISO string
       // silently matches nothing. The (few) deleted frames of a roll are dropped in memory.
       const records = await pb.collection(FRAMES_COLLECTION).getFullList<RemoteRecord>({
-        filter: pb.filter('rollId = {:rollId}', { rollId }),
-        sort: 'frameNo',
+        filter: pb.filter("rollId = {:rollId}", { rollId }),
+        sort: "frameNo",
       });
       return records.map(frameFromRecord);
     },

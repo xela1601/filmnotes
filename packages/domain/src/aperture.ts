@@ -1,5 +1,5 @@
 /** Aperture helpers: which f-numbers a lens offers and whether a value is one of them. */
-import type { Lens } from './types';
+import type { Lens } from "./types";
 
 /** Tolerance for comparing f-numbers that were rounded for display (f/4.8, f/6.7, ...). */
 const EPSILON = 1e-6;

@@ -1,7 +1,7 @@
-import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
+import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 
-import { FieldLabel } from './FieldLabel';
-import { useTheme } from './theme';
+import { FieldLabel } from "./FieldLabel";
+import { useTheme } from "./theme";
 
 export interface NumberFieldProps {
   label: string;
@@ -37,8 +37,8 @@ export function NumberField({
   };
 
   const parse = (text: string) => {
-    const trimmed = text.trim().replace(',', '.');
-    if (trimmed === '') {
+    const trimmed = text.trim().replace(",", ".");
+    if (trimmed === "") {
       onChange(null);
       return;
     }
@@ -62,7 +62,7 @@ export function NumberField({
         <TextInput
           testID={testID}
           accessibilityLabel={label}
-          value={value === null ? '' : String(value)}
+          value={value === null ? "" : String(value)}
           onChangeText={parse}
           keyboardType="numeric"
           style={[
@@ -86,14 +86,14 @@ export function NumberField({
 
 const styles = StyleSheet.create({
   field: { gap: 4 },
-  row: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  row: { flexDirection: "row", alignItems: "center", gap: 8 },
   stepper: {
     width: 48,
     height: 44,
     borderWidth: StyleSheet.hairlineWidth,
     borderRadius: 6,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
   },
   input: {
     flex: 1,
@@ -101,6 +101,6 @@ const styles = StyleSheet.create({
     borderRadius: 6,
     paddingHorizontal: 12,
     minHeight: 44,
-    textAlign: 'center',
+    textAlign: "center",
   },
 });
