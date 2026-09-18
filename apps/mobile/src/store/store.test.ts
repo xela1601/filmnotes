@@ -2,7 +2,7 @@ import type { StateStorage } from 'zustand/middleware';
 
 import * as clock from '../lib/clock';
 import { makeFrame, makeRoll } from '../testing/fixtures';
-import { createAppStore, PERSIST_KEY } from './store';
+import { createAppStore, DEFAULT_SETTINGS, emptyEntities, PERSIST_KEY } from './store';
 
 const T0 = '2026-09-18T10:00:00.000Z';
 const T1 = '2026-09-18T11:00:00.000Z';
@@ -191,5 +191,48 @@ describe('app store', () => {
       expect(raw as string).toContain('roll00000000001');
       expect(raw as string).toContain('persisted');
     });
+  });
+});
+
+describe('rehydration', () => {
+  const flushHydration = () => new Promise<void>((resolve) => setTimeout(resolve, 0));
+
+  it('finishes on a first launch, when storage is still empty', async () => {
+    // Regression: a merge that assumed a persisted object threw on the empty storage of
+    // a fresh install. `persist` swallows that error, `hasHydrated()` stays false and the
+    // app never leaves its hydration gate – the web build showed nothing but a spinner.
+    const store = createAppStore(createMemoryStorage());
+
+    await flushHydration();
+
+    expect(store.persist.hasHydrated()).toBe(true);
+    expect(store.getState().settings).toEqual(DEFAULT_SETTINGS);
+  });
+
+  it('restores a persisted state and fills settings added since it was written', async () => {
+    const storage = createMemoryStorage();
+    const roll = makeRoll({ id: 'roll0hydration1' });
+    storage.setItem(
+      PERSIST_KEY,
+      JSON.stringify({
+        state: {
+          entities: { ...emptyEntities(), rolls: { [roll.id]: roll } },
+          outbox: [],
+          lastSyncAt: null,
+          seededBundleIds: ['minolta-7000af-kit'],
+          // An older persisted settings object: locale only.
+          settings: { locale: 'en' },
+        },
+        version: 0,
+      }),
+    );
+
+    const store = createAppStore(storage);
+    await flushHydration();
+
+    expect(store.persist.hasHydrated()).toBe(true);
+    expect(store.getState().entities.rolls[roll.id]).toEqual(roll);
+    expect(store.getState().settings.locale).toBe('en');
+    expect(store.getState().settings.serverUrl).toBeNull();
   });
 });

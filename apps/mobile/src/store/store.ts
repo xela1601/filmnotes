@@ -1,4 +1,3 @@
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import type {
   Camera,
   CollectionName,
@@ -14,6 +13,7 @@ import { create } from 'zustand';
 import { createJSONStorage, persist, type StateStorage } from 'zustand/middleware';
 
 import * as clock from '../lib/clock';
+import { persistStorage } from './persistStorage';
 import {
   FILM_STOCK_BUNDLE_ID,
   loadEquipmentPresets,
@@ -251,7 +251,7 @@ export function createAppStore(storage?: StateStorage) {
       }),
       {
         name: PERSIST_KEY,
-        storage: createJSONStorage<PersistedState>(() => storage ?? AsyncStorage),
+        storage: createJSONStorage<PersistedState>(() => storage ?? persistStorage),
         partialize: (state): PersistedState => ({
           entities: state.entities,
           outbox: state.outbox,
@@ -259,14 +259,17 @@ export function createAppStore(storage?: StateStorage) {
           seededBundleIds: state.seededBundleIds,
           settings: state.settings,
         }),
-        merge: (persisted, current): AppState => ({
-          ...current,
-          ...(persisted as Partial<PersistedState>),
-          settings: {
-            ...DEFAULT_SETTINGS,
-            ...((persisted as Partial<PersistedState>).settings ?? {}),
-          },
-        }),
+        merge: (persisted, current): AppState => {
+          // `persisted` is undefined on a first launch and whenever the stored payload
+          // cannot be read; throwing here would leave `hasHydrated()` false forever,
+          // because persist swallows the error - and the app on its hydration gate.
+          const stored = (persisted ?? {}) as Partial<PersistedState>;
+          return {
+            ...current,
+            ...stored,
+            settings: { ...DEFAULT_SETTINGS, ...(stored.settings ?? {}) },
+          };
+        },
       },
     ),
   );
