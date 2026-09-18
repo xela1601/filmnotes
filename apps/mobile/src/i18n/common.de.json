@@ -1,0 +1,44 @@
+{
+  "app": {
+    "title": "filmnotes"
+  },
+  "tabs": {
+    "rolls": "Filme",
+    "equipment": "Ausrüstung",
+    "settings": "Einstellungen"
+  },
+  "actions": {
+    "save": "Speichern",
+    "cancel": "Abbrechen",
+    "delete": "Löschen",
+    "add": "Hinzufügen",
+    "back": "Zurück",
+    "confirm": "Bestätigen"
+  },
+  "settings": {
+    "language": "Sprache",
+    "languages": {
+      "system": "Systemsprache",
+      "de": "Deutsch",
+      "en": "English"
+    },
+    "server": "Server",
+    "wordpress": "WordPress",
+    "reset": "Lokale Daten zurücksetzen",
+    "resetConfirm": "Alle lokal gespeicherten Daten werden gelöscht. Fortfahren?",
+    "version": "Version"
+  },
+  "validation": {
+    "bulb_only_in_m": "Bulb ist nur im Modus M verfügbar.",
+    "aperture_not_on_lens": "Diese Blende gibt es am gewählten Objektiv nicht.",
+    "filter_thread_mismatch": "Filter {{filter}} hat {{filterThread}} mm, das Objektiv {{lensThread}} mm.",
+    "polarizer_blocks_af": "Autofokus funktioniert mit linearem Polfilter nicht – manuell fokussieren.",
+    "flash_forces_sync_speed": "Mit Blitz erzwingt die Kamera die Synchronzeit {{sync}}.",
+    "compensation_ignored_in_m": "Belichtungskorrektur hat im Modus M keine Wirkung.",
+    "handheld_shake_risk": "Verwacklungsgefahr: länger als {{limit}} aus der Hand.",
+    "focal_length_out_of_range": "Brennweite liegt außerhalb des Bereichs dieses Objektivs.",
+    "frame_no_out_of_range": "Bildnummer liegt außerhalb der Länge des Films.",
+    "frame_no_duplicate": "Diese Bildnummer ist auf dem Film schon vergeben.",
+    "shutter_not_available": "Diese Verschlusszeit bietet die Kamera in diesem Modus nicht an."
+  }
+}

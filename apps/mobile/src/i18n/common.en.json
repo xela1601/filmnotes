@@ -1,0 +1,44 @@
+{
+  "app": {
+    "title": "filmnotes"
+  },
+  "tabs": {
+    "rolls": "Rolls",
+    "equipment": "Equipment",
+    "settings": "Settings"
+  },
+  "actions": {
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "add": "Add",
+    "back": "Back",
+    "confirm": "Confirm"
+  },
+  "settings": {
+    "language": "Language",
+    "languages": {
+      "system": "System language",
+      "de": "Deutsch",
+      "en": "English"
+    },
+    "server": "Server",
+    "wordpress": "WordPress",
+    "reset": "Reset local data",
+    "resetConfirm": "All locally stored data will be deleted. Continue?",
+    "version": "Version"
+  },
+  "validation": {
+    "bulb_only_in_m": "Bulb is only available in mode M.",
+    "aperture_not_on_lens": "This aperture does not exist on the selected lens.",
+    "filter_thread_mismatch": "Filter {{filter}} has {{filterThread}} mm, the lens has {{lensThread}} mm.",
+    "polarizer_blocks_af": "Autofocus does not work with a linear polarizer – focus manually.",
+    "flash_forces_sync_speed": "With flash the camera forces its sync speed {{sync}}.",
+    "compensation_ignored_in_m": "Exposure compensation has no effect in mode M.",
+    "handheld_shake_risk": "Shake risk: slower than {{limit}} hand-held.",
+    "focal_length_out_of_range": "Focal length is outside the range of this lens.",
+    "frame_no_out_of_range": "Frame number is outside the length of the roll.",
+    "frame_no_duplicate": "This frame number is already used on this roll.",
+    "shutter_not_available": "The camera does not offer this shutter speed in this mode."
+  }
+}
