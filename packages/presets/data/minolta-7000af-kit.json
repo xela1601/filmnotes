@@ -1,0 +1,197 @@
+{
+  "id": "minolta-7000af-kit",
+  "name": "Minolta 7000 AF – Familienausrüstung",
+  "version": 1,
+  "cameras": [
+    {
+      "id": "cam0minolta7000",
+      "make": "Minolta",
+      "model": "7000 AF",
+      "aliases": ["Maxxum 7000", "Alpha 7000"],
+      "year": 1985,
+      "format": "135",
+      "mount": "Minolta A / Sony A",
+      "exposureModes": ["P", "A", "S", "M"],
+      "shutterSpeedsManual": [
+        "30\"", "15\"", "8\"", "4\"", "2\"", "1\"",
+        "1/2", "1/4", "1/8", "1/15", "1/30", "1/60",
+        "1/125", "1/250", "1/500", "1/1000", "1/2000", "bulb"
+      ],
+      "shutterSpeedsAutoExtra": [
+        "20\"", "12\"", "6\"", "3\"", "1\"5", "0\"7",
+        "1/3", "1/6", "1/10", "1/20", "1/45", "1/90",
+        "1/180", "1/350", "1/750", "1/1500"
+      ],
+      "bulbOnlyInModes": ["M"],
+      "exposureCompensation": { "min": -4, "max": 4, "step": 0.5, "notInModes": ["M"] },
+      "iso": { "min": 25, "max": 6400, "stepEv": 0.333, "dxAuto": true },
+      "focusModes": ["AF", "M"],
+      "driveModes": ["S", "C", "ST"],
+      "flashSync": "1/100",
+      "metering": "TTL center-weighted",
+      "notes": "First SLR with a built-in autofocus motor (1985). Flash sync is 1/100 s, in program mode below EV 12 the camera falls back to 1/60 s. TTL flash metering only covers ISO 25-1000. Shake warning beeps below 1/30 s (under 35 mm), 1/60 s (35-105 mm) and 1/125 s (over 105 mm). Known weak spots of the model: sticky aperture magnets, LCD bleeding, battery corrosion and aged light seals.",
+      "conditionNotes": [
+        "Top LCD shows black blotches, all indicators still readable",
+        "Battery compartment cleaned after alkaline battery corrosion",
+        "Function tests of autofocus, shutter and aperture still pending"
+      ],
+      "defaultsForNewFrame": {
+        "exposureMode": "P",
+        "driveMode": "S",
+        "focusMode": "AF",
+        "exposureCompensationEv": 0,
+        "programShift": false,
+        "aeLock": false,
+        "lensId": "lens0min3570f40",
+        "filterIds": ["filt0hamauv49a0"],
+        "flashId": null,
+        "support": "handheld"
+      }
+    }
+  ],
+  "lenses": [
+    {
+      "id": "lens0min3570f40",
+      "make": "Minolta",
+      "model": "AF Zoom 35-70mm f/4",
+      "focalMinMm": 35,
+      "focalMaxMm": 70,
+      "maxAperture": 4,
+      "minAperture": 22,
+      "apertureValues": [4, 4.8, 5.6, 6.7, 8, 9.5, 11, 13, 16, 19, 22],
+      "filterThreadMm": 49,
+      "minFocusM": 1,
+      "macroNote": "Macro setting at 35 mm, approx. 1:4",
+      "weightG": 255,
+      "defaultFilterIds": ["filt0hamauv49a0"],
+      "handheldMinShutter": "1/60",
+      "hasHood": false
+    },
+    {
+      "id": "lens0min50f1700",
+      "make": "Minolta",
+      "model": "AF 50mm f/1.7",
+      "focalMinMm": 50,
+      "focalMaxMm": 50,
+      "maxAperture": 1.7,
+      "minAperture": 22,
+      "apertureValues": [1.7, 2, 2.4, 2.8, 3.4, 4, 4.8, 5.6, 6.7, 8, 9.5, 11, 13, 16, 19, 22],
+      "filterThreadMm": 49,
+      "minFocusM": 0.45,
+      "macroNote": null,
+      "weightG": 185,
+      "defaultFilterIds": ["filt0hamauv49b0"],
+      "handheldMinShutter": "1/60",
+      "hasHood": false
+    },
+    {
+      "id": "lens0min70210f4",
+      "make": "Minolta",
+      "model": "AF Zoom 70-210mm f/4 (Beercan)",
+      "focalMinMm": 70,
+      "focalMaxMm": 210,
+      "maxAperture": 4,
+      "minAperture": 32,
+      "apertureValues": [4, 4.8, 5.6, 6.7, 8, 9.5, 11, 13, 16, 19, 22, 27, 32],
+      "filterThreadMm": 55,
+      "minFocusM": 1.1,
+      "macroNote": "Macro setting at 210 mm, approx. 1:4",
+      "weightG": 695,
+      "defaultFilterIds": ["filt0hamauv5500"],
+      "handheldMinShutter": "1/250",
+      "hasHood": true
+    }
+  ],
+  "filters": [
+    {
+      "id": "filt0hamauv49a0",
+      "make": "Hama",
+      "model": "UV 390 (O-Haze) M49",
+      "threadMm": 49,
+      "type": "UV",
+      "exposureFactorEv": 0,
+      "afCompatible": "yes",
+      "warning": null,
+      "mountedOnLensId": "lens0min3570f40"
+    },
+    {
+      "id": "filt0hamauv49b0",
+      "make": "Hama",
+      "model": "UV 390 (O-Haze) M49",
+      "threadMm": 49,
+      "type": "UV",
+      "exposureFactorEv": 0,
+      "afCompatible": "yes",
+      "warning": null,
+      "mountedOnLensId": "lens0min50f1700"
+    },
+    {
+      "id": "filt0hamauv5500",
+      "make": "Hama",
+      "model": "UV 390 (O-Haze) M55",
+      "threadMm": 55,
+      "type": "UV",
+      "exposureFactorEv": 0,
+      "afCompatible": "yes",
+      "warning": null,
+      "mountedOnLensId": "lens0min70210f4"
+    },
+    {
+      "id": "filt0kenkosky49",
+      "make": "Kenko",
+      "model": "Skylight 49",
+      "threadMm": 49,
+      "type": "skylight",
+      "exposureFactorEv": 0,
+      "afCompatible": "yes",
+      "warning": null,
+      "mountedOnLensId": null
+    },
+    {
+      "id": "filt0kenkopl490",
+      "make": "Kenko",
+      "model": "PL (linear) 49",
+      "threadMm": 49,
+      "type": "polarizer_linear",
+      "exposureFactorEv": 1.5,
+      "afCompatible": "no",
+      "warning": "Autofocus of the 7000 AF does not work with a linear polarizer",
+      "mountedOnLensId": null
+    },
+    {
+      "id": "filt0kenkocf490",
+      "make": "Kenko",
+      "model": "Center Focus 49S",
+      "threadMm": 49,
+      "type": "effect_center_soft",
+      "exposureFactorEv": 0,
+      "afCompatible": "limited",
+      "warning": "Soft edges are only visible at wide apertures; focus manually if the autofocus hunts",
+      "mountedOnLensId": null
+    },
+    {
+      "id": "filt0kenkotff49",
+      "make": "Kenko",
+      "model": "Two Field Focus 49S",
+      "threadMm": 49,
+      "type": "split_field_closeup",
+      "exposureFactorEv": 0,
+      "afCompatible": "limited",
+      "warning": "Split field close-up lens; focus manually if the autofocus hunts",
+      "mountedOnLensId": null
+    }
+  ],
+  "flashes": [
+    {
+      "id": "flash0min2800af",
+      "make": "Minolta",
+      "model": "Program Flash 2800 AF",
+      "guideNumberIso100M": 28,
+      "powerLevels": ["Hi", "Lo"],
+      "headPositions": ["direct", "bounce"],
+      "afIlluminator": true,
+      "sync": "1/100",
+      "notes": "TTL flash automation with the 7000 AF: the camera sets 1/100 s in P and A and fires automatic fill-in flash in daylight. In M speeds faster than 1/100 s are reset. Lo reduces the output for close-ups under 1.5 m and for bursts. The AF illuminator reaches about 5 m. Powered by 4x AA, switches off after 15 minutes. Condition of the unit is not verified."
+    }
+  ]
+}
