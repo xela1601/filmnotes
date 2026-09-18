@@ -155,6 +155,11 @@ export function ServerSettingsScreen() {
                   {t("conflictsLocalWon", { count: lastResult.conflictsLocalWon })}
                 </Text>
               )}
+              {lastResult.conflictsRemoteWon > 0 && (
+                <Text testID="sync-conflicts-remote" style={muted}>
+                  {t("conflictsRemoteWon", { count: lastResult.conflictsRemoteWon })}
+                </Text>
+              )}
               {lastResult.errors.length > 0 && (
                 <Text testID="sync-failed" style={{ color: palette.danger, fontSize: fontSize.sm }}>
                   {t("syncFailed")}

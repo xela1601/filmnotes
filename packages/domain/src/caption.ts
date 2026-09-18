@@ -5,6 +5,7 @@
  * part that only appears when the value is non-empty – so that users can change the caption
  * layout in the settings without the app depending on a template engine.
  */
+import { deviceTimeZone, formatLocalDate } from "./localTime";
 import type { Camera, FilmStock, Filter, Frame, Lens, Roll } from "./types";
 
 export interface CaptionInput {
@@ -20,6 +21,8 @@ export interface CaptionInput {
   hashtags?: string[];
   /** Date format only; the caption itself contains no translated words. Defaults to `de`. */
   locale?: "de" | "en";
+  /** Time zone the date is written in. Defaults to the device's - see `localTime.ts`. */
+  timeZone?: string;
 }
 
 export const DEFAULT_CAPTION_TEMPLATE = [
@@ -49,15 +52,6 @@ function hashtagFor(filmStock: FilmStock): string {
   return `#${filmStock.name.toLowerCase().replace(/[^a-z0-9]/g, "")}`;
 }
 
-/** ISO date → `2026-09-18` (en) or `18.09.2026` (de), without touching the time zone. */
-function formatDate(takenAt: string | null, locale: "de" | "en"): string {
-  if (takenAt === null) return "";
-  const match = /^(\d{4})-(\d{2})-(\d{2})/.exec(takenAt);
-  if (match === null) return "";
-  const [, year, month, day] = match;
-  return locale === "en" ? `${year}-${month}-${day}` : `${day}.${month}.${year}`;
-}
-
 function equipmentName(item: { make: string; model: string } | null): string {
   return item === null ? "" : `${item.make} ${item.model}`.trim();
 }
@@ -72,16 +66,21 @@ function exposureOf(frame: Frame): string {
 
 /** Removes the separators a dropped value left behind and the trailing blanks of a line. */
 function tidyLine(line: string): string {
-  return line
-    .replace(new RegExp(`(?:\\s*${SEPARATOR}\\s*){2,}`, "g"), ` ${SEPARATOR} `)
-    .replace(new RegExp(`^\\s*${SEPARATOR}\\s*`), "")
-    .replace(new RegExp(`\\s*${SEPARATOR}\\s*$`), "")
-    .trimEnd();
+  return (
+    line
+      .replace(new RegExp(`(?:\\s*${SEPARATOR}\\s*){2,}`, "g"), ` ${SEPARATOR} `)
+      // A dropped value between two kept ones leaves the gap it used to fill ("A ·  @ 50mm").
+      .replace(/ {2,}/g, " ")
+      .replace(new RegExp(`^\\s*${SEPARATOR}\\s*`), "")
+      .replace(new RegExp(`\\s*${SEPARATOR}\\s*$`), "")
+      .trimEnd()
+  );
 }
 
 export function buildCaption(input: CaptionInput): string {
   const { frame, camera, lens, filters, filmStock } = input;
   const locale = input.locale ?? "de";
+  const timeZone = input.timeZone ?? deviceTimeZone();
   const hashtags = input.hashtags ?? [...DEFAULT_HASHTAGS, hashtagFor(filmStock)];
 
   const values: Record<string, string> = {
@@ -92,7 +91,7 @@ export function buildCaption(input: CaptionInput): string {
     exposure: exposureOf(frame),
     filters: filters.map((filter) => filter.model).join(", "),
     location: frame.location?.name ?? "",
-    date: formatDate(frame.takenAt, locale),
+    date: formatLocalDate(frame.takenAt, locale, timeZone),
     notes: frame.notes,
     hashtags: hashtags.join(" "),
   };

@@ -33,8 +33,16 @@ export function SelectField<T extends string | number>({
   const { palette, fontSize } = useTheme();
   const [pickerOpen, setPickerOpen] = useState(false);
 
-  const segmented = options.length <= SEGMENTED_MAX_OPTIONS;
-  const selected = options.find((option) => option.value === value) ?? null;
+  // A value the option list does not contain has to stay visible. It happens when the value was
+  // valid for a different lens or exposure mode, and it is usually exactly what an error message
+  // is complaining about - showing "–" there would hide the problem the user has to fix.
+  const known = options.find((option) => option.value === value) ?? null;
+  const stranded: SelectOption<T> | null =
+    value === null || known !== null ? null : { value, label: String(value) };
+  const shownOptions = stranded === null ? options : [stranded, ...options];
+
+  const segmented = shownOptions.length <= SEGMENTED_MAX_OPTIONS;
+  const selected = known ?? stranded;
   const optionTestID = (option: SelectOption<T>) =>
     testID === undefined ? undefined : `${testID}-option-${String(option.value)}`;
 
@@ -56,7 +64,7 @@ export function SelectField<T extends string | number>({
               onPress={() => select(null)}
             />
           )}
-          {options.map((option) => (
+          {shownOptions.map((option) => (
             <Segment
               key={String(option.value)}
               testID={optionTestID(option)}
@@ -102,7 +110,7 @@ export function SelectField<T extends string | number>({
               onPress={() => select(null)}
             />
           )}
-          {options.map((option) => (
+          {shownOptions.map((option) => (
             <ModalOption
               key={String(option.value)}
               testID={optionTestID(option)}

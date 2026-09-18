@@ -35,7 +35,8 @@
     "locationName": "Ort",
     "date": "Datum",
     "time": "Uhrzeit",
-    "notes": "Notizen"
+    "notes": "Notizen",
+    "chosenByCamera": "von der Kamera gewählt"
   },
   "placeholders": {
     "date": "JJJJ-MM-TT",
@@ -97,5 +98,9 @@
   "saveNext": "Speichern & nächstes",
   "export": "Exportieren",
   "delete": "Bild löschen",
-  "deleteConfirm": "Dieses Bild wirklich löschen?"
+  "deleteConfirm": "Dieses Bild wirklich löschen?",
+  "errors": {
+    "date": "Datum bitte als JJJJ-MM-TT angeben – dieses Datum gibt es nicht.",
+    "time": "Uhrzeit bitte als HH:MM angeben, z. B. 09:50."
+  }
 }

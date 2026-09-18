@@ -69,20 +69,24 @@ describe("FrameEditScreen", () => {
     render(<FrameEditScreen />);
 
     expect(screen.getByText(i18n.t("frames:title", { no: 1, total: 36 }))).toBeOnTheScreen();
+    // The fixture is 10:00 UTC and the suite runs in Europe/Berlin: the photographer reads 12:00.
     expect(screen.getByDisplayValue("2026-09-18")).toBeOnTheScreen();
-    expect(screen.getByDisplayValue("10:00")).toBeOnTheScreen();
+    expect(screen.getByDisplayValue("12:00")).toBeOnTheScreen();
 
     fireEvent.changeText(screen.getByTestId("frame-taken-time"), "11:30");
     fireEvent.press(screen.getByTestId("frame-save"));
 
-    expect(stored(frame.id).takenAt).toBe("2026-09-18T11:30:00.000Z");
+    expect(stored(frame.id).takenAt).toBe("2026-09-18T09:30:00.000Z");
   });
 
-  it("2. leaves the exposure to the camera in P and opens it in M", () => {
+  it("2. records the exposure in every mode and says who chose it", () => {
     render(<FrameEditScreen />);
 
-    expect(screen.queryByTestId("frame-shutter")).toBeNull();
-    expect(screen.queryByTestId("frame-aperture")).toBeNull();
+    // P: the camera picks both halves - but the fields stay, because the camera *shows* what it
+    // picked and writing that down is the point of the app.
+    expect(screen.getByTestId("frame-shutter")).toBeOnTheScreen();
+    expect(screen.getByTestId("frame-aperture")).toBeOnTheScreen();
+    expect(screen.getAllByText(new RegExp(i18n.t("frames:fields.chosenByCamera")))).toHaveLength(2);
     expect(screen.getByTestId("frame-program-shift")).toBeOnTheScreen();
     expect(screen.getByTestId("frame-compensation")).toBeOnTheScreen();
 
@@ -90,8 +94,81 @@ describe("FrameEditScreen", () => {
 
     expect(screen.getByTestId("frame-shutter")).toBeOnTheScreen();
     expect(screen.getByTestId("frame-aperture")).toBeOnTheScreen();
+    expect(screen.queryByText(new RegExp(i18n.t("frames:fields.chosenByCamera")))).toBeNull();
     expect(screen.queryByTestId("frame-program-shift")).toBeNull();
     expect(screen.queryByTestId("frame-compensation")).toBeNull();
+  });
+
+  it("2a. keeps the time the camera chose in A editable and saves it", () => {
+    render(<FrameEditScreen />);
+
+    fireEvent.press(screen.getByTestId("frame-mode-option-A"));
+    fireEvent.press(screen.getByTestId("frame-shutter-open"));
+    fireEvent.press(screen.getByTestId("frame-shutter-option-1/125"));
+    fireEvent.press(screen.getByTestId("frame-save"));
+
+    expect(stored(frame.id).shutterSpeed).toBe("1/125");
+  });
+
+  it("2b. keeps an aperture the lens does not have visible, so the error can be cleared", () => {
+    // f/1.7 belongs to the 50 mm; the frame starts on the 35-70, whose widest stop is f/4.
+    frame = setup({ exposureMode: "M", aperture: 1.7 });
+    render(<FrameEditScreen />);
+
+    // The closed field shows the stranded value instead of "–" ...
+    expect(screen.getByTestId("frame-aperture")).toHaveTextContent(/1\.7/);
+    expect(screen.getByTestId("frame-issues")).toHaveTextContent(
+      i18n.t("common:validation.aperture_not_on_lens"),
+    );
+
+    // ... and the picker offers it too, so it is never a value you cannot get rid of.
+    fireEvent.press(screen.getByTestId("frame-aperture-open"));
+    expect(screen.getByTestId("frame-aperture-option-1.7")).toBeOnTheScreen();
+    fireEvent.press(screen.getByTestId("frame-aperture-option-8"));
+    fireEvent.press(screen.getByTestId("frame-save"));
+
+    expect(stored(frame.id).aperture).toBe(8);
+  });
+
+  it("1a. refuses a half-typed time instead of silently storing midnight", () => {
+    render(<FrameEditScreen />);
+
+    fireEvent.changeText(screen.getByTestId("frame-taken-time"), "9:5");
+
+    expect(screen.getByTestId("frame-taken-time-error")).toBeOnTheScreen();
+    fireEvent.press(screen.getByTestId("frame-save"));
+    expect(stored(frame.id).takenAt).toBe(FIXTURE_NOW);
+
+    fireEvent.changeText(screen.getByTestId("frame-taken-time"), "09:50");
+    expect(screen.queryByTestId("frame-taken-time-error")).toBeNull();
+    fireEvent.press(screen.getByTestId("frame-save"));
+    expect(stored(frame.id).takenAt).toBe("2026-09-18T07:50:00.000Z");
+  });
+
+  it("1b. refuses a date the calendar does not have instead of rolling it over", () => {
+    render(<FrameEditScreen />);
+
+    fireEvent.changeText(screen.getByTestId("frame-taken-date"), "2026-13-45");
+
+    expect(screen.getByTestId("frame-taken-date-error")).toBeOnTheScreen();
+    fireEvent.press(screen.getByTestId("frame-save"));
+    expect(stored(frame.id).takenAt).toBe(FIXTURE_NOW);
+  });
+
+  it("1c. clearing both fields records the frame without a time", () => {
+    render(<FrameEditScreen />);
+
+    fireEvent.changeText(screen.getByTestId("frame-taken-date"), "");
+    fireEvent.changeText(screen.getByTestId("frame-taken-time"), "");
+    fireEvent.press(screen.getByTestId("frame-save"));
+
+    expect(stored(frame.id).takenAt).toBeNull();
+  });
+
+  it("1d. shows no coordinates for a frame that has none", () => {
+    render(<FrameEditScreen />);
+
+    expect(screen.queryByTestId("frame-location-coords")).toBeNull();
   });
 
   it("3. offers bulb in M but not in S", () => {

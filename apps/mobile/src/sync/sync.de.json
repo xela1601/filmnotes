@@ -17,5 +17,6 @@
   "never": "noch nie",
   "result": "{{pushed}} gesendet, {{pulled}} empfangen",
   "conflictsLocalWon": "{{count}} Konflikte lokal entschieden",
-  "syncFailed": "Synchronisierung fehlgeschlagen."
+  "syncFailed": "Synchronisierung fehlgeschlagen.",
+  "conflictsRemoteWon": "{{count}} Änderungen vom Server übernommen – lokale Bearbeitungen wurden dabei ersetzt"
 }

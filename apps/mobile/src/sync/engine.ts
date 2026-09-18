@@ -36,7 +36,7 @@ import {
 } from "@filmnotes/domain";
 
 import type { RemoteRecord, SyncClient } from "./client";
-import { fromRemote, toRemote } from "./mapping";
+import { fromRemote, remoteUpdatedAt, toRemote } from "./mapping";
 import { COLLECTIONS, type AppState, type OutboxEntry } from "../store/store";
 
 export interface SyncResult {
@@ -46,6 +46,14 @@ export interface SyncResult {
   pulled: number;
   /** Records the server also changed, where the local version was the newer one. */
   conflictsLocalWon: number;
+  /**
+   * Records where the server version won and a local edit was dropped.
+   *
+   * Last-write-wins is the rule, but the user has to be able to see that the note he typed on
+   * the phone was replaced by the tablet's version - with two devices this is the conflict he
+   * will actually hit.
+   */
+  conflictsRemoteWon: number;
   /** One entry per failed record or collection; a sync is never aborted by a single error. */
   errors: string[];
 }
@@ -61,8 +69,25 @@ export interface SyncDeps {
   now: () => ISODateTime;
 }
 
-/** Subtracted from the start of the run to absorb a client/server clock offset. */
-const WATERMARK_MARGIN_MS = 5_000;
+/**
+ * The watermark is taken from the data, never from a clock.
+ *
+ * PocketBase filters `updated > {:since}` against its own `updated` column, so `since` has to be
+ * a *server* timestamp. Taking it from the device instead meant that a phone whose clock ran
+ * ahead of the server stored a watermark in the server's future, and every record the server
+ * wrote in that window stayed invisible forever - silently, and on exactly the kind of
+ * home server whose NTP has drifted.
+ */
+function latestRemoteUpdate(changes: RemoteChanges): ISODateTime | null {
+  let latest: ISODateTime | null = null;
+  for (const records of changes.values()) {
+    for (const record of records.values()) {
+      const updated = remoteUpdatedAt(record);
+      if (updated !== null && (latest === null || updated > latest)) latest = updated;
+    }
+  }
+  return latest;
+}
 
 /**
  * Collections that `seedPresets` fills locally without queueing an outbox entry, and that
@@ -152,7 +177,9 @@ async function pushOutbox(
       const remoteUpdated = fromRemote(entry.collection, candidate).updated;
       if (remoteUpdated > local.updated) {
         // The server version is newer: keep it, drop the local change and let the pull
-        // step below write it into the store.
+        // step below write it into the store. Counted, because this is a local edit the user
+        // made and will not find again.
+        result.conflictsRemoteWon += 1;
         handled.push(entry);
         continue;
       }
@@ -177,13 +204,21 @@ async function pushOutbox(
   return written;
 }
 
-/** Pushes the locally seeded equipment and film stocks to a server that has none. */
+/**
+ * Pushes the locally seeded equipment and film stocks the server does not have yet.
+ *
+ * Seed records are written by `seedPresets` without an outbox entry, so this is their only way
+ * up. It runs on the first sync of an installation (no watermark yet) and skips every record the
+ * server just sent back - both the ones another device seeded and the ones a previous, partly
+ * failed run of this function already managed to upload.
+ */
 async function uploadSeedData(
   deps: SyncDeps,
   changes: RemoteChanges,
   written: Set<string>,
   result: SyncResult,
-): Promise<void> {
+): Promise<{ failed: number }> {
+  let failed = 0;
   for (const collection of SEED_COLLECTIONS) {
     // Indexing the entity map with a union key widens the values to `any`; the cast puts
     // the collection's entity type back, which is what `pushRecord` is generic over.
@@ -192,15 +227,21 @@ async function uploadSeedData(
     ) as EntityOf<CollectionName>[];
     for (const record of records) {
       if (written.has(`${collection}/${record.id}`)) continue;
+      // Already on the server (another device, or an earlier attempt): the pull step decides
+      // whose version wins, and pushing ours over it would be a silent overwrite.
+      if (changes.get(collection)?.has(record.id) === true) continue;
       try {
         await pushRecord(deps, collection, record);
         result.pushed += 1;
         changes.get(collection)?.delete(record.id);
       } catch (error) {
+        failed += 1;
         result.errors.push(`${PB_COLLECTION[collection]}/${record.id}: ${messageOf(error)}`);
       }
     }
   }
+
+  return { failed };
 }
 
 /** Applies the fetched records of one collection that are newer than the local ones. */
@@ -225,29 +266,38 @@ function pullCollection<K extends CollectionName>(
 
 /** One full sync round trip. Never throws: every failure lands in `result.errors`. */
 export async function runSync(deps: SyncDeps): Promise<SyncResult> {
-  const result: SyncResult = { pushed: 0, pulled: 0, conflictsLocalWon: 0, errors: [] };
-  const startedAt = deps.now();
+  const result: SyncResult = {
+    pushed: 0,
+    pulled: 0,
+    conflictsLocalWon: 0,
+    conflictsRemoteWon: 0,
+    errors: [],
+  };
   const since = deps.getState().lastSyncAt;
 
   const { changes, complete } = await fetchChanges(deps, since, result);
 
   const written = await pushOutbox(deps, changes, result);
 
-  const serverIsEmpty = (changes.get("cameras")?.size ?? 0) === 0;
-  if (complete && since === null && serverIsEmpty) {
-    await uploadSeedData(deps, changes, written, result);
+  // Only on the very first sync of this installation, and only for what the server is missing.
+  let seedFailed = 0;
+  if (complete && since === null) {
+    ({ failed: seedFailed } = await uploadSeedData(deps, changes, written, result));
   }
 
   for (const collection of COLLECTIONS) {
     result.pulled += pullCollection(deps, collection, changes.get(collection)?.values() ?? []);
   }
 
-  // Only advance the watermark when every collection was actually read; otherwise the
-  // missed changes would never be fetched again. Failed pushes are safe to ignore here –
-  // their outbox entries survive.
-  if (complete) {
-    const watermark = new Date(Date.parse(startedAt) - WATERMARK_MARGIN_MS).toISOString();
-    deps.setLastSyncAt(watermark);
+  // Only advance the watermark when every collection was actually read; otherwise the missed
+  // changes would never be fetched again. Failed pushes are safe to ignore here - their outbox
+  // entries survive - but a failed *seed* upload is not: seed records carry no outbox entry, and
+  // the upload only ever runs while the watermark is still null.
+  if (complete && seedFailed === 0) {
+    const latest = latestRemoteUpdate(changes);
+    // Nothing came back: the window stays open, so the same range is asked for again. That is
+    // cheap (it is empty) and it is the only safe answer without a server clock.
+    if (latest !== null && (since === null || latest > since)) deps.setLastSyncAt(latest);
   }
 
   return result;

@@ -100,3 +100,48 @@ describe("parseArgs", () => {
     expect(() => parseArgs(["--server", "https://pb", "--email"], {})).toThrow(/--email/);
   });
 });
+
+describe("parseArgs with a credentials file loaded into the environment", () => {
+  const ENV = {
+    FILMNOTES_SERVER_URL: "https://pb.example.com",
+    FILMNOTES_EMAIL: "me@example.com",
+    FILMNOTES_PASSWORD: "from-env",
+  };
+
+  it("takes server, email and password from the environment", () => {
+    expect(parseArgs(["--roll", "roll100000000000", "/scans/roll-42"], ENV)).toEqual({
+      server: "https://pb.example.com",
+      email: "me@example.com",
+      password: "from-env",
+      roll: "roll100000000000",
+      source: "/scans/roll-42",
+      yes: false,
+      dryRun: false,
+    });
+  });
+
+  it("lets an explicit flag win over the environment", () => {
+    const args = parseArgs(
+      ["--server", "http://127.0.0.1:8090", "--roll", "roll100000000000", "/scans"],
+      ENV,
+    );
+
+    expect(args.server).toBe("http://127.0.0.1:8090");
+    expect(args.email).toBe("me@example.com");
+  });
+
+  it("still reports the missing option when neither flag nor environment has it", () => {
+    expect(() => parseArgs(["--roll", "roll100000000000", "/scans"], {})).toThrow(
+      /--server is required/,
+    );
+    expect(() =>
+      parseArgs(["--server", "https://pb.example.com", "--roll", "roll100000000000", "/scans"], {}),
+    ).toThrow(/--email is required/);
+  });
+
+  it("ignores an empty environment value", () => {
+    expect(() =>
+      parseArgs(["--roll", "roll100000000000", "/scans"], { FILMNOTES_SERVER_URL: "" }),
+    ).toThrow(/--server is required/);
+  });
+});

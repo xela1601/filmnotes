@@ -11,7 +11,6 @@ import { makeFrame, makeRoll } from "../testing/fixtures";
 const OWNER = "user00000000001";
 /** The moment `runSync` is started in these tests. */
 const START = "2026-09-18T12:00:00.000Z";
-const WATERMARK = "2026-09-18T11:59:55.000Z";
 
 function createMemoryStorage(): StateStorage {
   const map = new Map<string, string>();
@@ -198,6 +197,31 @@ describe("runSync – last write wins", () => {
   });
 });
 
+describe("runSync – conflicts", () => {
+  it("counts a local edit that the server version replaced", async () => {
+    const { store, client, deps } = harness();
+    client.seed("rolls", {
+      ...toRemote("rolls", makeRoll({ notes: "from the tablet" }), OWNER),
+      clientUpdated: "2026-09-18T11:00:00.000Z",
+      updated: "2026-09-18 11:00:00.000Z",
+    });
+    deps.setLastSyncAt("2026-09-18T09:00:00.000Z");
+    harnessWrite(
+      store,
+      "rolls",
+      makeRoll({ notes: "typed on the phone" }),
+      "2026-09-18T10:00:00.000Z",
+    );
+
+    const result = await runSync(deps);
+
+    // Last write wins - but the user has to be able to see that his note is gone.
+    expect(result.conflictsRemoteWon).toBe(1);
+    expect(result.conflictsLocalWon).toBe(0);
+    expect(store.getState().entities.rolls["roll00000000001"]?.notes).toBe("from the tablet");
+  });
+});
+
 describe("runSync – seed upload", () => {
   it("uploads the seeded equipment on the first sync and not again on the second", async () => {
     const { store, client, deps } = harness();
@@ -212,7 +236,9 @@ describe("runSync – seed upload", () => {
     expect(client.count("cameras")).toBe(localCameras);
     expect(client.count("film_stocks")).toBeGreaterThan(0);
     expect(first.pushed).toBeGreaterThanOrEqual(localCameras);
-    expect(store.getState().lastSyncAt).toBe(WATERMARK);
+    // Nothing came back from the empty server, so there is no server timestamp to start from
+    // yet; the watermark is taken from the data and stays null until the first record arrives.
+    expect(store.getState().lastSyncAt).toBeNull();
 
     const createsAfterFirst = client.createCalls.length;
     const second = await runSync(deps);
@@ -220,9 +246,11 @@ describe("runSync – seed upload", () => {
     expect(second.pushed).toBe(0);
     expect(second.pulled).toBe(0);
     expect(client.createCalls).toHaveLength(createsAfterFirst);
+    // The second run reads its own upload back and now has a server timestamp to remember.
+    expect(store.getState().lastSyncAt).not.toBeNull();
   });
 
-  it("does not upload the seed data when the server already has cameras", async () => {
+  it("leaves a record another device already uploaded alone", async () => {
     const { store, client, deps } = harness();
     store.getState().seedPresets("2026-09-18T08:00:00.000Z");
     const [someCamera] = Object.values(store.getState().entities.cameras);
@@ -231,23 +259,64 @@ describe("runSync – seed upload", () => {
 
     const result = await runSync(deps);
 
-    expect(result.pushed).toBe(0);
-    expect(client.count("cameras")).toBe(1);
-    expect(client.count("film_stocks")).toBe(0);
+    // The camera the server sent back is not pushed over - the pull decides whose version wins.
+    expect(client.createCalls).not.toContain(`cameras/${someCamera.id}`);
+    expect(client.updateCalls).not.toContain(`cameras/${someCamera.id}`);
+    // What the server does not have is uploaded, so a half-finished first sync can finish.
+    expect(result.pushed).toBeGreaterThan(0);
+    expect(client.count("film_stocks")).toBeGreaterThan(0);
   });
 });
 
 describe("runSync – watermark", () => {
-  it("stores a last-sync timestamp no later than the start of the run", async () => {
-    const { deps, setLastSyncAt } = harness();
+  it("takes the watermark from the newest record the server returned", async () => {
+    const { client, deps, setLastSyncAt } = harness();
+    client.seed("rolls", {
+      ...toRemote("rolls", makeRoll({ notes: "from the server" }), OWNER),
+      updated: "2026-09-18 11:58:00.000Z",
+    });
 
     await runSync(deps);
 
     expect(setLastSyncAt).toHaveBeenCalledTimes(1);
-    const [stored] = setLastSyncAt.mock.calls[0] ?? [];
-    expect(typeof stored).toBe("string");
-    expect(Date.parse(String(stored))).toBeLessThanOrEqual(Date.parse(START));
-    expect(stored).toBe(WATERMARK);
+    expect(setLastSyncAt.mock.calls[0]?.[0]).toBe("2026-09-18T11:58:00.000Z");
+  });
+
+  it("survives a device clock that runs ahead of the server", async () => {
+    // The regression: the watermark used to be `deviceNow - 5 s`. A phone two minutes fast
+    // stored a watermark in the server's future, and every record the server wrote in that
+    // window was never fetched again - silently, and for good.
+    const AHEAD = "2026-09-18T12:02:00.000Z";
+    const { store, client, deps, setLastSyncAt } = harness();
+    deps.now = () => AHEAD;
+    client.seed("rolls", {
+      ...toRemote(
+        "rolls",
+        makeRoll({ id: "roll0watermark1", notes: "written by the server" }),
+        OWNER,
+      ),
+      updated: "2026-09-18 11:59:58.000Z",
+      clientUpdated: "2026-09-18T11:59:58.000Z",
+    });
+
+    await runSync(deps);
+
+    const stored = setLastSyncAt.mock.calls[0]?.[0];
+    expect(stored).toBe("2026-09-18T11:59:58.000Z");
+    expect(Date.parse(String(stored))).toBeLessThan(Date.parse(AHEAD));
+    expect(store.getState().entities.rolls["roll0watermark1"]).toBeDefined();
+  });
+
+  it("leaves the watermark alone when the server had nothing new", async () => {
+    const { deps, setLastSyncAt } = harness();
+    deps.setLastSyncAt("2026-09-18T09:00:00.000Z");
+    setLastSyncAt.mockClear();
+
+    await runSync(deps);
+
+    // An empty window stays open: asking for the same range again is cheap and cannot lose a
+    // change, while inventing a timestamp can.
+    expect(setLastSyncAt).not.toHaveBeenCalled();
   });
 
   it("keeps the old watermark when a collection could not be listed", async () => {
@@ -260,6 +329,34 @@ describe("runSync – watermark", () => {
 
     expect(result.errors).toHaveLength(1);
     expect(setLastSyncAt).not.toHaveBeenCalled();
+  });
+
+  it("keeps the watermark null when the first seed upload failed halfway", async () => {
+    // Seed records carry no outbox entry and the upload only runs while the watermark is null,
+    // so advancing it here would leave those records unpushed for ever.
+    const { store, client, deps, setLastSyncAt } = harness();
+    store.getState().seedPresets("2026-09-18T08:00:00.000Z");
+    client.failingCreates.add("lenses");
+
+    const result = await runSync(deps);
+
+    expect(result.errors.length).toBeGreaterThan(0);
+    expect(setLastSyncAt).not.toHaveBeenCalled();
+  });
+
+  it("retries the seed upload on the next run", async () => {
+    const { store, client, deps } = harness();
+    store.getState().seedPresets("2026-09-18T08:00:00.000Z");
+    client.failingCreates.add("lenses");
+    await runSync(deps);
+    const uploadedFirst = client.count("lenses");
+
+    client.failingCreates.clear();
+    const second = await runSync(deps);
+
+    expect(uploadedFirst).toBe(0);
+    expect(second.errors).toEqual([]);
+    expect(client.count("lenses")).toBeGreaterThan(0);
   });
 });
 

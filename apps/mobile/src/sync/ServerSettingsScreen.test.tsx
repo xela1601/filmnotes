@@ -149,6 +149,9 @@ describe("ServerSettingsScreen", () => {
       key === "serverToken" ? `token-${OWNER}` : null,
     );
     client.tokens.set(`token-${OWNER}`, OWNER);
+    // An installation that has synced before, so this run pushes the roll and nothing else;
+    // a first-ever sync would also upload the seeded equipment.
+    useStore.getState().setLastSyncAt("2026-09-18T09:00:00.000Z");
     useStore.getState().upsert("rolls", makeRoll({ notes: "offline" }));
 
     render(<ServerSettingsScreen />);

@@ -17,5 +17,6 @@
   "never": "never",
   "result": "{{pushed}} pushed, {{pulled}} pulled",
   "conflictsLocalWon": "{{count}} conflicts decided locally",
-  "syncFailed": "Sync failed."
+  "syncFailed": "Sync failed.",
+  "conflictsRemoteWon": "{{count}} changes taken from the server, replacing local edits"
 }

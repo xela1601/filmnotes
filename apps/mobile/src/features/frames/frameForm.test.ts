@@ -3,7 +3,9 @@ import {
   LIGHT_OPTIONS,
   SUBJECT_OPTIONS,
   applyLensChange,
-  editableFields,
+  exposureFields,
+  parseTakenAt,
+  takenAtFields,
   filterOptions,
   focalLengthOptions,
 } from "./frameForm";
@@ -42,44 +44,44 @@ const polarizer49 = makeFilter({
 });
 const allFilters = [uv49, uv55, polarizer49];
 
-describe("editableFields", () => {
-  it("lets the camera decide the exposure in P", () => {
-    expect(editableFields("P")).toEqual({
-      shutter: false,
-      aperture: false,
+describe("exposureFields", () => {
+  it("attributes both halves to the camera in P, and keeps recording them", () => {
+    expect(exposureFields("P")).toEqual({
+      shutter: "camera",
+      aperture: "camera",
       programShift: true,
       compensation: true,
     });
   });
 
-  it("opens the aperture in A and the shutter in S", () => {
-    expect(editableFields("A")).toEqual({
-      shutter: false,
-      aperture: true,
+  it("splits the pair in A and S", () => {
+    expect(exposureFields("A")).toEqual({
+      shutter: "camera",
+      aperture: "photographer",
       programShift: false,
       compensation: true,
     });
-    expect(editableFields("S")).toEqual({
-      shutter: true,
-      aperture: false,
+    expect(exposureFields("S")).toEqual({
+      shutter: "photographer",
+      aperture: "camera",
       programShift: false,
       compensation: true,
     });
   });
 
-  it("opens both in M, where program shift and compensation have no effect", () => {
-    expect(editableFields("M")).toEqual({
-      shutter: true,
-      aperture: true,
+  it("gives both to the photographer in M, where program shift and compensation have no effect", () => {
+    expect(exposureFields("M")).toEqual({
+      shutter: "photographer",
+      aperture: "photographer",
       programShift: false,
       compensation: false,
     });
   });
 
-  it("keeps shutter and aperture editable while the mode is unknown", () => {
-    const fields = editableFields(null);
-    expect(fields.shutter).toBe(true);
-    expect(fields.aperture).toBe(true);
+  it("attributes nothing to the camera while the mode is unknown", () => {
+    const fields = exposureFields(null);
+    expect(fields.shutter).toBe("photographer");
+    expect(fields.aperture).toBe("photographer");
     expect(fields.programShift).toBe(false);
     expect(fields.compensation).toBe(true);
   });
@@ -175,5 +177,42 @@ describe("option catalogues", () => {
       "night",
       "other",
     ]);
+  });
+});
+
+describe("takenAtFields / parseTakenAt", () => {
+  const MUNICH = "Europe/Berlin";
+
+  it("shows the local wall clock of the stored instant", () => {
+    expect(takenAtFields("2026-09-18T22:30:00.000Z", MUNICH)).toEqual({
+      date: "2026-09-19",
+      time: "00:30",
+    });
+  });
+
+  it("has no fields without a timestamp", () => {
+    expect(takenAtFields(null, MUNICH)).toEqual({ date: "", time: "" });
+  });
+
+  it("reads both fields back into the instant", () => {
+    expect(parseTakenAt("2026-09-19", "00:30", MUNICH)).toEqual({
+      kind: "ok",
+      instant: "2026-09-18T22:30:00.000Z",
+    });
+  });
+
+  it("treats two empty fields as 'no time recorded'", () => {
+    expect(parseTakenAt("", "", MUNICH)).toEqual({ kind: "empty" });
+    expect(parseTakenAt("  ", " ", MUNICH)).toEqual({ kind: "empty" });
+  });
+
+  it("reports a half-typed time instead of falling back to midnight", () => {
+    expect(parseTakenAt("2026-09-19", "9:5", MUNICH)).toEqual({ kind: "invalid", field: "time" });
+    expect(parseTakenAt("2026-09-19", "", MUNICH)).toEqual({ kind: "invalid", field: "time" });
+  });
+
+  it("reports an impossible date instead of rolling it over", () => {
+    expect(parseTakenAt("2026-13-45", "10:00", MUNICH)).toEqual({ kind: "invalid", field: "date" });
+    expect(parseTakenAt("", "10:00", MUNICH)).toEqual({ kind: "invalid", field: "date" });
   });
 });

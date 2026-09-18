@@ -35,7 +35,8 @@
     "locationName": "Place",
     "date": "Date",
     "time": "Time",
-    "notes": "Notes"
+    "notes": "Notes",
+    "chosenByCamera": "chosen by the camera"
   },
   "placeholders": {
     "date": "YYYY-MM-DD",
@@ -97,5 +98,9 @@
   "saveNext": "Save & next",
   "export": "Export",
   "delete": "Delete frame",
-  "deleteConfirm": "Really delete this frame?"
+  "deleteConfirm": "Really delete this frame?",
+  "errors": {
+    "date": "Enter the date as YYYY-MM-DD – this one does not exist.",
+    "time": "Enter the time as HH:MM, for example 09:50."
+  }
 }

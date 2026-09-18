@@ -24,6 +24,15 @@ import {
 /** Storage key of the persisted slice; bump the suffix on a breaking state change. */
 export const PERSIST_KEY = "filmnotes-v1";
 
+/**
+ * Schema version of the persisted payload.
+ *
+ * Bump it when a release changes the *meaning* of stored data, and handle the old shape in
+ * `migrate` below. Adding a collection or a settings field does not need a bump: `merge` fills
+ * both from the defaults.
+ */
+export const PERSIST_VERSION = 1;
+
 export const COLLECTIONS = [
   "cameras",
   "lenses",
@@ -247,6 +256,10 @@ export function createAppStore(storage?: StateStorage) {
 
         resetAll(): void {
           set(initialPersistedState());
+          // Immediately, not on the next launch: the seed effect in app/_layout.tsx only runs
+          // when hydration flips, so without this the app would have no cameras and no film
+          // stocks until the process restarts - and no roll could be created at all.
+          get().seedPresets(clock.now());
         },
       }),
       {
@@ -259,6 +272,10 @@ export function createAppStore(storage?: StateStorage) {
           seededBundleIds: state.seededBundleIds,
           settings: state.settings,
         }),
+        version: PERSIST_VERSION,
+        // Nothing to migrate yet: every shape this app has written so far is read correctly by
+        // `merge`. The hook exists so that a future breaking change has a place to live.
+        migrate: (persisted): PersistedState => persisted as PersistedState,
         merge: (persisted, current): AppState => {
           // `persisted` is undefined on a first launch and whenever the stored payload
           // cannot be read; throwing here would leave `hasHydrated()` false forever,
@@ -267,6 +284,14 @@ export function createAppStore(storage?: StateStorage) {
           return {
             ...current,
             ...stored,
+            // Every part of the persisted slice is filled from the defaults first. A payload
+            // written by an older release is missing whatever that release did not have yet -
+            // a collection added since, a settings field - and `softDelete`, `selectActive` and
+            // the sync engine would all dereference `undefined` on the next action.
+            entities: { ...emptyEntities(), ...(stored.entities ?? {}) },
+            outbox: stored.outbox ?? [],
+            lastSyncAt: stored.lastSyncAt ?? null,
+            seededBundleIds: stored.seededBundleIds ?? [],
             settings: { ...DEFAULT_SETTINGS, ...(stored.settings ?? {}) },
           };
         },

@@ -8,7 +8,9 @@
  * Posts are created as drafts by default (see the spec): publishing stays a manual step in
  * WordPress, so a bad export never appears on the blog.
  */
+import { localParts } from "@filmnotes/domain";
 import { z } from "zod";
+
 import type { Exporter, ExporterDeps, ExportImage, ExportInput, ExportResult } from "./types";
 
 export interface WordPressConfig {
@@ -132,11 +134,14 @@ function joinNames(items: { make: string; model: string }[]): string | null {
   return names.length === 0 ? null : names.join(", ");
 }
 
-/** ISO timestamp → `2026-09-18`, without touching the time zone. */
-function isoDate(takenAt: string | null): string | null {
-  if (takenAt === null) return null;
-  const match = /^\d{4}-\d{2}-\d{2}/.exec(takenAt);
-  return match === null ? null : match[0];
+/**
+ * The local calendar day of the shot, `2026-09-18`.
+ *
+ * Not an ISO slice: a frame taken at 00:30 in Munich is stored as the previous day in UTC, so the
+ * post would carry the wrong date (see `localTime.ts` in the domain).
+ */
+function localDay(takenAt: string | null): string | null {
+  return localParts(takenAt)?.date ?? null;
 }
 
 /** `"Kodak Gold 200 – #12 – Munich"`, leaving out the parts the frame does not have. */
@@ -164,7 +169,7 @@ function metadataRows(input: ExportInput): [string, string][] {
     ["Mode", frame.exposureMode],
     ["Filters", joinNames(filters)],
     ["Location", location],
-    ["Date", isoDate(frame.takenAt)],
+    ["Date", localDay(frame.takenAt)],
   ];
   return candidates.filter((row): row is [string, string] => row[1] !== null && row[1] !== "");
 }

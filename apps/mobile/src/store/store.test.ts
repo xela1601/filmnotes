@@ -166,7 +166,7 @@ describe("app store", () => {
   });
 
   describe("setLastSyncAt / resetAll", () => {
-    it("stores the sync timestamp and resets everything", () => {
+    it("stores the sync timestamp and drops everything the user entered", () => {
       store.getState().upsert("rolls", makeRoll());
       store.getState().setLastSyncAt(T1);
       expect(store.getState().lastSyncAt).toBe(T1);
@@ -177,8 +177,20 @@ describe("app store", () => {
       expect(state.entities.rolls).toEqual({});
       expect(state.outbox).toEqual([]);
       expect(state.lastSyncAt).toBeNull();
-      expect(state.seededBundleIds).toEqual([]);
       expect(state.settings.locale).toBe("system");
+    });
+
+    it("leaves the app usable: the presets are seeded again right away", () => {
+      store.getState().resetAll();
+
+      const state = store.getState();
+      // Without this the app has no camera and no film stock until the process restarts, so
+      // not a single roll can be created - the seed effect only runs when hydration flips.
+      expect(Object.keys(state.entities.cameras).length).toBeGreaterThan(0);
+      expect(Object.keys(state.entities.filmStocks).length).toBeGreaterThan(0);
+      expect(state.seededBundleIds.length).toBeGreaterThan(0);
+      // The equipment is local seed data, so it must not queue a push.
+      expect(state.outbox).toEqual([]);
     });
   });
 
@@ -234,5 +246,42 @@ describe("rehydration", () => {
     expect(store.getState().entities.rolls[roll.id]).toEqual(roll);
     expect(store.getState().settings.locale).toBe("en");
     expect(store.getState().settings.serverUrl).toBeNull();
+  });
+});
+
+describe("rehydration of an older payload", () => {
+  const flushHydration = () => new Promise<void>((resolve) => setTimeout(resolve, 0));
+
+  it("fills a collection the stored payload does not know yet", async () => {
+    const storage = createMemoryStorage();
+    const { exportLogs: _dropped, ...withoutExportLogs } = emptyEntities();
+    storage.setItem(
+      PERSIST_KEY,
+      JSON.stringify({
+        // A payload written before `exportLogs` existed - which is what every release that adds
+        // a collection leaves behind on the devices that already run the app.
+        state: { entities: withoutExportLogs, outbox: [], seededBundleIds: [] },
+        version: 0,
+      }),
+    );
+
+    const store = createAppStore(storage);
+    await flushHydration();
+
+    expect(store.getState().entities.exportLogs).toEqual({});
+    // And the state stays usable rather than throwing on the first action.
+    expect(() => store.getState().softDelete("exportLogs", "expl00000000001")).not.toThrow();
+  });
+
+  it("survives a persisted payload that is not an object", async () => {
+    const storage = createMemoryStorage();
+    storage.setItem(PERSIST_KEY, JSON.stringify({ state: null, version: 0 }));
+
+    const store = createAppStore(storage);
+    await flushHydration();
+
+    expect(store.persist.hasHydrated()).toBe(true);
+    expect(store.getState().entities).toEqual(emptyEntities());
+    expect(store.getState().settings).toEqual(DEFAULT_SETTINGS);
   });
 });

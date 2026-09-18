@@ -87,6 +87,9 @@ describe("useSync", () => {
   it("syncs with the token from secure storage and keeps the result", async () => {
     const client = configureServer();
     mockGetSecret.mockImplementation(async (key) => (key === "serverToken" ? TOKEN : null));
+    // Not the first sync of this installation: a first one would also upload the seeded
+    // equipment, which has its own tests in engine.test.ts.
+    useStore.getState().setLastSyncAt("2026-09-18T09:00:00.000Z");
     useStore.getState().upsert("rolls", makeRoll({ notes: "offline" }));
 
     const { result } = renderHook(() => useSync());

@@ -8,9 +8,14 @@
 import { createInterface } from "node:readline";
 import type { Interface } from "node:readline";
 
+import { loadCredentialsFile } from "./env";
 import type { Io, PromptOptions } from "./main";
 import { main } from "./main";
 import { createPocketBaseClient } from "./pb";
+
+// Fills server, email and password from the credentials file before the arguments are parsed.
+// A variable that is already set in the shell wins, and a missing file is not an error.
+loadCredentialsFile();
 
 /** The readline internals used to suppress the echo of a hidden answer. */
 interface MutableInterface {

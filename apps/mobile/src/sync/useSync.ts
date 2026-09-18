@@ -44,7 +44,7 @@ export function resetSyncSchedule(): void {
 }
 
 function failure(message: string): SyncResult {
-  return { pushed: 0, pulled: 0, conflictsLocalWon: 0, errors: [message] };
+  return { pushed: 0, pulled: 0, conflictsLocalWon: 0, conflictsRemoteWon: 0, errors: [message] };
 }
 
 function messageOf(error: unknown): string {

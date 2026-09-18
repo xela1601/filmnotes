@@ -16,7 +16,6 @@ import type {
   Frame,
   FrameContext,
   Id,
-  ISODateTime,
   Roll,
   ShutterSpeed,
   Support,
@@ -57,9 +56,12 @@ import {
   LIGHT_OPTIONS,
   SUBJECT_OPTIONS,
   applyLensChange,
-  editableFields,
+  exposureFields,
   filterOptions,
   focalLengthOptions,
+  parseTakenAt,
+  takenAtFields,
+  type SetBy,
 } from "./frameForm";
 import { useLocation } from "./useLocation";
 
@@ -67,36 +69,6 @@ import { useLocation } from "./useLocation";
 const AF_RESULTS: AfResult[] = ["green", "red_blink", "manual"];
 /** How the camera was held – the input of the camera-shake rule. */
 const SUPPORTS: Support[] = ["handheld", "braced", "tripod", "beanbag"];
-
-const DATE_PATTERN = /^(\d{4})-(\d{1,2})-(\d{1,2})$/;
-const TIME_PATTERN = /^(\d{1,2}):(\d{2})$/;
-
-/**
- * `takenAt` split into the two fields the photographer edits. Both are read and written in UTC,
- * because that is how the record stores them – no hidden timezone shift on a round trip.
- */
-function splitTakenAt(takenAt: ISODateTime | null): { date: string; time: string } {
-  if (takenAt === null) return { date: "", time: "" };
-  const parsed = new Date(takenAt);
-  if (Number.isNaN(parsed.getTime())) return { date: "", time: "" };
-  const iso = parsed.toISOString();
-  return { date: iso.slice(0, 10), time: iso.slice(11, 16) };
-}
-
-/** The two fields back into an ISO timestamp; an unparsable date means "no time recorded". */
-function joinTakenAt(date: string, time: string): ISODateTime | null {
-  const day = DATE_PATTERN.exec(date.trim());
-  if (day === null) return null;
-  const clock = TIME_PATTERN.exec(time.trim());
-  const stamp = Date.UTC(
-    Number(day[1]),
-    Number(day[2]) - 1,
-    Number(day[3]),
-    clock === null ? 0 : Number(clock[1]),
-    clock === null ? 0 : Number(clock[2]),
-  );
-  return Number.isNaN(stamp) ? null : new Date(stamp).toISOString();
-}
 
 function isPresent<T>(value: T | undefined): value is T {
   return value !== undefined;
@@ -135,7 +107,7 @@ function FrameEditor({ initial, roll, camera }: FrameEditorProps) {
   const { palette, fontSize } = useTheme();
 
   const [frame, setFrame] = useState<Frame>(initial);
-  const initialTakenAt = splitTakenAt(initial.takenAt);
+  const initialTakenAt = takenAtFields(initial.takenAt);
   const [takenDate, setTakenDate] = useState(initialTakenAt.date);
   const [takenTime, setTakenTime] = useState(initialTakenAt.time);
   const [locationHint, setLocationHint] = useState<string | null>(null);
@@ -152,7 +124,7 @@ function FrameEditor({ initial, roll, camera }: FrameEditorProps) {
 
   const lens = lenses.find((candidate) => candidate.id === frame.lensId) ?? null;
   const flash = flashes.find((candidate) => candidate.id === frame.flashId) ?? null;
-  const editable = editableFields(frame.exposureMode);
+  const exposure = exposureFields(frame.exposureMode);
 
   const mountedFilters = useMemo(
     () => frame.filterIds.map((id) => allFilters.find((f) => f.id === id)).filter(isPresent),
@@ -167,14 +139,20 @@ function FrameEditor({ initial, roll, camera }: FrameEditorProps) {
     [camera, roll, lens, mountedFilters, flash, siblingFrames],
   );
   const issues = useMemo(() => validateFrame(frame, context), [frame, context]);
-  const blocked = issues.some((issue) => issue.level === "error");
+  const takenAt = useMemo(() => parseTakenAt(takenDate, takenTime), [takenDate, takenTime]);
+  // A frame is saved with an open warning, but never with a timestamp the fields cannot express:
+  // that used to store midnight or the wrong month without saying anything.
+  const blocked = issues.some((issue) => issue.level === "error") || takenAt.kind === "invalid";
 
   const title = t("title", { no: frame.frameNo, total: roll.exposures });
   const isLastFrame = frame.frameNo >= roll.exposures;
 
   /** Writes the edited frame (including the two time fields) to the store. */
   const persist = (): Frame => {
-    const saved: Frame = { ...frame, takenAt: joinTakenAt(takenDate, takenTime) };
+    const saved: Frame = {
+      ...frame,
+      takenAt: takenAt.kind === "ok" ? takenAt.instant : null,
+    };
     upsert("frames", saved);
     return saved;
   };
@@ -249,8 +227,18 @@ function FrameEditor({ initial, roll, camera }: FrameEditorProps) {
   const labelled = <T extends string>(values: T[], prefix: string): SelectOption<T>[] =>
     values.map((value) => ({ value, label: t(`${prefix}.${value}`) }));
 
+  /** "Shutter" or "Shutter · chosen by the camera", depending on the exposure mode. */
+  const fieldLabel = (field: "shutter" | "aperture", setBy: SetBy): string =>
+    setBy === "camera"
+      ? `${t(`fields.${field}`)} · ${t("fields.chosenByCamera")}`
+      : t(`fields.${field}`);
+
   const coordinates = frame.location;
-  const hasCoordinates = coordinates?.lat !== null && coordinates?.lon !== null;
+  // `frame.location` is null for every new frame, and then `coordinates?.lat` is *undefined* -
+  // which is neither null nor a number. Both have to be checked, or the block below renders
+  // the string "undefined, undefined".
+  const hasCoordinates =
+    coordinates !== null && coordinates.lat !== null && coordinates.lon !== null;
 
   return (
     <Screen title={title} testID="frame-edit">
@@ -265,33 +253,29 @@ function FrameEditor({ initial, roll, camera }: FrameEditorProps) {
           nullable
           testID="frame-mode"
         />
-        {editable.shutter && (
-          <SelectField<ShutterSpeed>
-            label={t("fields.shutter")}
-            value={frame.shutterSpeed}
-            options={shutterSpeedsForMode(camera, frame.exposureMode).map((speed) => ({
-              value: speed,
-              label: speed,
-            }))}
-            onChange={(speed) => patch({ shutterSpeed: speed })}
-            nullable
-            testID="frame-shutter"
-          />
-        )}
-        {editable.aperture && (
-          <SelectField<number>
-            label={t("fields.aperture")}
-            value={frame.aperture}
-            options={apertureValuesForLens(lens).map((value) => ({
-              value,
-              label: `f/${value}`,
-            }))}
-            onChange={(aperture) => patch({ aperture })}
-            nullable
-            testID="frame-aperture"
-          />
-        )}
-        {editable.compensation && (
+        <SelectField<ShutterSpeed>
+          label={fieldLabel("shutter", exposure.shutter)}
+          value={frame.shutterSpeed}
+          options={shutterSpeedsForMode(camera, frame.exposureMode).map((speed) => ({
+            value: speed,
+            label: speed,
+          }))}
+          onChange={(speed) => patch({ shutterSpeed: speed })}
+          nullable
+          testID="frame-shutter"
+        />
+        <SelectField<number>
+          label={fieldLabel("aperture", exposure.aperture)}
+          value={frame.aperture}
+          options={apertureValuesForLens(lens).map((value) => ({
+            value,
+            label: `f/${value}`,
+          }))}
+          onChange={(aperture) => patch({ aperture })}
+          nullable
+          testID="frame-aperture"
+        />
+        {exposure.compensation && (
           <NumberField
             label={t("fields.compensation")}
             value={frame.exposureCompensationEv}
@@ -302,7 +286,7 @@ function FrameEditor({ initial, roll, camera }: FrameEditorProps) {
             testID="frame-compensation"
           />
         )}
-        {editable.programShift && (
+        {exposure.programShift && (
           <SwitchField
             label={t("fields.programShift")}
             value={frame.programShift}
@@ -469,7 +453,7 @@ function FrameEditor({ initial, roll, camera }: FrameEditorProps) {
             testID="frame-location-coords"
             style={[styles.coords, { color: palette.textMuted, fontSize: fontSize.sm }]}
           >
-            {`${String(coordinates?.lat)}, ${String(coordinates?.lon)}`}
+            {`${String(coordinates?.lat ?? "")}, ${String(coordinates?.lon ?? "")}`}
           </Text>
         )}
         {locationHint !== null && (
@@ -487,6 +471,14 @@ function FrameEditor({ initial, roll, camera }: FrameEditorProps) {
           placeholder={t("placeholders.date")}
           testID="frame-taken-date"
         />
+        {takenAt.kind === "invalid" && takenAt.field === "date" && (
+          <Text
+            testID="frame-taken-date-error"
+            style={[styles.coords, { color: palette.danger, fontSize: fontSize.sm }]}
+          >
+            {t("errors.date")}
+          </Text>
+        )}
         <TextField
           label={t("fields.time")}
           value={takenTime}
@@ -494,6 +486,14 @@ function FrameEditor({ initial, roll, camera }: FrameEditorProps) {
           placeholder={t("placeholders.time")}
           testID="frame-taken-time"
         />
+        {takenAt.kind === "invalid" && takenAt.field === "time" && (
+          <Text
+            testID="frame-taken-time-error"
+            style={[styles.coords, { color: palette.danger, fontSize: fontSize.sm }]}
+          >
+            {t("errors.time")}
+          </Text>
+        )}
         <TextField
           label={t("fields.notes")}
           value={frame.notes}

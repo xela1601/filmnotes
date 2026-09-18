@@ -6,4 +6,5 @@ export * from "./frameDefaults";
 export * from "./validation";
 export * from "./scanMatching";
 export * from "./caption";
+export * from "./localTime";
 export * from "./fixtures";

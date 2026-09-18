@@ -31,7 +31,14 @@ export class ArgumentError extends Error {
   }
 }
 
-/** The environment variable that carries the password, so it never shows up in the process list. */
+/**
+ * The environment variables the CLI reads, normally from the credentials file (see `env.ts`).
+ *
+ * The password deliberately has no default on the command line: passing it as a flag puts it
+ * into the process list and the shell history.
+ */
+export const SERVER_ENV = "FILMNOTES_SERVER_URL";
+export const EMAIL_ENV = "FILMNOTES_EMAIL";
 export const PASSWORD_ENV = "FILMNOTES_PASSWORD";
 
 /** Options that take a value. */
@@ -56,8 +63,11 @@ Options:
       --dry-run         Print the plan and exit without uploading
   -h, --help            Show this help
 
-Environment:
-  ${PASSWORD_ENV}   Password, used when --password is omitted`;
+Environment (from .env, see .env.example; an explicit flag always wins):
+  ${SERVER_ENV}   Used when --server is omitted
+  ${EMAIL_ENV}       Used when --email is omitted
+  ${PASSWORD_ENV}    Used when --password is omitted
+  FILMNOTES_ENV_FILE     Credentials file to read instead of ./.env`;
 
 /**
  * Parses `argv` (without `node` and the script name) and folds in the password from `env`.
@@ -110,14 +120,20 @@ export function parseArgs(
     positional.push(token);
   }
 
-  const required = (flag: ValueFlag): string => {
+  /** An empty string counts as absent, in the environment as well as on the command line. */
+  const blank = (value: string | undefined): value is undefined =>
+    value === undefined || value === "";
+
+  const required = (flag: ValueFlag, fallbackVar?: string): string => {
     const value = values.get(flag);
-    if (value === undefined || value === "") throw new ArgumentError(`${flag} is required`);
-    return value;
+    if (!blank(value)) return value;
+    const fromEnv = fallbackVar === undefined ? undefined : env[fallbackVar];
+    if (!blank(fromEnv)) return fromEnv;
+    throw new ArgumentError(`${flag} is required`);
   };
 
-  const server = required("--server");
-  const email = required("--email");
+  const server = required("--server", SERVER_ENV);
+  const email = required("--email", EMAIL_ENV);
   const roll = required("--roll");
 
   if (positional.length === 0) {
@@ -127,8 +143,9 @@ export function parseArgs(
     throw new ArgumentError(`expected exactly one source, got ${positional.length}`);
   }
 
+  const fromFlag = values.get("--password");
   const fromEnv = env[PASSWORD_ENV];
-  const password = values.get("--password") ?? (fromEnv === "" ? undefined : fromEnv);
+  const password = blank(fromFlag) ? (blank(fromEnv) ? undefined : fromEnv) : fromFlag;
 
   return { server, email, password, roll, source: positional[0] as string, yes, dryRun };
 }

@@ -117,3 +117,24 @@ describe("buildCaption", () => {
     expect(caption).toBe("x");
   });
 });
+
+describe("buildCaption date and spacing", () => {
+  it("dates the frame by the local calendar day, not by the UTC one", () => {
+    // 19 September, 00:30 in Munich.
+    const frame = makeFrame({ takenAt: "2026-09-18T22:30:00.000Z" });
+
+    expect(buildCaption(input({ frame, locale: "de", timeZone: "Europe/Berlin" }))).toContain(
+      "19.09.2026",
+    );
+    expect(buildCaption(input({ frame, locale: "en", timeZone: "Europe/Berlin" }))).toContain(
+      "2026-09-19",
+    );
+  });
+
+  it("leaves no double blank where a value was dropped", () => {
+    const caption = buildCaption(input({ lens: null }));
+
+    expect(caption).not.toMatch(/ {2}/);
+    expect(caption.split("\n")[0]).toBe("Kodak Gold 200 · Minolta 7000 AF · @ 50mm");
+  });
+});

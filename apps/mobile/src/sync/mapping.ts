@@ -174,6 +174,16 @@ const FIELD_SPECS: { [K in CollectionName]: FieldSpec<K> } = {
   },
 };
 
+/**
+ * The server's own `updated` stamp of a remote record, as an ISO instant.
+ *
+ * The sync watermark is taken from this and never from a device clock: PocketBase compares the
+ * filter against its own column (see `latestRemoteUpdate` in engine.ts).
+ */
+export function remoteUpdatedAt(remote: RemoteRecord): ISODateTime | null {
+  return asDate(remote.updated);
+}
+
 /** The payload field names of a collection, in schema order. */
 export function payloadFields(collection: CollectionName): string[] {
   return Object.keys(FIELD_SPECS[collection]);

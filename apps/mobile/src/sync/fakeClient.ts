@@ -49,6 +49,8 @@ export class FakeSyncClient implements SyncClient {
   readonly failingUpdates = new Set<string>();
   /** Collections whose `list` throws. */
   readonly failingLists = new Set<string>();
+  /** Collections whose `create` throws - a first upload that only half succeeds. */
+  readonly failingCreates = new Set<string>();
   /** Tokens `authWithToken` accepts, as `token -> userId`. */
   readonly tokens = new Map<string, Id>();
 
@@ -72,9 +74,18 @@ export class FakeSyncClient implements SyncClient {
   }
 
   /** Puts a record on the fake server without going through the client API. */
+  /**
+   * Puts a record into the fake server. `created`/`updated` are stamped with the server clock
+   * unless the caller passes its own - which is how a test pins the value the sync watermark is
+   * taken from.
+   */
   seed(collection: string, record: RemoteRecord): RemoteRecord {
     const at = this.fakeServerNow();
-    const stored: RemoteRecord = { ...record, created: at, updated: at };
+    const stored: RemoteRecord = {
+      ...record,
+      created: record.created ?? at,
+      updated: record.updated ?? at,
+    };
     this.bucket(collection).set(record.id, stored);
     return stored;
   }
@@ -119,6 +130,9 @@ export class FakeSyncClient implements SyncClient {
 
   async create(collection: string, record: RemoteRecord): Promise<RemoteRecord> {
     this.createCalls.push(`${collection}/${record.id}`);
+    if (this.failingCreates.has(collection)) {
+      throw new FakeResponseError(500, `create ${collection}/${record.id} failed`);
+    }
     if (this.bucket(collection).has(record.id)) {
       throw new FakeResponseError(400, `${record.id} already exists`);
     }
