@@ -1,0 +1,58 @@
+{
+  "title": "Filme",
+  "new": "Neuer Film",
+  "edit": "Film bearbeiten",
+  "notFound": "Film nicht gefunden",
+  "notFoundHint": "Dieser Film wurde gelöscht oder gehört zu einem anderen Gerät.",
+  "empty": "Noch kein Film angelegt",
+  "emptyHint": "Lege einen Film an, sobald du eine Patrone in die Kamera eingelegt hast.",
+  "unknownFilm": "Unbekannter Film",
+  "unknownCamera": "Unbekannte Kamera",
+  "progress": "{{shot}} / {{total}} Bilder",
+  "iso": "ISO {{iso}}",
+  "pushPull": "Push/Pull {{ev}} EV",
+  "frames": "Bilder",
+  "noFrames": "Noch kein Bild aufgenommen",
+  "addFrame": "Bild hinzufügen",
+  "importScans": "Scans importieren",
+  "exportRoll": "Film exportieren",
+  "deleteRoll": "Film löschen",
+  "deleteConfirm": "Der Film und alle seine Bilder werden gelöscht. Fortfahren?",
+  "sections": {
+    "film": "Film",
+    "development": "Entwicklung",
+    "actions": "Aktionen"
+  },
+  "fields": {
+    "camera": "Kamera",
+    "filmType": "Filmart",
+    "filmStock": "Film",
+    "iso": "ISO",
+    "isoSource": "ISO-Quelle",
+    "exposures": "Bilder",
+    "pushPull": "Push/Pull (EV)",
+    "loadedAt": "Eingelegt am",
+    "lab": "Labor",
+    "notes": "Notizen"
+  },
+  "filmTypes": {
+    "color": "Farbe",
+    "bw": "Schwarzweiß"
+  },
+  "isoSources": {
+    "DX": "DX",
+    "manual": "manuell"
+  },
+  "status": {
+    "label": "Status",
+    "loaded": "eingelegt",
+    "shot": "belichtet",
+    "at_lab": "im Labor",
+    "developed": "entwickelt",
+    "archived": "archiviert"
+  },
+  "errors": {
+    "required": "Pflichtfeld",
+    "iso_range": "ISO muss zwischen 6 und 12800 liegen."
+  }
+}
