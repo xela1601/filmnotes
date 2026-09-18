@@ -1,0 +1,100 @@
+{
+  "title": "Bild {{no}} / {{total}}",
+  "notFound": "Dieses Bild gibt es nicht.",
+  "notFoundHint": "Es wurde vielleicht gelöscht.",
+  "sections": {
+    "exposure": "Belichtung",
+    "optics": "Optik",
+    "focus": "Fokus & Transport",
+    "flash": "Blitz",
+    "context": "Kontext",
+    "issues": "Hinweise"
+  },
+  "fields": {
+    "mode": "Modus",
+    "shutter": "Zeit",
+    "aperture": "Blende",
+    "compensation": "Korrektur (LW)",
+    "programShift": "Programm-Shift",
+    "aeLock": "AE-Lock",
+    "lens": "Objektiv",
+    "focalLength": "Brennweite",
+    "filters": "Filter",
+    "lensHood": "Gegenlichtblende",
+    "focusMode": "Fokus",
+    "afResult": "AF-Ergebnis",
+    "driveMode": "Transport",
+    "beepWarning": "Kamera hat gepiept",
+    "flash": "Blitzgerät",
+    "flashHead": "Reflektor",
+    "flashPower": "Leistung",
+    "flashOk": "Blitzbelichtung ok",
+    "support": "Halt",
+    "light": "Licht",
+    "subject": "Motiv",
+    "locationName": "Ort",
+    "date": "Datum",
+    "time": "Uhrzeit",
+    "notes": "Notizen"
+  },
+  "placeholders": {
+    "date": "JJJJ-MM-TT",
+    "time": "HH:MM",
+    "locationName": "z. B. Isarauen, München",
+    "notes": "Was war zu sehen, was ist aufgefallen?"
+  },
+  "focusModes": {
+    "AF": "AF",
+    "M": "Manuell"
+  },
+  "afResults": {
+    "green": "Grün (scharf)",
+    "red_blink": "Rot (blinkt)",
+    "manual": "Manuell fokussiert"
+  },
+  "driveModes": {
+    "S": "Einzelbild",
+    "C": "Serie",
+    "ST": "Selbstauslöser"
+  },
+  "flashHeads": {
+    "direct": "Direkt",
+    "bounce": "Indirekt"
+  },
+  "support": {
+    "handheld": "Aus der Hand",
+    "braced": "Abgestützt",
+    "tripod": "Stativ",
+    "beanbag": "Bohnensack"
+  },
+  "light": {
+    "sun": "Sonne",
+    "cloudy": "Bewölkt",
+    "shade": "Schatten",
+    "indoor_window": "Innen, Fensterlicht",
+    "indoor_artificial": "Innen, Kunstlicht",
+    "night": "Nacht",
+    "backlight": "Gegenlicht",
+    "snow_beach": "Schnee oder Strand"
+  },
+  "subject": {
+    "portrait": "Porträt",
+    "landscape": "Landschaft",
+    "street": "Street",
+    "sport": "Sport",
+    "macro": "Makro",
+    "group": "Gruppe",
+    "night": "Nacht",
+    "other": "Anderes"
+  },
+  "location": {
+    "useCurrent": "Aktuelle Position verwenden",
+    "locating": "Position wird bestimmt …",
+    "denied": "Zugriff auf den Standort wurde abgelehnt.",
+    "unavailable": "Die Position ist gerade nicht verfügbar."
+  },
+  "save": "Speichern",
+  "saveNext": "Speichern & nächstes",
+  "delete": "Bild löschen",
+  "deleteConfirm": "Dieses Bild wirklich löschen?"
+}
