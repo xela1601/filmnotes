@@ -18,8 +18,8 @@ import type { ImageFile } from './files';
 /** The collection of the `scans` records, narrowed to what the upload needs. */
 export interface ScanCollection {
   create(data: Record<string, unknown>): Promise<{ id: string }>;
-  /** Multipart update: the `FormData` carries the scan file. */
-  update(id: string, data: FormData): Promise<unknown>;
+  /** `FormData` carries the scan file; a plain object patches fields (the repair below). */
+  update(id: string, data: FormData | Record<string, unknown>): Promise<unknown>;
 }
 
 /** The slice of the PocketBase SDK `uploadPlan` uses, so tests can pass a fake. */
@@ -43,6 +43,32 @@ const FILE_FIELD = 'file';
 
 function messageOf(error: unknown): string {
   return error instanceof Error ? error.message : String(error);
+}
+
+/**
+ * Marks a record whose file never arrived as deleted, and says so for the log.
+ *
+ * A scan record without a file would reach the app through the next sync as a scan without an
+ * image, so it is soft-deleted – exactly the repair `uploadScans` does in the app. Best effort:
+ * the connection that just failed is the same one this needs.
+ */
+async function softDelete(
+  pb: PocketBaseLike,
+  recordId: string | null,
+  timestamp: string,
+): Promise<string> {
+  if (recordId === null) return '';
+  try {
+    await pb.collection(SCANS).update(recordId, {
+      id: recordId,
+      deleted: timestamp,
+      updated: timestamp,
+      clientUpdated: timestamp,
+    });
+    return ` (scan ${recordId} was marked deleted again)`;
+  } catch {
+    return ` (scan ${recordId} has no file and could not be cleaned up)`;
+  }
 }
 
 /**
@@ -78,19 +104,20 @@ export async function uploadPlan(
 
     const target = assignment.frameNo === null ? '(unassigned)' : `#${assignment.frameNo}`;
     let recordId: string | null = null;
+    let timestamp = new Date().toISOString();
     try {
       const bytes = await readFile(file.path);
-      const now = new Date().toISOString();
+      timestamp = new Date().toISOString();
       const created = await pb.collection(SCANS).create({
         id: newId(),
         rollId,
         frameId: assignment.frameId,
         fileName: file.name,
         sortIndex: assignment.sortIndex,
-        importedAt: now,
+        importedAt: timestamp,
         deleted: null,
         owner: ownerId,
-        clientUpdated: now,
+        clientUpdated: timestamp,
       });
       recordId = created.id;
 
@@ -102,8 +129,8 @@ export async function uploadPlan(
       log(`${file.name} -> ${target} (scan ${created.id})`);
     } catch (error) {
       failed.push(assignment.fileName);
-      const dangling = recordId === null ? '' : ` (scan ${recordId} has no file yet)`;
-      log(`${file.name}: ${messageOf(error)}${dangling}`);
+      const repaired = await softDelete(pb, recordId, timestamp);
+      log(`${file.name}: ${messageOf(error)}${repaired}`);
     }
   }
 

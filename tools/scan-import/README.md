@@ -98,9 +98,10 @@ One record per file in the `scans` collection, created with a client-generated 1
 | `importedAt`, `clientUpdated` | Time of the import (UTC) |
 | `owner` | The user behind `--email` |
 
-`width`/`height` stay empty: the CLI does not decode the images. Nothing is ever updated or
-deleted, so running the import twice creates a second set of scans – check with `--dry-run`
-first.
+`width`/`height` stay empty: the CLI does not decode the images. Existing records are never
+touched – the only exception is a record whose file upload failed, which is marked deleted again
+so the app never sees a scan without an image. Running the import twice therefore creates a
+second set of scans: check with `--dry-run` first.
 
 ## Development
 

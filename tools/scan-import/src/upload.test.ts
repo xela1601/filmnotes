@@ -20,7 +20,7 @@ interface CreateCall {
 interface UpdateCall {
   collection: string;
   id: string;
-  form: FormData;
+  data: FormData | Record<string, unknown>;
 }
 
 /** A `pb` stand-in that records what the upload did and can be told to fail. */
@@ -41,13 +41,15 @@ function fakePocketBase(options: { failCreate?: string[]; failUpdate?: string[] 
         creates.push({ collection, data });
         return { id: String(data.id) };
       },
-      async update(id: string, form: FormData) {
-        const file = form.get('file');
-        const name = file instanceof File ? file.name : '';
-        if (options.failUpdate?.includes(name) === true) {
-          throw new Error(`upload refused ${name}`);
+      async update(id: string, data: FormData | Record<string, unknown>) {
+        if (data instanceof FormData) {
+          const file = data.get('file');
+          const name = file instanceof File ? file.name : '';
+          if (options.failUpdate?.includes(name) === true) {
+            throw new Error(`upload refused ${name}`);
+          }
         }
-        updates.push({ collection, id, form });
+        updates.push({ collection, id, data });
         return { id };
       },
     }),
@@ -101,7 +103,8 @@ describe('uploadPlan', () => {
 
     // The file goes into the record that was just created, under the `file` field.
     expect(updates[0]!.id).toBe(first.id);
-    const uploaded = updates[0]!.form.get('file');
+    expect(updates[0]!.data).toBeInstanceOf(FormData);
+    const uploaded = (updates[0]!.data as FormData).get('file');
     expect(uploaded).toBeInstanceOf(File);
     const blob = uploaded as File;
     expect(blob.name).toBe('img1.jpg');
@@ -131,15 +134,25 @@ describe('uploadPlan', () => {
     expect(log.join('\n')).toContain('create refused img2.jpg');
   });
 
-  it('reports a failed file upload and names the record that stayed empty', async () => {
-    const { pb, creates } = fakePocketBase({ failUpdate: ['img1.jpg'] });
+  it('marks the record deleted again when its file upload failed', async () => {
+    const { pb, creates, updates } = fakePocketBase({ failUpdate: ['img1.jpg'] });
     const log: string[] = [];
 
     const result = await uploadPlan(pb, OWNER, ROLL, files, assignments, (line) => log.push(line));
 
     expect(result.uploaded).toBe(2);
     expect(result.failed).toEqual(['img1.jpg']);
-    expect(log.join('\n')).toContain(String(creates[0]!.data.id));
+    expect(log.join('\n')).toContain('img1.jpg');
+
+    // A record without a file would come back as an image-less scan on the next sync, so it
+    // is soft-deleted – the same repair `uploadScans` does in the app.
+    const repair = updates.find(
+      (call) => call.id === String(creates[0]!.data.id) && !(call.data instanceof FormData),
+    );
+    expect(repair).toBeDefined();
+    const patch = repair!.data as Record<string, unknown>;
+    expect(patch.deleted).toBe(creates[0]!.data.importedAt);
+    expect(patch.clientUpdated).toBe(creates[0]!.data.importedAt);
   });
 
   it('reports a file that disappeared between the plan and the upload', async () => {
