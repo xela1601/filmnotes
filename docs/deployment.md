@@ -33,12 +33,23 @@ HTTPS is not optional in practice:
 ```bash
 cd backend
 cp .env.example .env && $EDITOR .env      # see the table below
-docker compose up -d --build
+docker compose pull
+docker compose up -d
 docker compose logs -f filmnotes-pb       # the migration runs on the first start
 ```
 
-The image downloads the PocketBase release for the build platform's `TARGETARCH` and copies
-`pb_migrations/` in. `docker-compose.yml` publishes the port as `127.0.0.1:8090:8090` **on
+The image is `ghcr.io/xela1601/filmnotes`, built and pushed by the Publish workflow whenever a
+semver tag lands on main (`amd64` and `arm64`). It carries three things: the PocketBase binary for
+the platform, the schema migrations, and the web app in `pb_public` — so app and API come from one
+origin and cannot be half-updated. Pin a version instead of `latest` if you would rather decide
+when to move:
+
+```yaml
+image: ghcr.io/xela1601/filmnotes:0.2.0
+```
+
+To run something that is not tagged yet, build it from a checkout instead — replace the `image:`
+line with `build: { context: .., dockerfile: Dockerfile }` and use `docker compose up -d --build`. `docker-compose.yml` publishes the port as `127.0.0.1:8090:8090` **on
 purpose**: PocketBase must never be reachable directly from the network. It has a healthcheck on
 `/api/health`, so `docker compose ps` shows whether it is actually serving.
 
@@ -107,7 +118,12 @@ seed it by hand.
 
 ## 4. Hosting the web build
 
-The web app is a static bundle; build it on a machine with the toolchain (not on the server):
+**The image already serves it** — PocketBase hands out `pb_public`, and `--indexFallback` (on by
+default) is exactly the single-page rule the router needs. `https://pb.example.com/` is the app,
+`/api/...` is the API, and the CORS question never comes up.
+
+What follows is for serving the bundle somewhere else instead (a separate web server, a static
+host). Build it on a machine with the toolchain, not on the server:
 
 ```bash
 cd apps/mobile

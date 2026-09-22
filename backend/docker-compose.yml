@@ -1,18 +1,19 @@
-# filmnotes PocketBase for the home server.
+# filmnotes for the home server: PocketBase, the schema migrations and the web app in one image.
 #
 #   cp .env.example .env && $EDITOR .env
-#   docker compose up -d --build
+#   docker compose pull && docker compose up -d
+#
+# The image is built and pushed by the Release/publish workflow on a semver tag. To run something
+# that is not tagged yet, build it from a checkout instead:
+#
+#   build: { context: .., dockerfile: Dockerfile }
 #
 # The port is bound to 127.0.0.1 on purpose: the existing reverse proxy terminates
 # TLS and forwards to it. PocketBase itself must never be exposed directly.
 
 services:
   filmnotes-pb:
-    build:
-      context: .
-      args:
-        PB_VERSION: 0.40.4
-    image: filmnotes-pb:0.40.4
+    image: ghcr.io/xela1601/filmnotes:latest
     container_name: filmnotes-pb
     restart: unless-stopped
     env_file: .env

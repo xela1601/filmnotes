@@ -10,7 +10,7 @@ backend/
   scripts/fetch-pocketbase.mjs                   provides bin/pocketbase for local dev
   scripts/serve.sh                               local dev server (mise task `backend`)
   test/smoke.test.mjs                            integration test against the real binary
-  Dockerfile, docker-compose.yml, .env.example   deployment on the home server
+  docker-compose.yml, .env.example                deployment (the image is built from the repository root Dockerfile)
 ```
 
 `bin/` and `pb_data/` are git-ignored: the binary is fetched, the data is local.
@@ -108,13 +108,14 @@ callers see nothing, and that a scan upload returns a servable `200x200` thumbna
 ```bash
 cd backend
 cp .env.example .env && $EDITOR .env
-docker compose up -d --build
+docker compose pull && docker compose up -d
 docker compose run --rm filmnotes-pb /pb/pocketbase superuser upsert \
   "$PB_ADMIN_EMAIL" "$PB_ADMIN_PASSWORD" --dir /pb/pb_data
 ```
 
-The image downloads PocketBase for the build platform's `TARGETARCH` and copies `pb_migrations`
-in; migrations run on every container start, so a new schema version ships with a new image.
+The image (`ghcr.io/xela1601/filmnotes`, built from the repository root `Dockerfile` by the Publish
+workflow) carries PocketBase for the platform, `pb_migrations` and the web app; migrations run on
+every container start, so a new schema version ships with a new image.
 
 The service listens on `127.0.0.1:8090` only. Put it behind the existing reverse proxy with TLS
 and forward to that port — the app needs the public HTTPS URL, and PocketBase's file and realtime
@@ -144,5 +145,5 @@ with the project directory name.
 ### Upgrading PocketBase
 
 Bump `PB_VERSION` in `docker-compose.yml` (and `PB_VERSION_DEFAULT` in
-`scripts/fetch-pocketbase.mjs` so local dev matches), then `docker compose up -d --build`. Back
+`scripts/fetch-pocketbase.mjs` so local dev matches), then `docker compose pull && docker compose up -d`. Back
 up the volume first; PocketBase migrates its own system tables on start.

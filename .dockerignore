@@ -1,0 +1,31 @@
+# Everything the image does not need, and everything that would make the build context huge or
+# the result wrong (host-built node_modules carry binaries for the host's platform).
+node_modules
+**/node_modules
+dist
+**/dist
+.npm-cache
+.expo
+**/.expo
+coverage
+
+.git
+.github
+.changeset
+.claude
+.vscode
+.idea
+
+# Documentation and pictures: 2 MB of screenshots have no business in a server image.
+docs
+sandbox
+automation
+*.md
+!backend/pb_migrations/*.md
+
+# Runtime data and binaries of a local checkout.
+backend/pb_data
+backend/bin
+.env
+.env.*
+!.env.example
