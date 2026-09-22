@@ -2,7 +2,7 @@
   "expo": {
     "name": "filmnotes",
     "slug": "filmnotes",
-    "version": "0.1.0",
+    "version": "0.2.0-alpha.0",
     "scheme": "filmnotes",
     "orientation": "portrait",
     "icon": "./assets/icon.png",

@@ -1,7 +1,7 @@
 {
   "name": "filmnotes",
   "private": true,
-  "version": "0.1.0",
+  "version": "0.2.0-alpha.0",
   "description": "Per-frame notes for analogue film rolls – Expo app + PocketBase backend",
   "license": "MIT",
   "workspaces": [

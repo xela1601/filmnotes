@@ -1,6 +1,6 @@
 {
   "name": "@filmnotes/presets",
-  "version": "0.1.0",
+  "version": "0.2.0-alpha.0",
   "private": true,
   "main": "src/index.ts",
   "types": "src/index.ts",
@@ -8,7 +8,7 @@
     "test": "jest"
   },
   "dependencies": {
-    "@filmnotes/domain": "*",
+    "@filmnotes/domain": "0.2.0-alpha.0",
     "zod": "^3.23.8"
   }
 }

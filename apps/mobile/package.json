@@ -1,6 +1,6 @@
 {
   "name": "@filmnotes/mobile",
-  "version": "0.1.0",
+  "version": "0.2.0-alpha.0",
   "private": true,
   "main": "expo-router/entry",
   "scripts": {
@@ -14,9 +14,9 @@
   "dependencies": {
     "@expo/metro-runtime": "~57.0.15",
     "@expo/vector-icons": "^15.0.2",
-    "@filmnotes/domain": "*",
-    "@filmnotes/exporters": "*",
-    "@filmnotes/presets": "*",
+    "@filmnotes/domain": "0.2.0-alpha.0",
+    "@filmnotes/exporters": "0.2.0-alpha.0",
+    "@filmnotes/presets": "0.2.0-alpha.0",
     "@react-native-async-storage/async-storage": "2.2.0",
     "expo": "~57.0.23",
     "expo-clipboard": "~57.0.2",
