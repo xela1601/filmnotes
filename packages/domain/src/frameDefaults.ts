@@ -1,10 +1,18 @@
 /**
  * Defaults for a freshly created frame.
  *
- * A new frame starts from the camera preset (`defaultsForNewFrame`). If the roll already has a
- * frame, the setup of that frame wins for everything that stays mounted on the camera – lens,
- * filters, flash, modes, support. The exposure itself (times, aperture, notes, location) is
- * always empty: it is what the photographer is about to record.
+ * A new frame starts from the camera preset (`defaultsForNewFrame`); once the roll has a frame,
+ * that frame wins. The rule is "what is still true when you wind on":
+ *
+ *  - **Carried over** – everything that is still set when the next shot comes: the lens and its
+ *    focal length, the filters, the flash and how it is set, the exposure mode, focus and drive
+ *    mode, the support, the hood, the light, the exposure itself (time, aperture, compensation),
+ *    and where you are and what you are photographing. In a series that is almost everything, so
+ *    in the field only what actually changed has to be touched.
+ *  - **Empty again** – what you observed about *that* one frame: the AF lamp, whether the flash
+ *    was enough, the beep, the notes, and the time of the shot.
+ *  - **Reset** – what the camera itself resets between two shots: program shift (cancelled when
+ *    the meter switches off) and AE lock (held with a button).
  */
 import { newId } from "./id";
 import type { Camera, Frame, FrameDefaults, Id, ISODateTime } from "./types";
@@ -53,6 +61,7 @@ export function newFrame(input: NewFrameInput): Frame {
     ...(camera.defaultsForNewFrame as FrameDefaults | null | undefined),
   };
   /** Everything that stays mounted/dialled in on the camera between two shots. */
+  /** Everything that is still set on the camera - and around it - when the film is wound on. */
   const carriedOver =
     previous === null
       ? {
@@ -68,6 +77,11 @@ export function newFrame(input: NewFrameInput): Frame {
           support: defaults.support,
           lensHood: false,
           light: null,
+          shutterSpeed: null,
+          aperture: null,
+          exposureCompensationEv: defaults.exposureCompensationEv,
+          subject: null,
+          location: null,
         }
       : {
           lensId: previous.lensId,
@@ -82,6 +96,12 @@ export function newFrame(input: NewFrameInput): Frame {
           support: previous.support,
           lensHood: previous.lensHood,
           light: previous.light,
+          shutterSpeed: previous.shutterSpeed,
+          aperture: previous.aperture,
+          exposureCompensationEv: previous.exposureCompensationEv,
+          subject: previous.subject,
+          // Copied, not shared: editing the new frame's location must not change the old one.
+          location: previous.location === null ? null : { ...previous.location },
         };
 
   return {
@@ -96,9 +116,10 @@ export function newFrame(input: NewFrameInput): Frame {
     lensId: carriedOver.lensId,
     focalLengthMm: carriedOver.focalLengthMm,
     exposureMode: carriedOver.exposureMode,
-    shutterSpeed: null,
-    aperture: null,
-    exposureCompensationEv: defaults.exposureCompensationEv,
+    shutterSpeed: carriedOver.shutterSpeed,
+    aperture: carriedOver.aperture,
+    exposureCompensationEv: carriedOver.exposureCompensationEv,
+    // The camera resets both between two shots, so a new frame does too.
     programShift: defaults.programShift,
     aeLock: defaults.aeLock,
     focusMode: carriedOver.focusMode,
@@ -113,8 +134,8 @@ export function newFrame(input: NewFrameInput): Frame {
     support: carriedOver.support,
     beepWarning: false,
     light: carriedOver.light,
-    subject: null,
-    location: null,
+    subject: carriedOver.subject,
+    location: carriedOver.location,
     notes: "",
   };
 }

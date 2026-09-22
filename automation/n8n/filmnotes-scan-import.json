@@ -1,9 +1,12 @@
 {
-  "name": "filmnotes – scan import",
+  "name": "filmnotes \u2013 scan import",
   "meta": {
     "description": "Imports the lab's scans for a roll: the download link arrives by mail, the CLI uploads the files into PocketBase, the roll moves to 'developed' and a summary comes back by mail. A second, scheduled branch only reports what the lab says about an open order. See docs/automation.md."
   },
-  "settings": { "executionOrder": "v1", "saveManualExecutions": true },
+  "settings": {
+    "executionOrder": "v1",
+    "saveManualExecutions": true
+  },
   "nodes": [
     {
       "id": "trigger-mail",
@@ -17,7 +20,12 @@
           "customEmailConfig": "[\"UNSEEN\", [\"FROM\", \"photoprintit.com\"]]"
         }
       },
-      "credentials": { "imap": { "id": "REPLACE_IMAP_CREDENTIAL", "name": "mail.example.org" } },
+      "credentials": {
+        "imap": {
+          "id": "REPLACE_IMAP_CREDENTIAL",
+          "name": "mail.example.org"
+        }
+      },
       "notes": "The lab mail. Narrow the FROM filter once you have seen the real sender."
     },
     {
@@ -38,11 +46,17 @@
       "position": [-200, 0],
       "parameters": {
         "conditions": {
-          "options": { "caseSensitive": true, "version": 2 },
+          "options": {
+            "caseSensitive": true,
+            "version": 2
+          },
           "combinator": "and",
           "conditions": [
             {
-              "operator": { "type": "string", "operation": "notEmpty" },
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty"
+              },
               "leftValue": "={{ $json.downloadUrl }}",
               "rightValue": ""
             }
@@ -81,12 +95,20 @@
               "name": "filter",
               "value": "={{ `labOrderId = \"${$('Extract order and download link').first().json.orderId}\" && deleted = null` }}"
             },
-            { "name": "perPage", "value": "2" }
+            {
+              "name": "perPage",
+              "value": "2"
+            }
           ]
         },
         "sendHeaders": true,
         "headerParameters": {
-          "parameters": [{ "name": "Authorization", "value": "={{ $json.token }}" }]
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "={{ $json.token }}"
+            }
+          ]
         },
         "options": {}
       },
@@ -100,11 +122,17 @@
       "position": [480, -100],
       "parameters": {
         "conditions": {
-          "options": { "caseSensitive": true, "version": 2 },
+          "options": {
+            "caseSensitive": true,
+            "version": 2
+          },
           "combinator": "and",
           "conditions": [
             {
-              "operator": { "type": "number", "operation": "equals" },
+              "operator": {
+                "type": "number",
+                "operation": "equals"
+              },
               "leftValue": "={{ $json.totalItems }}",
               "rightValue": 1
             }
@@ -167,11 +195,17 @@
       "position": [1140, 0],
       "parameters": {
         "conditions": {
-          "options": { "caseSensitive": true, "version": 2 },
+          "options": {
+            "caseSensitive": true,
+            "version": 2
+          },
           "combinator": "and",
           "conditions": [
             {
-              "operator": { "type": "number", "operation": "gt" },
+              "operator": {
+                "type": "number",
+                "operation": "gt"
+              },
               "leftValue": "={{ $json.uploaded }}",
               "rightValue": 0
             }
@@ -188,12 +222,17 @@
       "parameters": {
         "fromEmail": "filmnotes@example.org",
         "toEmail": "={{ $env.FILMNOTES_NOTIFY_EMAIL }}",
-        "subject": "=filmnotes: {{ $json.uploaded }} Scans für Auftrag {{ $json.orderId }}",
+        "subject": "=filmnotes: {{ $json.uploaded }} Scans f\u00fcr Auftrag {{ $json.orderId }}",
         "emailFormat": "text",
-        "text": "=Auftrag {{ $json.orderId }} (Film {{ $json.rollId }})\n\n{{ $json.uploaded }} von {{ $json.files }} Dateien hochgeladen.\n{{ $json.failed && $json.failed.length ? 'Nicht hochgeladen: ' + JSON.stringify($json.failed) : 'Keine Fehler.' }}\n\nZuordnung prüfen: in der App unter Filme -> der Film -> \"Scans importieren\".\n{{ $json.stderr ? '\\nstderr:\\n' + $json.stderr : '' }}",
+        "text": "=Auftrag {{ $json.orderId }} (Film {{ $json.rollId }})\n\n{{ $json.uploaded }} von {{ $json.files }} Dateien hochgeladen.\n{{ $json.failed && $json.failed.length ? 'Nicht hochgeladen: ' + JSON.stringify($json.failed) : 'Keine Fehler.' }}\n\nZuordnung pr\u00fcfen: in der App unter Filme -> der Film -> \"Scans importieren\".\n{{ $json.stderr ? '\\nstderr:\\n' + $json.stderr : '' }}",
         "options": {}
       },
-      "credentials": { "smtp": { "id": "REPLACE_SMTP_CREDENTIAL", "name": "mail.example.org" } }
+      "credentials": {
+        "smtp": {
+          "id": "REPLACE_SMTP_CREDENTIAL",
+          "name": "mail.example.org"
+        }
+      }
     },
     {
       "id": "mail-needs-help",
@@ -209,7 +248,12 @@
         "text": "=Der Download ist da, aber die Auftragsnummer passt auf {{ $json.totalItems }} Filme.\n\nAuftragsnummer: {{ $('Extract order and download link').first().json.orderId }}\nDownload: {{ $('Extract order and download link').first().json.downloadUrl }}\n\nTrag die Nummer am Film ein (Film bearbeiten -> \"Auftragsnummer Labor\") und starte den Workflow erneut,\noder importiere von Hand:\n  npm run import -w @filmnotes/scan-import -- --roll <rollId> '<download-url>'",
         "options": {}
       },
-      "credentials": { "smtp": { "id": "REPLACE_SMTP_CREDENTIAL", "name": "mail.example.org" } }
+      "credentials": {
+        "smtp": {
+          "id": "REPLACE_SMTP_CREDENTIAL",
+          "name": "mail.example.org"
+        }
+      }
     },
     {
       "id": "trigger-schedule",
@@ -217,7 +261,16 @@
       "type": "n8n-nodes-base.scheduleTrigger",
       "typeVersion": 1.2,
       "position": [-640, 320],
-      "parameters": { "rule": { "interval": [{ "field": "hours", "hoursInterval": 6 }] } }
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "hours",
+              "hoursInterval": 6
+            }
+          ]
+        }
+      }
     },
     {
       "id": "open-orders",
@@ -281,7 +334,13 @@
       "position": [20, 320],
       "parameters": {
         "url": "={{ $env.FILMNOTES_LAB_STATUS_URL.replace('{order}', $json.orderId) }}",
-        "options": { "response": { "response": { "neverError": true } } }
+        "options": {
+          "response": {
+            "response": {
+              "neverError": true
+            }
+          }
+        }
       },
       "notes": "FILMNOTES_LAB_STATUS_URL carries the shop-specific part, e.g. https://spot.photoprintit.com/spotapi/orderInfo/forShop?config=<config>&shop=<shop>&order={order}"
     },
@@ -292,7 +351,7 @@
       "typeVersion": 2,
       "position": [240, 320],
       "parameters": {
-        "jsCode": "// The second place that knows about the lab - adjust once you have seen one real answer\n// (Executions -> 'Lab: order info' -> Output). Everything below only needs { finished, label }.\nconst info = $input.first().json;\nconst roll = $('One roll at a time').first().json;\n\n// Defensive: the field names are not documented, so anything that looks like a state is read.\nconst state = String(\n  info.orderState ?? info.state ?? info.status ?? info.orderStatus ?? '',\n).toLowerCase();\nconst finished = /fertig|abgeschlossen|versand|shipped|complete|done|ready/.test(state);\n\nreturn [\n  {\n    json: {\n      ...roll,\n      finished,\n      label: state === '' ? JSON.stringify(info).slice(0, 300) : state,\n    },\n  },\n];"
+        "jsCode": "// The shape of a real dm order, confirmed 2026-09-23 against\n// spot.photoprintit.com/spotapi/orderInfo/forShop:\n//\n//   summaryStateCode  \"PROCESSING\"                     <- machine readable, this is what we use\n//   summaryStateText  \"Dein Auftrag wird gefertigt.\"   <- for the mail\n//   summaryDate       \"2026-09-21\"\n//   deliveryType/Text 0 + the dm branch address        <- 0 = collect in the store\n//   subOrders[0]      the same state plus trackingNumber/trackingUrl once something ships\n//\n// The download link for the digital images is *not* in here - it arrives by mail, which is what\n// the other branch of this workflow waits for.\nconst info = $input.first().json;\nconst roll = $('One roll at a time').first().json;\nconst sub = Array.isArray(info.subOrders) ? info.subOrders[0] : undefined;\n\nconst code = String(info.summaryStateCode ?? sub?.stateCode ?? '').toUpperCase();\n// Everything the lab reports while it is still working on the order. Anything else - shipped,\n// ready for pickup, done - is worth a mail. Unknown codes count as \"worth a look\" on purpose:\n// a new code should reach you, not be swallowed.\nconst IN_PROGRESS = new Set(['', 'NEW', 'RECEIVED', 'ORDERED', 'PROCESSING', 'IN_PRODUCTION']);\n\nreturn [\n  {\n    json: {\n      ...roll,\n      finished: !IN_PROGRESS.has(code),\n      code,\n      stateText: info.summaryStateText ?? sub?.stateText ?? code,\n      stateDate: info.summaryDate ?? sub?.stateDate ?? null,\n      delivery: info.deliveryText ?? '',\n      trackingUrl: sub?.trackingUrl ?? null,\n      trackingNumber: sub?.trackingNumber ?? null,\n    },\n  },\n];"
       }
     },
     {
@@ -304,69 +363,251 @@
       "parameters": {
         "fromEmail": "filmnotes@example.org",
         "toEmail": "={{ $env.FILMNOTES_NOTIFY_EMAIL }}",
-        "subject": "=filmnotes: Auftrag {{ $json.orderId }} ist {{ $json.finished ? 'fertig' : 'noch unterwegs' }}",
+        "subject": "=filmnotes: Auftrag {{ $json.orderNo || $json.orderId }} \u2013 {{ $json.stateText }}",
         "emailFormat": "text",
-        "text": "=Film {{ $json.rollId }}, Auftrag {{ $json.orderId }}\nStatus laut Labor: {{ $json.label }}\n\nDer Import startet von selbst, sobald die Mail mit dem Downloadlink eintrifft.",
+        "text": "=Film {{ $json.rollId }}, Auftrag {{ $json.orderId }}\nStatus laut Labor: {{ $json.stateText }} ({{ $json.code }}, Stand {{ $json.stateDate }})\n\n{{ $json.delivery ? 'Abholung/Lieferung:\\n' + $json.delivery + '\\n\\n' : '' }}{{ $json.trackingUrl ? 'Sendungsverfolgung: ' + $json.trackingUrl + '\\n\\n' : '' }}Die Bilder werden automatisch importiert, sobald die Mail mit dem Downloadlink eintrifft.",
         "options": {}
       },
-      "credentials": { "smtp": { "id": "REPLACE_SMTP_CREDENTIAL", "name": "mail.example.org" } },
+      "credentials": {
+        "smtp": {
+          "id": "REPLACE_SMTP_CREDENTIAL",
+          "name": "mail.example.org"
+        }
+      },
       "notes": "Only a heads-up. The import hangs off the mail trigger, because that is where the download link is."
+    },
+    {
+      "id": "status-finished",
+      "name": "Something to report?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [350, 460],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "version": 2
+          },
+          "combinator": "and",
+          "conditions": [
+            {
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              },
+              "leftValue": "={{ $json.finished }}",
+              "rightValue": ""
+            }
+          ]
+        }
+      },
+      "notes": "The lab answers PROCESSING for days; only a state that is not 'still working on it' is worth a mail."
     }
   ],
   "connections": {
     "Lab mail arrives": {
-      "main": [[{ "node": "Extract order and download link", "type": "main", "index": 0 }]]
+      "main": [
+        [
+          {
+            "node": "Extract order and download link",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     },
     "Extract order and download link": {
-      "main": [[{ "node": "Order and link found?", "type": "main", "index": 0 }]]
+      "main": [
+        [
+          {
+            "node": "Order and link found?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     },
     "Order and link found?": {
-      "main": [[{ "node": "PocketBase: log in", "type": "main", "index": 0 }], []]
+      "main": [
+        [
+          {
+            "node": "PocketBase: log in",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        []
+      ]
     },
     "PocketBase: log in": {
-      "main": [[{ "node": "PocketBase: roll for this order", "type": "main", "index": 0 }]]
+      "main": [
+        [
+          {
+            "node": "PocketBase: roll for this order",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     },
     "PocketBase: roll for this order": {
-      "main": [[{ "node": "Exactly one roll?", "type": "main", "index": 0 }]]
+      "main": [
+        [
+          {
+            "node": "Exactly one roll?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     },
     "Exactly one roll?": {
       "main": [
-        [{ "node": "Run filmnotes-import", "type": "main", "index": 0 }],
-        [{ "node": "Mail: needs a human", "type": "main", "index": 0 }]
+        [
+          {
+            "node": "Run filmnotes-import",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Mail: needs a human",
+            "type": "main",
+            "index": 0
+          }
+        ]
       ]
     },
     "Run filmnotes-import": {
-      "main": [[{ "node": "Read the import result", "type": "main", "index": 0 }]]
+      "main": [
+        [
+          {
+            "node": "Read the import result",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     },
     "Read the import result": {
-      "main": [[{ "node": "Anything uploaded?", "type": "main", "index": 0 }]]
+      "main": [
+        [
+          {
+            "node": "Anything uploaded?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     },
     "Anything uploaded?": {
       "main": [
-        [{ "node": "PocketBase: roll is developed", "type": "main", "index": 0 }],
-        [{ "node": "Mail: import summary", "type": "main", "index": 0 }]
+        [
+          {
+            "node": "PocketBase: roll is developed",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Mail: import summary",
+            "type": "main",
+            "index": 0
+          }
+        ]
       ]
     },
     "PocketBase: roll is developed": {
-      "main": [[{ "node": "Mail: import summary", "type": "main", "index": 0 }]]
+      "main": [
+        [
+          {
+            "node": "Mail: import summary",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     },
     "Every 6 hours": {
-      "main": [[{ "node": "PocketBase: log in for the status check", "type": "main", "index": 0 }]]
+      "main": [
+        [
+          {
+            "node": "PocketBase: log in for the status check",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     },
     "PocketBase: log in for the status check": {
-      "main": [[{ "node": "PocketBase: rolls at the lab", "type": "main", "index": 0 }]]
+      "main": [
+        [
+          {
+            "node": "PocketBase: rolls at the lab",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     },
     "PocketBase: rolls at the lab": {
-      "main": [[{ "node": "One roll at a time", "type": "main", "index": 0 }]]
+      "main": [
+        [
+          {
+            "node": "One roll at a time",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     },
     "One roll at a time": {
-      "main": [[{ "node": "Lab: order info", "type": "main", "index": 0 }]]
+      "main": [
+        [
+          {
+            "node": "Lab: order info",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     },
     "Lab: order info": {
-      "main": [[{ "node": "Is the order finished?", "type": "main", "index": 0 }]]
+      "main": [
+        [
+          {
+            "node": "Is the order finished?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     },
     "Is the order finished?": {
-      "main": [[{ "node": "Mail: order status", "type": "main", "index": 0 }]]
+      "main": [
+        [
+          {
+            "node": "Something to report?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Something to report?": {
+      "main": [
+        [
+          {
+            "node": "Mail: order status",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        []
+      ]
     }
   }
 }

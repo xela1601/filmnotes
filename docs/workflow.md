@@ -39,15 +39,21 @@ The roll id is the last path segment of that URL and is what the desktop CLI in 
 - [ ] Roll detail → **"Bild hinzufügen"**. The frame record is created immediately (it gets the
       next free number) and you land on `/frames/<id>`, titled **"Bild {{no}} / {{total}}"**.
       The button is greyed out once the roll has as many frames as it has exposures.
-- [ ] **Change only what changed.** A new frame inherits from the previous frame of the same roll:
-      lens, focal length, filters, flash (unit, head, power), exposure mode, focus mode, drive
-      mode, support, lens hood and light. The very first frame of a roll takes those from the
-      camera's own defaults instead ("Standard: …" fields on the camera in "Ausrüstung").
-- [ ] **Deliberately blank every time**, because they are per-picture: **"Zeit"**, **"Blende"**,
-      **"AF-Ergebnis"**, **"Blitzbelichtung ok"**, **"Motiv"**, **"Ort"**, **"Notizen"**,
-      **"Kamera hat gepiept"**. Exposure compensation, program shift and AE lock always come back
-      from the camera defaults, never from the previous frame — an accidental −1 EV cannot follow
-      you down the roll.
+- [ ] **Change only what changed.** A new frame inherits everything from the previous frame of the
+      same roll that is still true when you wind on: lens, focal length, filters, flash (unit,
+      head, power), exposure mode, focus mode, drive mode, support, lens hood, light, **the
+      exposure itself ("Zeit", "Blende", "Belichtungskorrektur")** and **"Motiv"** and **"Ort"**.
+      In a series that is almost everything — which is the point. The first frame of a roll takes
+      what it can from the camera's own defaults instead ("Standard: …" fields on the camera in
+      "Ausrüstung").
+- [ ] **Blank every time**, because they are what you observed about _that_ frame:
+      **"AF-Ergebnis"**, **"Blitzbelichtung ok"**, **"Kamera hat gepiept"**, **"Notizen"** — and
+      **"Datum"/"Uhrzeit"**, which start at _now_.
+- [ ] **Reset every time**, because the camera resets them too: **program shift** (cancelled when
+      the meter switches off) and **AE-Lock** (held with a button). The exposure compensation is
+      _not_ among them — it stays dialled in on the Minolta until you turn it back, so it follows
+      you down the roll, a forgotten −1 EV included. It is in the "Belichtung" section of every
+      frame, where you will see it.
 - [ ] Sections to walk through: **"Belichtung"** (the fields shown depend on the mode — in P there
       is no **"Zeit"**/**"Blende"** to enter), **"Optik"**, **"Fokus & Transport"**, **"Blitz"**,
       **"Kontext"**.

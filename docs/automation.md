@@ -56,21 +56,34 @@ any roll, or the same number twice, and the workflow mails you instead of guessi
    the "Run filmnotes-import" node with an **SSH** node that runs the same command on the host —
    the command is in one place for exactly that reason.
 
-## The two places that need your first real delivery
+## What the lab answers
 
-Both are Code nodes, both work defensively, and both are marked in the workflow:
+`spot.photoprintit.com/spotapi/orderInfo/forShop?config=…&shop=…&order=…` answers JSON, confirmed
+against a real dm order:
 
-- **"Extract order and download link"** — picks the order number and the download URL out of the
-  mail. It accepts `orderID=540996-624893` and plain numbers, and takes the first link that looks
-  like a download. When your first lab mail is in, open the execution, look at the node's input and
-  tighten the two regular expressions.
-- **"Is the order finished?"** — reads the lab's order info. The response shape of
-  `spot.photoprintit.com/spotapi/orderInfo/forShop` is not documented, so the node looks for
-  anything resembling a state field and otherwise mails you the raw payload. One look at a real
-  answer is enough to make it exact.
+```json
+{
+  "summaryStateCode": "PROCESSING",
+  "summaryStateText": "Dein Auftrag wird gefertigt.",
+  "summaryDate": "2026-09-21",
+  "orderNo": "540996",
+  "deliveryType": 0,
+  "deliveryText": "dm-drogerie markt\nBahnhofstraße 27\n82131 Gauting",
+  "subOrders": [{ "stateCode": "PROCESSING", "trackingNumber": null, "trackingUrl": null }]
+}
+```
 
-Until then the workflow still does something useful: it tells you what the lab says, and the import
-branch runs as soon as a mail with a link arrives.
+`summaryStateCode` is what the workflow reads; `PROCESSING`, `NEW`, `RECEIVED`, `ORDERED` and
+`IN_PRODUCTION` count as "still working on it" and are not worth a mail. Every other code is - an
+unknown one included, so a state nobody has seen yet reaches you instead of being swallowed.
+`deliveryType: 0` means the prints are collected in the branch named in `deliveryText`.
+
+**The download link for the digital images is not in that payload.** It arrives by mail, which is
+what the other branch waits for, and that is the one place that still needs your first real
+delivery: the Code node **"Extract order and download link"** picks the order number
+(`orderID=540996-624893` or a plain number) and the first link that looks like a download. When
+the mail is in, open the execution, look at the node's input and tighten the two regular
+expressions.
 
 ## What the workflow does, step by step
 

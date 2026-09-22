@@ -139,22 +139,42 @@ describe("newFrame with a previous frame", () => {
     expect(frame.light).toBe("backlight");
   });
 
-  it("does not carry the exposure of the previous frame over", () => {
-    expect(frame.shutterSpeed).toBeNull();
-    expect(frame.aperture).toBeNull();
-    expect(frame.notes).toBe("");
-    expect(frame.location).toBeNull();
-    expect(frame.takenAt).toBe(LATER);
+  it("carries the exposure over: it is still dialled in on the camera", () => {
+    // A series in the same light keeps its settings, and the compensation stays set on the
+    // Minolta until it is turned back. Starting every frame empty meant dialling in the same
+    // three values again for every shot.
+    expect(frame.shutterSpeed).toBe("1/30");
+    expect(frame.aperture).toBe(8);
+    expect(frame.exposureCompensationEv).toBe(1.5);
+  });
+
+  it("carries where and what: the next shot is usually in the same place", () => {
+    expect(frame.subject).toBe("street");
+    expect(frame.location).toEqual({ name: "Isar", lat: null, lon: null });
+  });
+
+  it("starts the observations of the shot empty", () => {
+    // What the camera told you about *this* frame, and what you wrote about it.
     expect(frame.afResult).toBeNull();
     expect(frame.flashOk).toBeNull();
     expect(frame.beepWarning).toBe(false);
-    expect(frame.subject).toBeNull();
+    expect(frame.notes).toBe("");
+    expect(frame.takenAt).toBe(LATER);
   });
 
-  it("resets compensation, program shift and AE lock to the camera defaults", () => {
-    expect(frame.exposureCompensationEv).toBe(0);
+  it("resets what the camera itself resets between two shots", () => {
+    // Program shift is cancelled when the meter switches off, and AE lock is held with a button.
     expect(frame.programShift).toBe(false);
     expect(frame.aeLock).toBe(false);
+  });
+
+  it("copies the location instead of sharing it with the previous frame", () => {
+    const shared = makeFrame({ location: { name: "Isar", lat: 48.1, lon: 11.5 } });
+    const next = newFrame({ rollId: ROLL_ID, frameNo: 2, camera, previous: shared, now: LATER });
+
+    (next.location as { name: string | null }).name = "Englischer Garten";
+
+    expect(shared.location?.name).toBe("Isar");
   });
 
   it("is a new record, not a copy of the previous one", () => {

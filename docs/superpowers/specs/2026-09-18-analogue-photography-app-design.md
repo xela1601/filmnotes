@@ -227,6 +227,16 @@ Multi-user UI, registration, lab APIs (none public), Instagram/Facebook Graph AP
   download link can be imported directly - by hand or from the optional n8n workflow in
   `automation/n8n/`. The CLI stays the only uploader; n8n does transport and notification
   (`docs/automation.md`).
+- **A new frame carries the last used values over** (owner's decision): not just the setup but the
+  exposure (time, aperture, compensation) and the context (subject, location) too. What stays empty
+  is what was observed about the previous frame (AF result, flash ok, beep, notes); what is reset is
+  what the camera resets itself (program shift, AE lock). The trade-off is deliberate: a forgotten
+  exposure compensation now follows you down the roll, which is what the camera does as well.
+- **A new frame carries the last used values over** (owner's decision): not only the setup but the
+  exposure (time, aperture, compensation) and the context (subject, location). Empty again is what
+  was observed about the previous frame (AF result, flash ok, beep, notes); reset is what the camera
+  resets itself (program shift, AE lock). The trade-off is deliberate: a forgotten compensation now
+  follows you down the roll - exactly as it does on the camera.
 - **Found by driving the exported bundle in a real browser** (and by nothing else): an
   `Intl.DateTimeFormat` with the runtime's own `Etc/Unknown` threw a `RangeError` and took the whole
   app down at boot, and the modal picker had no `ScrollView`, so the last of the Minolta's 18
