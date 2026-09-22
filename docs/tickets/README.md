@@ -48,21 +48,27 @@ Wave 3 (parallel)
   T-014 Workflow & deployment docs        docs/                                         needs everything (last)
 ```
 
-Integrator merges each finished ticket branch into `main` in wave order, runs `npm test`, then starts the next wave.
+```
+Backlog (refined, not scheduled - pick one up when it is worth the time)
+  T-015 Frame metadata into the scans     packages/domain, packages/exporters, tools/scan-import
+```
 
-| Ticket                               | Title                              | Owns                                                                                                            |
-| ------------------------------------ | ---------------------------------- | --------------------------------------------------------------------------------------------------------------- |
-| [T-001](T-001-monorepo-scaffold.md)  | Monorepo scaffold + type contracts | root files, `packages/domain/src/types.ts`, `packages/domain/src/id.ts`                                         |
-| [T-002](T-002-domain-rules.md)       | Domain rules & helpers             | `packages/domain/**` (except `types.ts`, `id.ts`)                                                               |
-| [T-003](T-003-presets-package.md)    | Presets package                    | `packages/presets/**`                                                                                           |
-| [T-004](T-004-pocketbase-backend.md) | PocketBase backend                 | `backend/**`                                                                                                    |
-| [T-005](T-005-app-skeleton.md)       | Expo app skeleton, store, i18n     | `apps/mobile/**` except `src/features/**`                                                                       |
-| [T-006](T-006-roll-ui.md)            | Roll management UI                 | `apps/mobile/src/features/rolls/**`, `apps/mobile/app/(tabs)/index.tsx`, `apps/mobile/app/rolls/**`             |
-| [T-007](T-007-frame-ui.md)           | Frame capture & edit UI            | `apps/mobile/src/features/frames/**`, `apps/mobile/app/frames/**`                                               |
-| [T-008](T-008-sync-engine.md)        | Sync engine                        | `apps/mobile/src/sync/**`, `apps/mobile/app/settings/server.tsx`                                                |
-| [T-009](T-009-scan-import-ui.md)     | Scan import & review UI            | `apps/mobile/src/features/scans/**`, `apps/mobile/app/scans/**`                                                 |
-| [T-010](T-010-exporters-package.md)  | Exporters package                  | `packages/exporters/**`                                                                                         |
-| [T-011](T-011-export-ui.md)          | Export UI                          | `apps/mobile/src/features/export/**`, `apps/mobile/app/export/**`, `apps/mobile/app/settings/wordpress.tsx`     |
-| [T-012](T-012-equipment-ui.md)       | Equipment management UI            | `apps/mobile/src/features/equipment/**`, `apps/mobile/app/(tabs)/equipment.tsx`, `apps/mobile/app/equipment/**` |
-| [T-013](T-013-scan-import-cli.md)    | Scan-import CLI                    | `tools/scan-import/**`                                                                                          |
-| [T-014](T-014-docs.md)               | Workflow & deployment docs         | `docs/workflow.md`, `docs/deployment.md`, `README.md`                                                           |
+Integrator merges each finished ticket branch into `main` in wave order, runs `npm test`, then starts the next wave. Waves 0-3 are merged; what is in the backlog needs a decision from the owner before it starts (each such ticket says which).
+
+| Ticket                               | Title                                                | Owns                                                                                                            |
+| ------------------------------------ | ---------------------------------------------------- | --------------------------------------------------------------------------------------------------------------- |
+| [T-001](T-001-monorepo-scaffold.md)  | Monorepo scaffold + type contracts                   | root files, `packages/domain/src/types.ts`, `packages/domain/src/id.ts`                                         |
+| [T-002](T-002-domain-rules.md)       | Domain rules & helpers                               | `packages/domain/**` (except `types.ts`, `id.ts`)                                                               |
+| [T-003](T-003-presets-package.md)    | Presets package                                      | `packages/presets/**`                                                                                           |
+| [T-004](T-004-pocketbase-backend.md) | PocketBase backend                                   | `backend/**`                                                                                                    |
+| [T-005](T-005-app-skeleton.md)       | Expo app skeleton, store, i18n                       | `apps/mobile/**` except `src/features/**`                                                                       |
+| [T-006](T-006-roll-ui.md)            | Roll management UI                                   | `apps/mobile/src/features/rolls/**`, `apps/mobile/app/(tabs)/index.tsx`, `apps/mobile/app/rolls/**`             |
+| [T-007](T-007-frame-ui.md)           | Frame capture & edit UI                              | `apps/mobile/src/features/frames/**`, `apps/mobile/app/frames/**`                                               |
+| [T-008](T-008-sync-engine.md)        | Sync engine                                          | `apps/mobile/src/sync/**`, `apps/mobile/app/settings/server.tsx`                                                |
+| [T-009](T-009-scan-import-ui.md)     | Scan import & review UI                              | `apps/mobile/src/features/scans/**`, `apps/mobile/app/scans/**`                                                 |
+| [T-010](T-010-exporters-package.md)  | Exporters package                                    | `packages/exporters/**`                                                                                         |
+| [T-011](T-011-export-ui.md)          | Export UI                                            | `apps/mobile/src/features/export/**`, `apps/mobile/app/export/**`, `apps/mobile/app/settings/wordpress.tsx`     |
+| [T-012](T-012-equipment-ui.md)       | Equipment management UI                              | `apps/mobile/src/features/equipment/**`, `apps/mobile/app/(tabs)/equipment.tsx`, `apps/mobile/app/equipment/**` |
+| [T-013](T-013-scan-import-cli.md)    | Scan-import CLI                                      | `tools/scan-import/**`                                                                                          |
+| [T-014](T-014-docs.md)               | Workflow & deployment docs                           | `docs/workflow.md`, `docs/deployment.md`, `README.md`                                                           |
+| [T-015](T-015-scan-metadata.md)      | Frame metadata into the scans (EXIF/XMP) — _backlog_ | `packages/domain/src/frameMetadata.*`, `packages/exporters/src/embedMetadata.*`, `tools/scan-import/src/tag.*`  |
