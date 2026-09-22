@@ -16,9 +16,13 @@
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "format": "prettier --write .",
-    "format:check": "prettier --check ."
+    "format:check": "prettier --check .",
+    "changeset": "changeset",
+    "changeset:status": "changeset status --since=main",
+    "release": "changeset version && node scripts/sync-app-version.mjs && npm install --package-lock-only && prettier --write \"**/CHANGELOG.md\" \"**/package.json\" apps/mobile/app.json"
   },
   "devDependencies": {
+    "@changesets/cli": "^3.0.3",
     "@eslint-react/eslint-plugin": "^5.19.1",
     "@eslint/js": "^10.0.1",
     "@types/jest": "^30.0.0",

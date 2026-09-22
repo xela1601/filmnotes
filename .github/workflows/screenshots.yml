@@ -1,0 +1,31 @@
+# Regenerates docs/screenshots/ in a real Chromium and hands the result back as an artifact.
+#
+# Manual on purpose: the pictures belong in a commit, and only a human should decide when the
+# documentation is supposed to look different. `mise run check:tour` guards the tour on every push
+# without a browser - this is the part that needs one.
+name: Screenshots
+
+on:
+  workflow_dispatch:
+
+jobs:
+  screenshots:
+    name: Guided tour, light and dark
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: jdx/mise-action@v2
+        with:
+          install: true
+          cache: true
+      - run: npm ci
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+        working-directory: apps/mobile
+      - name: Take them
+        run: mise run screenshots
+      - uses: actions/upload-artifact@v4
+        with:
+          name: screenshots
+          path: docs/screenshots/
+          if-no-files-found: error

@@ -5,6 +5,7 @@
 - Before reporting done also run `npm run lint` and `npm run format` (ESLint 10 + Prettier; double quotes, semicolons, two spaces, 100 columns).
 - English everywhere in code/docs/commits; UI text only via i18n keys (`de` default, `en`).
 - Conventional commits, scoped by workspace: feat|fix|test|chore|docs(domain|presets|exporters|app|backend|cli).
+- Every change a user would notice gets a changeset (`mise run changeset`) in the same commit - pre-1.0: `minor` for a new capability, a changed workflow or anything needing a migration, `patch` for a fix. All `@filmnotes/*` workspaces share one version (`fixed` group); `mise run release` bumps them, writes the changelogs and syncs `app.json`.
 - Stay inside the paths your ticket owns. Do not edit root config files; add dependencies to your workspace's package.json and run `npm install` at the repo root.
 - Ids: `newId()` from `@filmnotes/domain`. Dates: ISO strings in UTC.
 - Never commit secrets, `pb_data`, `node_modules`, or `backend/bin`.

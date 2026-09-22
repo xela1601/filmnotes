@@ -47,6 +47,18 @@ run = "npm run format"
 description = "Fail if anything is not Prettier-formatted"
 run = "npm run format:check"
 
+[tasks.changeset]
+description = "Write a changeset for what you just changed"
+run = "npx changeset"
+
+[tasks."changeset:status"]
+description = "What is waiting for the next release"
+run = "npx changeset status --since=main"
+
+[tasks.release]
+description = "Apply the changesets: versions, changelogs, app.json"
+run = "npm run release"
+
 [tasks.typecheck]
 description = "TypeScript: project references plus the Expo app (no emit of stale output)"
 run = "npm run typecheck"

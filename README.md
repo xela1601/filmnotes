@@ -182,6 +182,26 @@ Worth knowing before you rely on something that is not there:
 - **Docker is not available in the development sandbox** — the backend image is built on the
   server; local development runs the PocketBase binary directly.
 
+## Versioning
+
+Semantic versioning, with [changesets](https://github.com/changesets/changesets) as the log. Every
+change that a user would notice gets a file in `.changeset/` while it is being made:
+
+```bash
+mise run changeset          # write one
+mise run changeset:status   # what is waiting for the next release
+mise run release            # apply them: versions, CHANGELOG.md, app.json
+```
+
+All `@filmnotes/*` workspaces are a fixed group — one product, one number, which is also the version
+Expo builds into the app. Nothing is published to a registry; a release is the bump, the changelog
+and a tag. The first one is a pre-release:
+
+```bash
+npx changeset pre enter alpha   # once
+mise run release                # -> 0.2.0-alpha.0
+```
+
 ## Documentation
 
 | Document                                                                                                                                       | Content                                                                           |

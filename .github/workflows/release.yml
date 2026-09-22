@@ -1,0 +1,41 @@
+# Turns the changesets on main into a version bump.
+#
+# Nothing is published to a registry - every workspace is private, and "release" here means: the
+# version in package.json and app.json, a CHANGELOG entry, and a tag. The action opens a
+# "Version Packages" pull request and keeps it up to date; merging it is the release.
+name: Release
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  version:
+    name: Version pull request
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+      - uses: jdx/mise-action@v2
+        with:
+          install: true
+          cache: true
+      - run: npm ci
+      - uses: changesets/action@v1
+        with:
+          # `npm run release` = changeset version + sync app.json/root + lockfile + format.
+          version: npm run release
+          title: "chore: version packages"
+          commit: "chore: version packages"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
