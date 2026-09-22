@@ -78,6 +78,9 @@ try {
   // Step 4: camera defaults, then a plausibility warning.
   await waitFor("frame-edit");
   check("frame defaults to program mode", textOf("frame-mode").includes("P"), textOf("frame-mode"));
+  // The editor is collapsed to the exposure; the lens the preset mounted is behind the details.
+  await press("frame-details-toggle");
+  await waitFor("frame-details");
   check("lens preset offered", /35\s*-\s*70/.test(textOf("frame-lens")));
   await press("frame-mode-option-M");
   await press("frame-shutter-open");
