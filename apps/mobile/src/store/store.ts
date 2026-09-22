@@ -68,6 +68,14 @@ export interface Settings {
   /** null = DEFAULT_CAPTION_TEMPLATE from @filmnotes/domain. */
   captionTemplate: string | null;
   hashtags: string[];
+  /**
+   * Whether the frame editor shows everything below the exposure.
+   *
+   * Device-local (settings are not synced): whoever opens the details once keeps them open until
+   * they close them again. Collapsed is the default, because a new frame inherits the whole setup
+   * from the previous one and usually needs nothing but time and aperture.
+   */
+  frameDetailsExpanded: boolean;
 }
 
 export interface AppState {
@@ -108,6 +116,7 @@ export const DEFAULT_SETTINGS: Settings = {
   wordpressUsername: null,
   captionTemplate: null,
   hashtags: [],
+  frameDetailsExpanded: false,
 };
 
 export function emptyEntities(): Entities {

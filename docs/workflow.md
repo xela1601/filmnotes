@@ -54,9 +54,14 @@ The roll id is the last path segment of that URL and is what the desktop CLI in 
       _not_ among them — it stays dialled in on the Minolta until you turn it back, so it follows
       you down the roll, a forgotten −1 EV included. It is in the "Belichtung" section of every
       frame, where you will see it.
-- [ ] Sections to walk through: **"Belichtung"** (the fields shown depend on the mode — in P there
-      is no **"Zeit"**/**"Blende"** to enter), **"Optik"**, **"Fokus & Transport"**, **"Blitz"**,
-      **"Kontext"**.
+- [ ] **What you see is "Belichtung" and "Notizen"** — mode, time, aperture, and a place to write.
+      That is the whole screen, and for most frames it is the whole job: everything else was
+      carried over from the frame before.
+- [ ] **"Mehr Details"** opens the rest — **"Optik"**, **"Fokus & Transport"**, **"Blitz"**,
+      **"Kontext"** (place, date, time, support, light, subject) and the exposure's automation
+      fields (compensation, program shift, AE lock). The switch is remembered: whoever likes them
+      open sees them on every frame until he closes them again. A red hint opens them by itself —
+      the field to fix is usually in there.
 - [ ] **"Ort"** is free text; **"Aktuelle Position verwenden"** adds coordinates (it asks for the
       location permission the first time, and only then). **"Datum"** and **"Uhrzeit"** are
       prefilled with _now_ and are plain text fields (`JJJJ-MM-TT`, `HH:MM`) — correct them if you

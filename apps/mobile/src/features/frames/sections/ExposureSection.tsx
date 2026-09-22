@@ -18,9 +18,22 @@ export interface ExposureSectionProps {
   camera: Camera;
   lens: Lens | null;
   patch: (changes: Partial<Frame>) => void;
+  /**
+   * Compensation, program shift and AE lock.
+   *
+   * Mode, time and aperture are what changes from frame to frame; the three below are set once
+   * and then stay, so they live behind the details switch like the other sections.
+   */
+  showAutomation: boolean;
 }
 
-export function ExposureSection({ frame, camera, lens, patch }: ExposureSectionProps) {
+export function ExposureSection({
+  frame,
+  camera,
+  lens,
+  patch,
+  showAutomation,
+}: ExposureSectionProps) {
   const { t } = useTranslation(FRAMES_NAMESPACE);
   const exposure = exposureFields(frame.exposureMode);
 
@@ -59,7 +72,7 @@ export function ExposureSection({ frame, camera, lens, patch }: ExposureSectionP
         nullable
         testID="frame-aperture"
       />
-      {exposure.compensation && (
+      {showAutomation && exposure.compensation && (
         <NumberField
           label={t("fields.compensation")}
           value={frame.exposureCompensationEv}
@@ -70,7 +83,7 @@ export function ExposureSection({ frame, camera, lens, patch }: ExposureSectionP
           testID="frame-compensation"
         />
       )}
-      {exposure.programShift && (
+      {showAutomation && exposure.programShift && (
         <SwitchField
           label={t("fields.programShift")}
           value={frame.programShift}
@@ -78,12 +91,14 @@ export function ExposureSection({ frame, camera, lens, patch }: ExposureSectionP
           testID="frame-program-shift"
         />
       )}
-      <SwitchField
-        label={t("fields.aeLock")}
-        value={frame.aeLock}
-        onChange={(aeLock) => patch({ aeLock })}
-        testID="frame-ae-lock"
-      />
+      {showAutomation && (
+        <SwitchField
+          label={t("fields.aeLock")}
+          value={frame.aeLock}
+          onChange={(aeLock) => patch({ aeLock })}
+          testID="frame-ae-lock"
+        />
+      )}
     </Section>
   );
 }

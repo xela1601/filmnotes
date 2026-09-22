@@ -227,11 +227,21 @@ Multi-user UI, registration, lab APIs (none public), Instagram/Facebook Graph AP
   download link can be imported directly - by hand or from the optional n8n workflow in
   `automation/n8n/`. The CLI stays the only uploader; n8n does transport and notification
   (`docs/automation.md`).
+- **The frame editor is compact by default** (owner's decision): mode, time, aperture and the notes
+  are on the screen, everything else is behind one remembered "Mehr Details" switch. It only works
+  because a new frame inherits the whole setup from the previous one - the two decisions belong
+  together. An error opens the details by itself, because the field that blocks saving is usually
+  among them.
 - **A new frame carries the last used values over** (owner's decision): not just the setup but the
   exposure (time, aperture, compensation) and the context (subject, location) too. What stays empty
   is what was observed about the previous frame (AF result, flash ok, beep, notes); what is reset is
   what the camera resets itself (program shift, AE lock). The trade-off is deliberate: a forgotten
   exposure compensation now follows you down the roll, which is what the camera does as well.
+- **The frame editor is compact by default** (owner's decision): mode, time, aperture and the notes
+  are on the screen, everything else is behind one remembered "Mehr Details" switch. It only works
+  because a new frame inherits the whole setup from the previous one - the two decisions belong
+  together. An error opens the details by itself, because the field that blocks saving is usually
+  among them.
 - **A new frame carries the last used values over** (owner's decision): not only the setup but the
   exposure (time, aperture, compensation) and the context (subject, location). Empty again is what
   was observed about the previous frame (AF result, flash ok, beep, notes); reset is what the camera

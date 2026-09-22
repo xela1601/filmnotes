@@ -23,12 +23,19 @@ Film, camera and ISO are on the roll; the frame list starts at 0 / 36.
 ![The roll, still empty (light)](light/03-roll-detail-empty.png)
 ![The roll, still empty (dark)](dark/03-roll-detail-empty.png)
 
-## A new frame starts from the camera defaults
+## A new frame asks for the exposure and nothing else
 
-Program mode, the 35-70 zoom, the UV filter and hand-held support are prefilled - in the field only what actually changed has to be touched.
+Mode, time, aperture, notes. Everything else - lens, filters, focus, flash, place - is carried over from the frame before and sits behind "Mehr Details".
 
-![A new frame starts from the camera defaults (light)](light/04-frame-defaults.png)
-![A new frame starts from the camera defaults (dark)](dark/04-frame-defaults.png)
+![A new frame asks for the exposure and nothing else (light)](light/04-frame-defaults.png)
+![A new frame asks for the exposure and nothing else (dark)](dark/04-frame-defaults.png)
+
+## The details, one tap away
+
+Optics, focus and transport, flash and context. The switch is remembered, so whoever wants them open sees them on every frame.
+
+![The details, one tap away (light)](light/04a-frame-details.png)
+![The details, one tap away (dark)](dark/04a-frame-details.png)
 
 ## Recording the exposure
 
@@ -92,3 +99,4 @@ Offline by default: the app is fully usable without this screen. Sync, scans and
 
 ![The server connection (light)](light/13-server-settings.png)
 ![The server connection (dark)](dark/13-server-settings.png)
+

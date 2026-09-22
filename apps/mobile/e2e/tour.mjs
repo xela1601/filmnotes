@@ -55,14 +55,26 @@ export const scenes = [
   },
   {
     id: "04-frame-defaults",
-    title: "A new frame starts from the camera defaults",
+    title: "A new frame asks for the exposure and nothing else",
     caption:
-      "Program mode, the 35-70 zoom, the UV filter and hand-held support are prefilled - in " +
-      "the field only what actually changed has to be touched.",
+      "Mode, time, aperture, notes. Everything else - lens, filters, focus, flash, place - is " +
+      'carried over from the frame before and sits behind "Mehr Details".',
     anchor: "frame-edit",
     async run(ui) {
       await ui.press("roll-detail-add-frame");
       await ui.waitFor("frame-edit");
+    },
+  },
+  {
+    id: "04a-frame-details",
+    title: "The details, one tap away",
+    caption:
+      "Optics, focus and transport, flash and context. The switch is remembered, so whoever " +
+      "wants them open sees them on every frame.",
+    anchor: "frame-details",
+    async run(ui) {
+      await ui.press("frame-details-toggle");
+      await ui.waitFor("frame-details");
     },
   },
   {
@@ -99,6 +111,7 @@ export const scenes = [
       "will not work - focus manually.",
     anchor: "frame-issues",
     async run(ui) {
+      // The details are open since scene 04a - that is what the remembered switch buys.
       await ui.press(`frame-lens-option-${LENS_50MM}`);
       await ui.press(`frame-filters-option-${FILTER_POLARIZER}`);
       await ui.waitFor("frame-issues");

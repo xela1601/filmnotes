@@ -8,7 +8,8 @@
     "focus": "Focus & drive",
     "flash": "Flash",
     "context": "Context",
-    "issues": "Notes"
+    "issues": "Notes",
+    "notes": "Notes"
   },
   "fields": {
     "mode": "Mode",
@@ -102,5 +103,9 @@
   "errors": {
     "date": "Enter the date as YYYY-MM-DD – this one does not exist.",
     "time": "Enter the time as HH:MM, for example 09:50."
+  },
+  "details": {
+    "show": "More details",
+    "hide": "Fewer details"
   }
 }

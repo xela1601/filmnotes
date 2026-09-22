@@ -24,6 +24,7 @@ import { ContextSection } from "./sections/ContextSection";
 import { ExposureSection } from "./sections/ExposureSection";
 import { FlashSection } from "./sections/FlashSection";
 import { FocusSection } from "./sections/FocusSection";
+import { NotesSection } from "./sections/NotesSection";
 import { OpticsSection } from "./sections/OpticsSection";
 import { useLocation } from "./useLocation";
 
@@ -73,6 +74,8 @@ function FrameEditor({ initial, roll, camera }: FrameEditorProps) {
   const flashes = useActive("flashes");
   const allFrames = useActive("frames");
   const upsert = useStore((state) => state.upsert);
+  const detailsExpanded = useStore((state) => state.settings.frameDetailsExpanded);
+  const updateSettings = useStore((state) => state.updateSettings);
   const softDelete = useStore((state) => state.softDelete);
   const { busy: locating, requestPosition } = useLocation();
 
@@ -98,6 +101,12 @@ function FrameEditor({ initial, roll, camera }: FrameEditorProps) {
   // A frame is saved with an open warning, but never with a timestamp the fields cannot express:
   // that used to store midnight or the wrong month without saying anything.
   const blocked = issues.some((issue) => issue.level === "error") || takenAt.kind === "invalid";
+  /**
+   * Everything below the exposure is collapsed by default - a new frame inherits it from the
+   * previous one and rarely needs a touch. An error is the exception: it blocks saving, and the
+   * field that has to be fixed is usually down there, so the details open by themselves.
+   */
+  const showDetails = detailsExpanded || blocked;
 
   const title = t("title", { no: frame.frameNo, total: roll.exposures });
   const isLastFrame = frame.frameNo >= roll.exposures;
@@ -183,36 +192,55 @@ function FrameEditor({ initial, roll, camera }: FrameEditorProps) {
     <Screen title={title} testID="frame-edit">
       <Stack.Screen options={{ title }} />
 
-      <ExposureSection frame={frame} camera={camera} lens={lens} patch={patch} />
-      <OpticsSection
+      <ExposureSection
         frame={frame}
+        camera={camera}
         lens={lens}
-        lenses={lenses}
-        allFilters={allFilters}
         patch={patch}
-        onLensChange={onLensChange}
+        showAutomation={showDetails}
       />
-      <FocusSection frame={frame} camera={camera} patch={patch} />
-      <FlashSection
-        frame={frame}
-        flash={flash}
-        flashes={flashes}
-        patch={patch}
-        onFlashChange={onFlashChange}
+      <NotesSection frame={frame} patch={patch} />
+
+      <Button
+        title={showDetails ? t("details.hide") : t("details.show")}
+        variant="secondary"
+        onPress={() => updateSettings({ frameDetailsExpanded: !detailsExpanded })}
+        testID="frame-details-toggle"
       />
-      <ContextSection
-        frame={frame}
-        patch={patch}
-        onLocationName={onLocationName}
-        onUseCurrentPosition={() => void onUseCurrentPosition()}
-        locating={locating}
-        locationHint={locationHint}
-        takenDate={takenDate}
-        takenTime={takenTime}
-        setTakenDate={setTakenDate}
-        setTakenTime={setTakenTime}
-        takenAt={takenAt}
-      />
+
+      {showDetails && (
+        <View testID="frame-details" style={styles.details}>
+          <OpticsSection
+            frame={frame}
+            lens={lens}
+            lenses={lenses}
+            allFilters={allFilters}
+            patch={patch}
+            onLensChange={onLensChange}
+          />
+          <FocusSection frame={frame} camera={camera} patch={patch} />
+          <FlashSection
+            frame={frame}
+            flash={flash}
+            flashes={flashes}
+            patch={patch}
+            onFlashChange={onFlashChange}
+          />
+          <ContextSection
+            frame={frame}
+            patch={patch}
+            onLocationName={onLocationName}
+            onUseCurrentPosition={() => void onUseCurrentPosition()}
+            locating={locating}
+            locationHint={locationHint}
+            takenDate={takenDate}
+            takenTime={takenTime}
+            setTakenDate={setTakenDate}
+            setTakenTime={setTakenTime}
+            takenAt={takenAt}
+          />
+        </View>
+      )}
 
       {issues.length > 0 && (
         <Section title={t("sections.issues")} testID="frame-section-issues">
@@ -245,4 +273,5 @@ function FrameEditor({ initial, roll, camera }: FrameEditorProps) {
 
 const styles = StyleSheet.create({
   actions: { gap: 8 },
+  details: { gap: 16 },
 });

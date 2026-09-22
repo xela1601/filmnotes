@@ -127,14 +127,6 @@ export function ContextSection({
       {takenAt.kind === "invalid" &&
         takenAt.field === "time" &&
         hint("frame-taken-time-error", t("errors.time"), palette.danger)}
-      <TextField
-        label={t("fields.notes")}
-        value={frame.notes}
-        onChangeText={(notes) => patch({ notes })}
-        placeholder={t("placeholders.notes")}
-        multiline
-        testID="frame-notes"
-      />
     </Section>
   );
 }

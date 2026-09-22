@@ -135,6 +135,8 @@ describe("equipment created in the app", () => {
     (useLocalSearchParams as jest.Mock).mockReturnValue({ frameId: frame.id });
 
     render(<FrameEditScreen />);
+    // The optics live behind the details switch; the user opens it once and it stays open.
+    fireEvent.press(screen.getByTestId("frame-details-toggle"));
 
     // The new lens is selectable, and its focal length follows from the record alone.
     fireEvent.press(screen.getByTestId(`frame-lens-option-${lens.id}`));

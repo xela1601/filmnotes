@@ -56,6 +56,16 @@ function stored(id: string): Frame {
   return record;
 }
 
+/**
+ * Renders with the details open: everything below the exposure is collapsed by default (that is
+ * the point of the switch), so a test about lens, filters, flash, focus or the time fields has to
+ * open them first - exactly as the user does once, after which it is remembered.
+ */
+function renderWithDetails(): void {
+  render(<FrameEditScreen />);
+  fireEvent.press(screen.getByTestId("frame-details-toggle"));
+}
+
 describe("FrameEditScreen", () => {
   let frame: Frame;
 
@@ -66,7 +76,7 @@ describe("FrameEditScreen", () => {
   });
 
   it("1. shows the frame number with the roll length and the time of the shot", () => {
-    render(<FrameEditScreen />);
+    renderWithDetails();
 
     expect(screen.getByText(i18n.t("frames:title", { no: 1, total: 36 }))).toBeOnTheScreen();
     // The fixture is 10:00 UTC and the suite runs in Europe/Berlin: the photographer reads 12:00.
@@ -80,7 +90,7 @@ describe("FrameEditScreen", () => {
   });
 
   it("2. records the exposure in every mode and says who chose it", () => {
-    render(<FrameEditScreen />);
+    renderWithDetails();
 
     // P: the camera picks both halves - but the fields stay, because the camera *shows* what it
     // picked and writing that down is the point of the app.
@@ -131,7 +141,7 @@ describe("FrameEditScreen", () => {
   });
 
   it("1a. refuses a half-typed time instead of silently storing midnight", () => {
-    render(<FrameEditScreen />);
+    renderWithDetails();
 
     fireEvent.changeText(screen.getByTestId("frame-taken-time"), "9:5");
 
@@ -146,7 +156,7 @@ describe("FrameEditScreen", () => {
   });
 
   it("1b. refuses a date the calendar does not have instead of rolling it over", () => {
-    render(<FrameEditScreen />);
+    renderWithDetails();
 
     fireEvent.changeText(screen.getByTestId("frame-taken-date"), "2026-13-45");
 
@@ -156,7 +166,7 @@ describe("FrameEditScreen", () => {
   });
 
   it("1c. clearing both fields records the frame without a time", () => {
-    render(<FrameEditScreen />);
+    renderWithDetails();
 
     fireEvent.changeText(screen.getByTestId("frame-taken-date"), "");
     fireEvent.changeText(screen.getByTestId("frame-taken-time"), "");
@@ -169,6 +179,54 @@ describe("FrameEditScreen", () => {
     render(<FrameEditScreen />);
 
     expect(screen.queryByTestId("frame-location-coords")).toBeNull();
+  });
+
+  it("0. shows the exposure and the notes, and hides the rest behind one switch", () => {
+    render(<FrameEditScreen />);
+
+    // What you touch for almost every frame.
+    expect(screen.getByTestId("frame-mode")).toBeOnTheScreen();
+    expect(screen.getByTestId("frame-shutter")).toBeOnTheScreen();
+    expect(screen.getByTestId("frame-aperture")).toBeOnTheScreen();
+    expect(screen.getByTestId("frame-notes")).toBeOnTheScreen();
+
+    // The rest is carried over from the previous frame and is one tap away.
+    expect(screen.queryByTestId("frame-section-optics")).toBeNull();
+    expect(screen.queryByTestId("frame-lens")).toBeNull();
+    expect(screen.queryByTestId("frame-focus-mode")).toBeNull();
+    expect(screen.queryByTestId("frame-support")).toBeNull();
+    expect(screen.queryByTestId("frame-compensation")).toBeNull();
+    expect(screen.queryByTestId("frame-taken-date")).toBeNull();
+
+    fireEvent.press(screen.getByTestId("frame-details-toggle"));
+
+    expect(screen.getByTestId("frame-section-optics")).toBeOnTheScreen();
+    expect(screen.getByTestId("frame-lens")).toBeOnTheScreen();
+    expect(screen.getByTestId("frame-support")).toBeOnTheScreen();
+    expect(screen.getByTestId("frame-taken-date")).toBeOnTheScreen();
+  });
+
+  it("0a. remembers the choice for the next frame", () => {
+    const first = render(<FrameEditScreen />);
+    fireEvent.press(screen.getByTestId("frame-details-toggle"));
+    expect(useStore.getState().settings.frameDetailsExpanded).toBe(true);
+    first.unmount();
+
+    render(<FrameEditScreen />);
+
+    expect(screen.getByTestId("frame-lens")).toBeOnTheScreen();
+  });
+
+  it("0b. opens the details by itself when an error is hiding in them", () => {
+    // f/1.7 belongs to the 50 mm; on the 35-70 it is an error that blocks saving - and the
+    // field to fix sits in the collapsed part.
+    frame = setup({ exposureMode: "M", aperture: 1.7 });
+    render(<FrameEditScreen />);
+
+    expect(screen.getByTestId("frame-issues")).toHaveTextContent(
+      i18n.t("common:validation.aperture_not_on_lens"),
+    );
+    expect(screen.getByTestId("frame-lens")).toBeOnTheScreen();
   });
 
   it("3. offers bulb in M but not in S", () => {
@@ -186,7 +244,7 @@ describe("FrameEditScreen", () => {
   });
 
   it("4. offers the aperture scale of the selected lens", () => {
-    render(<FrameEditScreen />);
+    renderWithDetails();
 
     fireEvent.press(screen.getByTestId("frame-mode-option-M"));
     fireEvent.press(screen.getByTestId("frame-aperture-open"));
@@ -206,7 +264,7 @@ describe("FrameEditScreen", () => {
   });
 
   it("5. warns about the linear polarizer while the focus mode is AF", () => {
-    render(<FrameEditScreen />);
+    renderWithDetails();
 
     fireEvent.press(screen.getByTestId("frame-filters-option-filt0kenkopl490"));
 
@@ -232,7 +290,7 @@ describe("FrameEditScreen", () => {
   });
 
   it("7. asks for head and power only once a flash is chosen", () => {
-    render(<FrameEditScreen />);
+    renderWithDetails();
 
     expect(screen.queryByTestId("frame-flash-head")).toBeNull();
     expect(screen.queryByTestId("frame-flash-power")).toBeNull();
