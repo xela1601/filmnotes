@@ -335,7 +335,8 @@ const FLASH_FIELDS: FieldDescriptor[] = [
 const FILM_STOCK_FIELDS: FieldDescriptor[] = [
   { key: "name", kind: "text", labelKey: "fields.name", required: true },
   { key: "maker", kind: "text", labelKey: "fields.maker", required: true },
-  { key: "iso", kind: "number", labelKey: "fields.iso", required: true, min: 0 },
+  // Same reason as the roll's exposure index: ISO 100/200/400, never 101.
+  { key: "iso", kind: "number", labelKey: "fields.iso", required: true, min: 0, step: 10 },
   {
     key: "process",
     kind: "select",

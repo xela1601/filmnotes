@@ -293,3 +293,11 @@ describe("validateRecord – lists the app cannot work without", () => {
     expect(validateRecord("lenses", makeLens())).toEqual({});
   });
 });
+
+describe("the ISO fields step in tens", () => {
+  it("is what the film stock editor offers", () => {
+    const iso = DESCRIPTORS.filmStocks.find((field) => field.key === "iso");
+
+    expect(iso?.step).toBe(10);
+  });
+});

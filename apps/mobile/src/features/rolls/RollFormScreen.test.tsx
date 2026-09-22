@@ -27,6 +27,22 @@ describe("RollForm", () => {
     await i18n.changeLanguage("de");
   });
 
+  it("steps the ISO in tens, not in ones", () => {
+    // 100 -> 200 -> 400 is the film scale; nudging it one unit at a time is useless, and a
+    // pushed roll is set in steps far bigger than 1.
+    render(<RollForm mode="create" />);
+    pickFilmStock(KODAK_GOLD_200);
+
+    fireEvent.press(screen.getByTestId("roll-form-iso-increment"));
+    fireEvent.press(screen.getByTestId("roll-form-iso-increment"));
+
+    expect(screen.getByTestId("roll-form-iso").props.value).toBe("220");
+
+    fireEvent.press(screen.getByTestId("roll-form-iso-decrement"));
+
+    expect(screen.getByTestId("roll-form-iso").props.value).toBe("210");
+  });
+
   it("starts with the seeded camera and no film", () => {
     render(<RollForm mode="create" />);
 

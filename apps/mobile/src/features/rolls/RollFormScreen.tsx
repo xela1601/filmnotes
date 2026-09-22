@@ -46,6 +46,9 @@ type FilmType = "color" | "bw";
 const PUSH_PULL_MIN = -3;
 const PUSH_PULL_MAX = 3;
 
+/** The -/+ buttons of the ISO field move in tens; the film scale has no use for ones. */
+const ISO_STEP = 10;
+
 export interface RollFormProps {
   mode: "create" | "edit";
   /** The roll to edit; ignored in create mode. */
@@ -204,6 +207,8 @@ function RollFormFields({ existing }: { existing: Roll | null }) {
             label={t("fields.iso")}
             value={values.isoSet}
             onChange={(next) => patch({ isoSet: next })}
+            // The film scale runs 100, 200, 400 - a stepper that moves by one is no help.
+            step={ISO_STEP}
             testID="roll-form-iso"
           />
           {error("isoSet")}
