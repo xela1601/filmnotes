@@ -145,6 +145,11 @@ export const scenes = [
     caption: "The seeded Minolta kit: body, three lenses, filters, flash - all editable.",
     anchor: "equipment-screen",
     async run(ui) {
+      // The scan import and the roll detail are pushed over the tabs, so the tab bar is not on
+      // screen until we are back on the roll list.
+      await ui.back();
+      await ui.back();
+      await ui.waitFor("rolls-screen");
       await ui.press("tab-equipment");
       await ui.waitFor("equipment-screen");
     },

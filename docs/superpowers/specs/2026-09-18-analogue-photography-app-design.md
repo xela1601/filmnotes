@@ -227,6 +227,11 @@ Multi-user UI, registration, lab APIs (none public), Instagram/Facebook Graph AP
   download link can be imported directly - by hand or from the optional n8n workflow in
   `automation/n8n/`. The CLI stays the only uploader; n8n does transport and notification
   (`docs/automation.md`).
+- **Found by driving the exported bundle in a real browser** (and by nothing else): an
+  `Intl.DateTimeFormat` with the runtime's own `Etc/Unknown` threw a `RangeError` and took the whole
+  app down at boot, and the modal picker had no `ScrollView`, so the last of the Minolta's 18
+  shutter speeds - "bulb" - could not be reached on a phone screen. Both fixed; the tour is what
+  keeps them fixed.
 - **@eslint-react replaces eslint-plugin-react** in the app: the latter has no ESLint 10 release
   (jsx-eslint/eslint-plugin-react#4018). `eslint-config-expo` keeps providing the RN globals,
   import resolution and `react-hooks`.

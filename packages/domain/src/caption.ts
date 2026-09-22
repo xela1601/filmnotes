@@ -5,7 +5,7 @@
  * part that only appears when the value is non-empty – so that users can change the caption
  * layout in the settings without the app depending on a template engine.
  */
-import { deviceTimeZone, formatLocalDate } from "./localTime";
+import { formatLocalDate } from "./localTime";
 import type { Camera, FilmStock, Filter, Frame, Lens, Roll } from "./types";
 
 export interface CaptionInput {
@@ -80,7 +80,7 @@ function tidyLine(line: string): string {
 export function buildCaption(input: CaptionInput): string {
   const { frame, camera, lens, filters, filmStock } = input;
   const locale = input.locale ?? "de";
-  const timeZone = input.timeZone ?? deviceTimeZone();
+  const timeZone = input.timeZone;
   const hashtags = input.hashtags ?? [...DEFAULT_HASHTAGS, hashtagFor(filmStock)];
 
   const values: Record<string, string> = {

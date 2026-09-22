@@ -12,6 +12,8 @@ backend/pb_data/
 
 # Generated
 package-lock.json
+# Written by apps/mobile/e2e/screenshots.mjs on every run
+docs/screenshots/README.md
 
 # Owned by the host, not by this repository: mounted read-only or unreadable inside the
 # sandbox, and excluded from git via .git/info/exclude. Prettier can only fail on them.

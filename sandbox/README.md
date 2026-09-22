@@ -47,17 +47,28 @@ sandbox/proxy/with-proxy.sh npm install   # anything that talks to a registry
 
 ## Headless browser
 
-The template carries the shared libraries a headless Chrome needs (`libglib2.0-0t64`,
-`libnss3`, `libx11-6`, … – Ubuntu 26.04 uses the `t64` names for six of them), so a
-downloaded Chrome links and runs. Puppeteer or Playwright fetch the binary itself, nothing
-is baked into the image.
+The screenshot tour (`mise run screenshots`) drives the exported web build in a real Chromium, and
+that works from inside the sandbox - including from an agent's Bash tool. Two things have to be in
+place:
 
-Claude Code's own command sandbox denies `socket(AF_UNIX)`, and Chrome needs a unix socket
-for its process singleton – under that sandbox it cannot start, however complete the
-library list is. Driving the web build in a real browser therefore works from a shell in
-the container or in CI, not from an agent's Bash tool while that sandbox is on. The check
-that always works is `npm run check:web` in `apps/mobile`: the same walkthrough against the
-exported bundle in jsdom.
+- **The download host** `cdn.playwright.dev` must be allowed (it is in `kit/spec.yaml`; a running
+  sandbox that predates the entry needs `sbx policy allow network cdn.playwright.dev` on the host,
+  or a recreate).
+- **The shared libraries** Chrome links against. They are in the `Dockerfile`, so a rebuilt image
+  brings them; an older image needs them once:
+
+  ```bash
+  sudo apt-get update -qq && sudo apt-get install -y --no-install-recommends \
+    libglib2.0-0t64 libnss3 libdbus-1-3 libatk1.0-0t64 libatk-bridge2.0-0t64 libatspi2.0-0t64 \
+    libgbm1 libasound2t64 libxkbcommon0 libx11-6 libxcb1 libxcomposite1 libxdamage1 libxext6 \
+    libxfixes3 libxrandr2 fonts-liberation
+  ```
+
+  `npx playwright install-deps` installs the same set and also needs root.
+
+`$HOME` is read-only, so the run sets `XDG_CACHE_HOME` itself - without it fontconfig prints an
+error per glyph run. `mise run check:tour` walks the identical scenes in jsdom and needs no browser
+at all.
 
 ## Notes
 

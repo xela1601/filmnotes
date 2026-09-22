@@ -1,4 +1,4 @@
-import { formatLocalDate, instantFromLocal, localParts } from "./localTime";
+import { deviceTimeZone, formatLocalDate, instantFromLocal, localParts } from "./localTime";
 
 const MUNICH = "Europe/Berlin";
 const AUCKLAND = "Pacific/Auckland";
@@ -77,5 +77,31 @@ describe("formatLocalDate", () => {
 
   it("is empty without a timestamp", () => {
     expect(formatLocalDate(null, "de", MUNICH)).toBe("");
+  });
+});
+
+describe("a time zone the runtime cannot resolve", () => {
+  it("falls back to the runtime's own default instead of throwing", () => {
+    // A container without /etc/localtime answers "Etc/Unknown", and handing that back to Intl
+    // throws a RangeError - which took the whole app down on the first date it formatted (the
+    // exported bundle showed a blank screen in Chromium). The unnamed zone is left to the
+    // runtime, so the result is whatever the device itself would show.
+    const broken = localParts("2026-09-18T22:30:00.000Z", "Etc/Unknown");
+    const runtimeDefault = localParts("2026-09-18T22:30:00.000Z");
+
+    expect(broken).toEqual(runtimeDefault);
+    expect(broken).not.toBeNull();
+    expect(() => formatLocalDate("2026-09-18T22:30:00.000Z", "de", "Etc/Unknown")).not.toThrow();
+
+    // And it still round-trips: what the user reads goes back to the instant it came from.
+    const parts = broken as NonNullable<typeof broken>;
+    expect(instantFromLocal(parts.date, parts.time, "Etc/Unknown")).toBe(
+      "2026-09-18T22:30:00.000Z",
+    );
+  });
+
+  it("uses a usable device zone when there is one", () => {
+    expect(deviceTimeZone()).toMatch(/^[A-Za-z]+(\/[A-Za-z_+-]+)*$/);
+    expect(() => new Intl.DateTimeFormat("en-US", { timeZone: deviceTimeZone() })).not.toThrow();
   });
 });

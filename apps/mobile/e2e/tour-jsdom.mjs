@@ -2,9 +2,11 @@
  * Dry run of the screenshot tour (`tour.mjs`) in jsdom: every scene is executed and its
  * anchor checked, but nothing is painted.
  *
- * Why it exists: the pictures themselves need a real browser, which the development sandbox
- * cannot start. This run proves that the steps, the test ids and the order still work, so a
- * failing `screenshots.mjs` on the host means "the browser is missing", not "the tour rotted".
+ * Why it exists: the pictures need a browser and this does not, so the tour stays checkable
+ * wherever the tests run - in CI, on a machine without Chromium, in a sandbox without the Chrome
+ * libraries. What it cannot see is anything that depends on layout: jsdom has none, which is why
+ * a scene can pass here and still fail in Chromium (it found a picker whose options reached past
+ * the bottom of the screen).
  *
  * Usage:
  *   npx expo export --platform web

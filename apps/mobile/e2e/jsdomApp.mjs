@@ -94,6 +94,11 @@ export async function bootJsdomApp(base) {
       click(find(testId));
       await sleep(150);
     },
+    /** Browser back - expo-router navigates on the history API, on web and in jsdom alike. */
+    async back() {
+      window.history.back();
+      await sleep(300);
+    },
     has: (testId) => find(testId) !== null,
     text: (testId) => (find(testId)?.textContent ?? "").replace(/\s+/g, " ").trim(),
     // jsdom cannot paint; the tour's screenshots happen in the Playwright driver.

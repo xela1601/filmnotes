@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Modal, Pressable, StyleSheet, Text, View } from "react-native";
+import { Modal, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 
 import { FieldLabel } from "./FieldLabel";
 import { useTheme } from "./theme";
@@ -102,23 +102,31 @@ export function SelectField<T extends string | number>({
           <Text style={[styles.modalTitle, { color: palette.text, fontSize: fontSize.lg }]}>
             {label}
           </Text>
-          {nullable && (
-            <ModalOption
-              testID={testID === undefined ? undefined : `${testID}-option-none`}
-              label="–"
-              active={value === null}
-              onPress={() => select(null)}
-            />
-          )}
-          {shownOptions.map((option) => (
-            <ModalOption
-              key={String(option.value)}
-              testID={optionTestID(option)}
-              label={option.label}
-              active={option.value === value}
-              onPress={() => select(option.value)}
-            />
-          ))}
+          {/*
+           * Scrollable, because a list can be longer than the screen: the Minolta offers 18
+           * manual shutter speeds, and on a phone the last of them - "bulb" - sat below the
+           * bottom edge with no way to reach it. Found by driving the exported bundle in a real
+           * browser; jsdom has no layout and could not have shown it.
+           */}
+          <ScrollView contentContainerStyle={styles.modalOptions}>
+            {nullable && (
+              <ModalOption
+                testID={testID === undefined ? undefined : `${testID}-option-none`}
+                label="–"
+                active={value === null}
+                onPress={() => select(null)}
+              />
+            )}
+            {shownOptions.map((option) => (
+              <ModalOption
+                key={String(option.value)}
+                testID={optionTestID(option)}
+                label={option.label}
+                active={option.value === value}
+                onPress={() => select(option.value)}
+              />
+            ))}
+          </ScrollView>
         </View>
       </Modal>
     </View>
@@ -198,6 +206,7 @@ const styles = StyleSheet.create({
     borderRadius: 6,
   },
   modal: { flex: 1, padding: 16, gap: 8 },
+  modalOptions: { gap: 8, paddingBottom: 24 },
   modalTitle: { fontWeight: "700", marginBottom: 8 },
   modalOption: {
     minHeight: 48,

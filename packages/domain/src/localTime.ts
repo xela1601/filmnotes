@@ -26,15 +26,43 @@ export interface LocalParts {
 const DATE_PATTERN = /^(\d{4})-(\d{2})-(\d{2})$/;
 const TIME_PATTERN = /^(\d{2}):(\d{2})$/;
 
-/** The zone the device is in; a named zone is only ever passed in by the tests. */
+/** True for a zone `Intl` actually accepts. */
+function isUsable(timeZone: string | undefined): timeZone is string {
+  if (typeof timeZone !== "string" || timeZone === "") return false;
+  try {
+    new Intl.DateTimeFormat("en-US", { timeZone });
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * The zone to compute with, or `undefined` for "whatever the runtime's default is".
+ *
+ * A runtime that cannot *name* its zone still has one: Node with `TZ=CEST-2` formats correctly
+ * but answers `undefined`, and a container without `/etc/localtime` answers `Etc/Unknown` -
+ * which, handed back to `Intl`, throws a `RangeError`. Unguarded that took the whole app down on
+ * the first date it formatted (found by running the exported bundle in Chromium). Passing
+ * `undefined` on keeps the runtime's own default, which is the time the user reads on the device.
+ */
+function usable(timeZone: string | undefined): string | undefined {
+  return isUsable(timeZone) ? timeZone : undefined;
+}
+
+/**
+ * The name of the zone the device is in, for display and logging - `"UTC"` when the runtime
+ * cannot name one. The functions below do not use it: they leave an unnamed zone to the runtime.
+ */
 export function deviceTimeZone(): string {
-  return Intl.DateTimeFormat().resolvedOptions().timeZone;
+  const zone: string | undefined = Intl.DateTimeFormat().resolvedOptions().timeZone;
+  return isUsable(zone) ? zone : "UTC";
 }
 
 /** The numeric parts of an instant in a zone, via the one formatter that knows the zone rules. */
-function partsOf(utcMs: number, timeZone: string): Record<string, number> {
+function partsOf(utcMs: number, timeZone: string | undefined): Record<string, number> {
   const formatter = new Intl.DateTimeFormat("en-US", {
-    timeZone,
+    timeZone: usable(timeZone),
     hour12: false,
     year: "numeric",
     month: "2-digit",
@@ -53,7 +81,7 @@ function partsOf(utcMs: number, timeZone: string): Record<string, number> {
 }
 
 /** How far `timeZone` is ahead of UTC at that instant, in milliseconds. */
-function offsetAt(utcMs: number, timeZone: string): number {
+function offsetAt(utcMs: number, timeZone: string | undefined): number {
   const parts = partsOf(utcMs, timeZone);
   const asUtc = Date.UTC(
     parts.year as number,
@@ -74,10 +102,7 @@ function pad(value: number): string {
 /**
  * The local calendar date and clock time of an instant, or `null` when the timestamp is not one.
  */
-export function localParts(
-  instant: ISODateTime | null,
-  timeZone: string = deviceTimeZone(),
-): LocalParts | null {
+export function localParts(instant: ISODateTime | null, timeZone?: string): LocalParts | null {
   if (instant === null) return null;
   const utcMs = Date.parse(instant);
   if (Number.isNaN(utcMs)) return null;
@@ -100,7 +125,7 @@ export function localParts(
 export function instantFromLocal(
   date: LocalDate,
   time: LocalTime,
-  timeZone: string = deviceTimeZone(),
+  timeZone?: string,
 ): ISODateTime | null {
   const day = DATE_PATTERN.exec(date.trim());
   const clock = TIME_PATTERN.exec(time.trim());
@@ -131,7 +156,7 @@ export function instantFromLocal(
 export function formatLocalDate(
   instant: ISODateTime | null,
   locale: "de" | "en",
-  timeZone: string = deviceTimeZone(),
+  timeZone?: string,
 ): string {
   const parts = localParts(instant, timeZone);
   if (parts === null) return "";

@@ -23,30 +23,22 @@ schema already carries an `owner` relation.
 
 ## Screenshots
 
-Not committed yet. They are generated, not taken by hand: `apps/mobile/e2e/tour.mjs` defines
-a guided tour – the standard routine plus the interesting edge cases – and
+In [`docs/screenshots/`](docs/screenshots/README.md) — 13 scenes, light and dark, German UI. They
+are generated, not taken by hand: `apps/mobile/e2e/tour.mjs` defines the tour (the standard routine
+plus the interesting edge cases) and
 
 ```bash
 cd apps/mobile
-npx playwright install chromium     # once, ~150 MB
+npx playwright install chromium     # once, ~190 MB
 mise run screenshots                # or: npx expo export --platform web && node e2e/screenshots.mjs
 ```
 
-drives the exported web bundle in a real Chromium and writes `docs/screenshots/{light,dark}/`
-plus an index. A real browser is needed, so this does not run inside the development sandbox
-(see `sandbox/README.md`); `mise run check:tour` walks the identical scenes in jsdom and is
-what keeps the tour from rotting.
+drives the exported web bundle in a real Chromium and rewrites `docs/screenshots/{light,dark}/`
+plus their index. Regenerate them after a UI change.
 
-| Scene                       | Screen                          | Why                                  |
-| --------------------------- | ------------------------------- | ------------------------------------ |
-| Roll list, empty            | `/`                             | the entry point                      |
-| New roll                    | `/rolls/new`                    | film stock and camera presets        |
-| Roll detail                 | `/rolls/[rollId]`               | frame list, status, roll actions     |
-| Frame defaults and exposure | `/frames/[frameId]`             | the core screen                      |
-| Shake risk, polarizer, bulb | `/frames/[frameId]`             | the plausibility rules, inline       |
-| Scan import without server  | `/scans/[rollId]`               | what the app says instead of failing |
-| Equipment                   | `/equipment`                    | the seeded Minolta kit               |
-| Settings and server         | `/settings`, `/settings/server` | language, sync, WordPress            |
+`mise run check:tour` walks the identical scenes in jsdom, without a browser — that is what keeps
+the tour from rotting in CI. It cannot see anything that needs layout, though: driving the real
+browser is what found a picker whose last options sat below the bottom edge of a phone screen.
 
 ## Repository layout
 
