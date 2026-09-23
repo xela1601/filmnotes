@@ -8,7 +8,7 @@
  * in a list under the result.
  */
 import type { Id, Roll } from "@filmnotes/domain";
-import { listExporters, shareExporter, wordPressExporter } from "@filmnotes/exporters";
+import { listExporters, shareExporter } from "@filmnotes/exporters";
 import { router } from "expo-router";
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -16,7 +16,8 @@ import { StyleSheet, Text, View } from "react-native";
 import { useShallow } from "zustand/react/shallow";
 
 import { exportErrorReason } from "./exportMessages";
-import { isWordPressConfigured, pairExportableFrames } from "./exportModel";
+import { isExporterReady, settingsRouteFor } from "./exporterConfig";
+import { pairExportableFrames } from "./exportModel";
 import { EXPORT_NAMESPACE } from "./i18n";
 import { useFrameExporter } from "./useFrameExporter";
 import { useEntity, useSettings } from "../../store/hooks";
@@ -72,8 +73,9 @@ function ExportRoll({ roll }: { roll: Roll }) {
   const [failures, setFailures] = useState<ExportFailure[]>([]);
   const [result, setResult] = useState<{ ok: number; total: number } | null>(null);
 
-  const wordPressReady = isWordPressConfigured(settings);
-  const available = (id: string): boolean => id !== wordPressExporter.id || wordPressReady;
+  /** Targets that cannot run yet because something is missing from the settings. */
+  const unready = exporters.filter((exporter) => !isExporterReady(exporter, settings));
+  const available = (id: string): boolean => !unready.some((exporter) => exporter.id === id);
 
   const toggle = (frameId: Id, checked: boolean): void => {
     setSelected((current) =>
@@ -133,19 +135,24 @@ function ExportRoll({ roll }: { roll: Roll }) {
             testID={`export-target-${exporter.id}`}
           />
         ))}
-        {!wordPressReady && (
-          <>
-            <Text testID="export-wordpress-hint" style={muted}>
-              {t("notConfigured")}
-            </Text>
-            <Button
-              title={t("configure")}
-              variant="secondary"
-              onPress={() => router.push("/settings/wordpress")}
-              testID="export-configure-wordpress"
-            />
-          </>
-        )}
+        {unready.map((exporter) => {
+          const route = settingsRouteFor(exporter.id);
+          return (
+            <View key={exporter.id}>
+              <Text testID={`export-${exporter.id}-hint`} style={muted}>
+                {t("notConfigured", { target: t(exporter.nameKey) })}
+              </Text>
+              {route !== null && (
+                <Button
+                  title={t("configure", { target: t(exporter.nameKey) })}
+                  variant="secondary"
+                  onPress={() => router.push(route)}
+                  testID={`export-configure-${exporter.id}`}
+                />
+              )}
+            </View>
+          );
+        })}
       </Section>
 
       <Section title={t("roll.frames")}>

@@ -54,19 +54,20 @@ jobs:
 
       - name: The tag sits on main
         run: |
+          # HEAD, not GITHUB_SHA: on a workflow_dispatch re-publish GITHUB_SHA is the commit of the
+          # branch the run was started from, so it would happily vouch for main while the tag we
+          # are about to build sits somewhere else entirely. The checkout above is at the tag.
+          tagged=$(git rev-parse HEAD)
           git fetch --no-tags origin main:refs/remotes/origin/main
-          if ! git merge-base --is-ancestor "$GITHUB_SHA" origin/main; then
-            echo "::error::this tag is not an ancestor of main - only what CI has seen gets published"
+          if ! git merge-base --is-ancestor "$tagged" origin/main; then
+            echo "::error::$tagged (the tagged commit) is not an ancestor of main - only what CI has seen gets published"
             exit 1
           fi
 
       - name: The tag matches the released version
-        run: |
-          released=$(node -p "require('./apps/mobile/package.json').version")
-          if [[ "$released" != "${{ steps.version.outputs.version }}" ]]; then
-            echo "::error::tag says ${{ steps.version.outputs.version }}, the workspaces say $released - run 'npm run release' and commit before tagging"
-            exit 1
-          fi
+        # Every workspace, not just the app: they are one fixed changesets group, and a manifest
+        # left behind means the tag names a version that was never actually released.
+        run: node scripts/check-release-version.mjs "${{ steps.version.outputs.version }}"
 
   checks:
     name: Checks

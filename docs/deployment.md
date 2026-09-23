@@ -186,8 +186,9 @@ docker run --rm -v filmnotes_pb_data:/data -v "$PWD":/backup alpine \
 docker compose start filmnotes-pb
 ```
 
-Stopping the container first keeps the SQLite files consistent. Check the real volume name with
-`docker volume ls`: Compose prefixes it with the project directory name.
+Stopping the container first keeps the SQLite files consistent. The volume really is called
+`filmnotes_pb_data` wherever the checkout lives — `compose.yaml` pins the project name, so the
+name does not follow the directory. `docker volume ls` confirms it.
 
 ### Restore
 

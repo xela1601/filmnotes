@@ -273,11 +273,14 @@ no global export history screen. Exports are logged only on success.
 Be aware of this, it is not what you would guess:
 
 - **Nothing syncs when the app starts**, and nothing syncs in the background.
-- Sync lives on **"Einstellungen"** → **"Server"**. Open that screen and press
+- **Bringing the app back to the foreground triggers a sync**, wherever you are in it — the
+  hook sits in the root layout, not on one screen — and at most once a minute. Locking the phone
+  between two frames and unlocking it again therefore costs nothing; coming back after lunch
+  syncs once.
+- To force a run, or to watch one: **"Einstellungen"** → **"Server"** →
   **"Jetzt synchronisieren"** (**"Synchronisiere …"** while it runs). Afterwards:
-  **"Zuletzt: {{time}}"** and **"{{pushed}} gesendet, {{pulled}} empfangen"**.
-- While that screen is open, bringing the app to the foreground triggers a sync too, at most once
-  a minute.
+  **"Zuletzt: {{time}}"** and **"{{pushed}} gesendet, {{pulled}} empfangen"**. That screen is the
+  only place the result is visible, which is why the habit below is still worth having.
 - So: **make it a habit** — after a shooting session, and before picking up the other device, open
   "Einstellungen" → "Server" and tap **"Jetzt synchronisieren"**.
 - **Uploading scans does not need a sync run.** The scan import authenticates on its own.

@@ -10,20 +10,14 @@
  * `ExportLog` the previous one wrote.
  */
 import type { Frame } from "@filmnotes/domain";
-import {
-  shareExporter,
-  wordPressExporter,
-  type ExportImage,
-  type ExportResult,
-} from "@filmnotes/exporters";
+import { shareExporter, type ExportImage, type ExportResult } from "@filmnotes/exporters";
 import { useCallback } from "react";
 
-import { wordPressConfigFor } from "./exportModel";
+import { configForExporter } from "./exporterConfig";
 import { loadScanImage } from "./loadScanImage";
 import { runFrameExport } from "./runExport";
 import { shareOut } from "./shareOut";
 import * as clock from "../../lib/clock";
-import { getSecret } from "../../lib/secureStore";
 import { openServerSession } from "../../sync/session";
 import { selectScanForFrame } from "../../store/selectors";
 import type { AppState } from "../../store/store";
@@ -35,12 +29,6 @@ export interface FrameExportRequest {
   exporterId: string;
   /** The caption as edited in the screen; omitted builds it from the settings. */
   caption?: string;
-}
-
-/** The stored settings of a target. Only WordPress needs any, and its password is a secret. */
-async function configFor(exporterId: string, state: AppState): Promise<unknown> {
-  if (exporterId !== wordPressExporter.id) return {};
-  return wordPressConfigFor(state.settings, await getSecret("wordpressAppPassword"));
 }
 
 /**
@@ -78,7 +66,7 @@ export function useFrameExporter(): (request: FrameExportRequest) => Promise<Exp
       exporterId,
       frame,
       state,
-      config: await configFor(exporterId, state),
+      config: await configForExporter(exporterId, state),
       image: await imageFor(exporterId, state, frame),
       // Read from the global scope at call time so a test can replace it.
       fetch: (input, init) => fetch(input, init),

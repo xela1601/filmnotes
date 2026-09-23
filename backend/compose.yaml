@@ -11,6 +11,12 @@
 # The port is bound to 127.0.0.1 on purpose: the existing reverse proxy terminates
 # TLS and forwards to it. PocketBase itself must never be exposed directly.
 
+# The project name is pinned instead of being derived from the directory this file happens to sit
+# in. That derived name is what prefixes the volume, so without this line a backup command with a
+# literal volume name is only correct as long as nobody renames or moves the checkout - and a
+# backup that silently writes an empty archive is worse than no backup.
+name: filmnotes
+
 services:
   filmnotes-pb:
     image: ghcr.io/xela1601/filmnotes:latest

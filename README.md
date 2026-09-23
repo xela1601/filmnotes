@@ -52,11 +52,18 @@ analogue_photography/
 │   │                      helpers, frame defaults, scan matching, caption builder
 │   ├── presets/           JSON presets (the Minolta 7000 AF kit + 22 film stocks) + loader
 │   └── exporters/         exporter interface, WordPress exporter, share-package builder
-├── backend/               PocketBase: versioned JS migrations, Dockerfile,
-│                          compose.yaml, integration smoke test
+├── backend/               PocketBase: versioned JS migrations, compose.yaml,
+│                          integration smoke test
 ├── tools/
 │   └── scan-import/       `filmnotes-import` CLI: import a folder/ZIP of lab scans
-├── docs/                  spec, tickets, workflow.md, deployment.md
+├── automation/            n8n workflow that turns the lab's e-mail into an import (optional)
+├── scripts/               release helpers, called by the npm scripts and by CI
+├── sandbox/               the Docker Sandbox this is developed in: mise wrapper, proxy
+├── docs/                  spec, tickets, workflow.md, deployment.md, screenshots
+├── .github/workflows/     CI, the reusable checks, the release PR, the image
+├── .changeset/            one file per unreleased user-visible change (see "Versioning")
+├── .claude/               instructions for the coding agents working in this repository
+├── Dockerfile             the deployable image: PocketBase + migrations + web bundle
 ├── Minolta_7000_AF_Preset.md   source document for the initial preset
 └── prompt.md                   the original project brief (German)
 ```
@@ -124,7 +131,7 @@ Node and wraps the commands above:
 
 ```bash
 mise install         # provision the pinned toolchain
-mise tasks           # install, test, test:backend, test:all, typecheck, check:web, import, web, backend
+mise tasks           # all 17, with a one-line description each
 mise run test
 mise run web         # Expo for the web on port 8081
 mise run backend     # local PocketBase on port 8090
@@ -162,9 +169,10 @@ See [`docs/deployment.md`](docs/deployment.md) for serving that `dist/` next to 
 
 Worth knowing before you rely on something that is not there:
 
-- **Sync is manual and lives on one screen.** Nothing syncs at app start or in the background;
-  open "Einstellungen" → "Server" and press "Jetzt synchronisieren". See
-  [`docs/workflow.md`](docs/workflow.md) §6.
+- **Sync is on demand, plus once when the app comes back.** Nothing syncs at app start and
+  nothing runs in the background. Returning to the foreground triggers a run from wherever you
+  are in the app, at most once a minute; to force one, open "Einstellungen" → "Server" and press
+  "Jetzt synchronisieren". See [`docs/workflow.md`](docs/workflow.md) §6.
 - **Scans need the server.** The image files are only ever stored in PocketBase, and the file
   field is protected, so a thumbnail also needs a valid session. No server (or no credentials),
   no scan import, no image and no export.

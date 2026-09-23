@@ -11,7 +11,7 @@
 import { readFile } from "node:fs/promises";
 
 import type { Id, ISODateTime, Scan, ScanAssignment, ScanUploadPort } from "@filmnotes/domain";
-import { newId, scanMimeType, uploadOneScan } from "@filmnotes/domain";
+import { isServerScanMimeType, newId, scanMimeType, uploadOneScan } from "@filmnotes/domain";
 
 import type { ImageFile } from "./files";
 
@@ -118,6 +118,16 @@ export async function uploadPlan(
     if (file === undefined) {
       failed.push(assignment.fileName);
       log(`${assignment.fileName}: no such file in the source`);
+      continue;
+    }
+
+    // `scans.file` accepts JPEG/PNG/TIFF/WebP only, so a HEIC from a phone is named as what it
+    // is here rather than as an opaque rejection two requests later - and before a record is
+    // created that would then have to be cleaned up again. The app refuses the same file for the
+    // same reason; the list itself lives once, in the domain.
+    if (!isServerScanMimeType(file.mimeType)) {
+      failed.push(assignment.fileName);
+      log(`${file.name}: ${file.mimeType} is not a format the server accepts`);
       continue;
     }
 

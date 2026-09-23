@@ -2,21 +2,22 @@ import { getLocales } from "expo-localization";
 import i18next, { type i18n as I18nInstance } from "i18next";
 import { initReactI18next } from "react-i18next";
 
-import de from "./common.de.json";
-import en from "./common.en.json";
+import {
+  DEFAULT_LANGUAGE,
+  DEFAULT_NAMESPACE,
+  NAMESPACES,
+  RESOURCES,
+  SUPPORTED_LANGUAGES,
+  type AppLanguage,
+} from "./resources";
 
-/** Languages the UI ships with; `de` is the default. */
-export const SUPPORTED_LANGUAGES = ["de", "en"] as const;
-export type AppLanguage = (typeof SUPPORTED_LANGUAGES)[number];
+export { DEFAULT_LANGUAGE, DEFAULT_NAMESPACE, SUPPORTED_LANGUAGES, type AppLanguage };
 
 /** What `Settings.locale` can hold: an explicit language or "follow the device". */
 export type LocaleSetting = "system" | AppLanguage;
 
-export const DEFAULT_LANGUAGE: AppLanguage = "de";
-export const DEFAULT_NAMESPACE = "common";
-
 function isSupported(value: string | null | undefined): value is AppLanguage {
-  return value === "de" || value === "en";
+  return SUPPORTED_LANGUAGES.includes(value as AppLanguage);
 }
 
 /** The device language, or the default when the device speaks something else. */
@@ -37,13 +38,10 @@ export function resolveLanguage(locale: LocaleSetting): AppLanguage {
 }
 
 void i18next.use(initReactI18next).init({
-  resources: {
-    de: { [DEFAULT_NAMESPACE]: de },
-    en: { [DEFAULT_NAMESPACE]: en },
-  },
+  resources: RESOURCES,
   lng: deviceLanguage(),
   fallbackLng: DEFAULT_LANGUAGE,
-  ns: [DEFAULT_NAMESPACE],
+  ns: NAMESPACES,
   defaultNS: DEFAULT_NAMESPACE,
   interpolation: { escapeValue: false },
   returnNull: false,
@@ -58,15 +56,19 @@ export async function setAppLanguage(locale: LocaleSetting): Promise<void> {
 }
 
 /**
- * Feature modules call this at module load to add their own namespace, e.g.
- * `registerFeatureTranslations('rolls', { de, en })` and then `useTranslation('rolls')`.
+ * Adds a namespace at runtime, for anything that is not part of the shipped table in
+ * `./resources` - a plugin, a test, a screen loaded on demand.
+ *
+ * Takes whichever languages it is given instead of a fixed pair, so it does not become the next
+ * place a new language has to be remembered.
  */
 export function registerFeatureTranslations(
   namespace: string,
-  resources: { de: object; en: object },
+  resources: Partial<Record<AppLanguage, object>>,
 ): void {
-  i18n.addResourceBundle("de", namespace, resources.de, true, true);
-  i18n.addResourceBundle("en", namespace, resources.en, true, true);
+  for (const [language, bundle] of Object.entries(resources)) {
+    i18n.addResourceBundle(language, namespace, bundle, true, true);
+  }
 }
 
 export default i18n;

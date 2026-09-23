@@ -79,6 +79,28 @@ afterEach(() => {
 });
 
 describe("uploadPlan", () => {
+  it("refuses a format the server does not accept, without sending a request", async () => {
+    const { pb, creates, updates } = fakePocketBase();
+    const log: string[] = [];
+
+    const path = join(workDir, "img4.heic");
+    writeFileSync(path, jpegBytes());
+    const withHeic: ImageFile[] = [...files, { name: "img4.heic", path, mimeType: "image/heic" }];
+    const plan: ScanAssignment[] = [
+      ...assignments,
+      { fileName: "img4.heic", sortIndex: 3, frameId: "frame1000000004", frameNo: 4 },
+    ];
+
+    const result = await uploadPlan(pb, OWNER, ROLL, withHeic, plan, (line) => log.push(line));
+
+    // `scans.file` accepts JPEG/PNG/TIFF/WebP only. The app refuses such a file with a named
+    // reason before it uploads; the CLI must not be the one path that tries anyway and leaves a
+    // half-written record behind for the server to reject.
+    expect(result).toEqual({ uploaded: 3, failed: ["img4.heic"] });
+    expect(creates.map((call) => call.data.fileName)).not.toContain("img4.heic");
+    expect(updates).toHaveLength(3);
+    expect(log.join("\n")).toContain("image/heic");
+  });
   it("creates a scan record per file and then uploads the bytes", async () => {
     const { pb, creates, updates } = fakePocketBase();
     const log: string[] = [];

@@ -6,7 +6,7 @@
  * be exported – the caption alone is useful, and the scans often arrive weeks after the notes.
  */
 import type { Frame, Id } from "@filmnotes/domain";
-import { listExporters, wordPressExporter, shareExporter } from "@filmnotes/exporters";
+import { listExporters, shareExporter } from "@filmnotes/exporters";
 import { router } from "expo-router";
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -14,7 +14,8 @@ import { Linking, StyleSheet, Text, View } from "react-native";
 import { useShallow } from "zustand/react/shallow";
 
 import { exportErrorMessage, formatTime, targetLabel } from "./exportMessages";
-import { captionFor, isWordPressConfigured, selectExportLogsForFrame } from "./exportModel";
+import { isExporterReady, settingsRouteFor } from "./exporterConfig";
+import { captionFor, selectExportLogsForFrame } from "./exportModel";
 import { EXPORT_NAMESPACE } from "./i18n";
 import { useFrameExporter } from "./useFrameExporter";
 import { selectScanForFrame } from "../../store/selectors";
@@ -66,9 +67,9 @@ function ExportFrame({ frame }: { frame: Frame }) {
   const [error, setError] = useState<string | null>(null);
   const [link, setLink] = useState<string | null>(null);
 
-  const wordPressReady = isWordPressConfigured(settings);
-  /** WordPress is the only target with settings; everything else is always available. */
-  const available = (id: string): boolean => id !== wordPressExporter.id || wordPressReady;
+  /** Targets that cannot run yet because something is missing from the settings. */
+  const unready = exporters.filter((exporter) => !isExporterReady(exporter, settings));
+  const available = (id: string): boolean => !unready.some((exporter) => exporter.id === id);
 
   // Scan files live on the server, so without one there is nothing to attach.
   const hasImage = scan !== null && scan.file !== null && settings.serverUrl !== null;
@@ -104,19 +105,24 @@ function ExportFrame({ frame }: { frame: Frame }) {
             testID={`export-target-${exporter.id}`}
           />
         ))}
-        {!wordPressReady && (
-          <>
-            <Text testID="export-wordpress-hint" style={muted}>
-              {t("notConfigured")}
-            </Text>
-            <Button
-              title={t("configure")}
-              variant="secondary"
-              onPress={() => router.push("/settings/wordpress")}
-              testID="export-configure-wordpress"
-            />
-          </>
-        )}
+        {unready.map((exporter) => {
+          const route = settingsRouteFor(exporter.id);
+          return (
+            <View key={exporter.id}>
+              <Text testID={`export-${exporter.id}-hint`} style={muted}>
+                {t("notConfigured", { target: t(exporter.nameKey) })}
+              </Text>
+              {route !== null && (
+                <Button
+                  title={t("configure", { target: t(exporter.nameKey) })}
+                  variant="secondary"
+                  onPress={() => router.push(route)}
+                  testID={`export-configure-${exporter.id}`}
+                />
+              )}
+            </View>
+          );
+        })}
       </Section>
 
       <Section title={t("image")}>

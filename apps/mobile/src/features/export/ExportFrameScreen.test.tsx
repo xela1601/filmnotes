@@ -127,7 +127,11 @@ describe("ExportFrameScreen", () => {
     render(<ExportFrameScreen frameId={FRAME_ID} />);
 
     expect(screen.getByTestId("export-target-wordpress")).toBeDisabled();
-    expect(screen.getByText(i18n.t("export:notConfigured"))).toBeOnTheScreen();
+    expect(
+      screen.getByText(
+        i18n.t("export:notConfigured", { target: i18n.t("export:exporters.wordpress") }),
+      ),
+    ).toBeOnTheScreen();
 
     fireEvent.press(screen.getByTestId("export-configure-wordpress"));
     expect(router.push).toHaveBeenCalledWith("/settings/wordpress");

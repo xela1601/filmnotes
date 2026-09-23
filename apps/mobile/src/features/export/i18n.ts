@@ -1,14 +1,9 @@
 /**
- * Translations of the export screens, registered as their own i18next namespace at module
- * load – see `src/i18n/index.ts`.
+ * The i18next namespace of the export screens.
  *
- * The exporter names live under `exporters.<id>`, which is the `nameKey` every exporter of
- * `@filmnotes/exporters` carries, so a new target only needs a key here.
+ * The strings sit in `export.<language>.json` next to this file; `src/i18n/resources.ts` wires them
+ * up. Modules of this feature import the constant and call `useTranslation(EXPORT_NAMESPACE)`.
+ * The exporter names live under `exporters.<id>`, the `nameKey` every exporter of
+ * `@filmnotes/exporters` carries, so a new target only needs a key in the JSON files.
  */
-import de from "./export.de.json";
-import en from "./export.en.json";
-import { registerFeatureTranslations } from "../../i18n";
-
 export const EXPORT_NAMESPACE = "export";
-
-registerFeatureTranslations(EXPORT_NAMESPACE, { de, en });
