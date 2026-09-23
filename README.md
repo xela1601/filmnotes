@@ -53,7 +53,7 @@ analogue_photography/
 │   ├── presets/           JSON presets (the Minolta 7000 AF kit + 22 film stocks) + loader
 │   └── exporters/         exporter interface, WordPress exporter, share-package builder
 ├── backend/               PocketBase: versioned JS migrations, Dockerfile,
-│                          docker-compose.yml, integration smoke test
+│                          compose.yaml, integration smoke test
 ├── tools/
 │   └── scan-import/       `filmnotes-import` CLI: import a folder/ZIP of lab scans
 ├── docs/                  spec, tickets, workflow.md, deployment.md

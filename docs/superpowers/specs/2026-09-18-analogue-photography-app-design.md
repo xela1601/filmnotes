@@ -51,7 +51,7 @@ analogue_photography/
 │   ├── pb_migrations/     PocketBase JS migrations (collections/schema)
 │   ├── pb_hooks/          PocketBase JS hooks (optional, e.g. thumbnails)
 │   ├── Dockerfile
-│   ├── docker-compose.yml
+│   ├── compose.yaml
 │   └── test/              Integration smoke tests against a locally started PocketBase binary
 ├── tools/
 │   └── scan-import/       CLI: import a folder/ZIP of scans for a roll (uses packages/domain + PocketBase SDK)
@@ -124,7 +124,7 @@ PocketBase ≥ 0.40 in Docker. Collections created through JS migrations (`pb_mi
 
 Auth: single PocketBase user created by the owner in the admin UI; the app logs in with email/password (token stored in expo-secure-store; on web in localStorage). No registration UI.
 
-Deployment: `docker-compose.yml` with a named volume for `pb_data`, intended for the owner's home server behind the existing reverse proxy. Development/integration tests run the PocketBase binary directly (downloaded to `backend/bin/`, git-ignored) because Docker is not available inside the sandbox.
+Deployment: `compose.yaml` with a named volume for `pb_data`, intended for the owner's home server behind the existing reverse proxy. Development/integration tests run the PocketBase binary directly (downloaded to `backend/bin/`, git-ignored) because Docker is not available inside the sandbox.
 
 ### 3.5 Exporters (packages/exporters)
 

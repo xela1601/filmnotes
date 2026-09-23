@@ -49,20 +49,20 @@ image: ghcr.io/xela1601/filmnotes:0.2.0
 ```
 
 To run something that is not tagged yet, build it from a checkout instead — replace the `image:`
-line with `build: { context: .., dockerfile: Dockerfile }` and use `docker compose up -d --build`. `docker-compose.yml` publishes the port as `127.0.0.1:8090:8090` **on
+line with `build: { context: .., dockerfile: Dockerfile }` and use `docker compose up -d --build`. `compose.yaml` publishes the port as `127.0.0.1:8090:8090` **on
 purpose**: PocketBase must never be reachable directly from the network. It has a healthcheck on
 `/api/health`, so `docker compose ps` shows whether it is actually serving.
 
 ### Environment variables
 
-| Variable                         | Where                               | Meaning                                                                                                                                                                                                                                                                                                    |
-| -------------------------------- | ----------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `PB_ADMIN_EMAIL`                 | `backend/.env`                      | superuser address, used once by the bootstrap command in step 3                                                                                                                                                                                                                                            |
-| `PB_ADMIN_PASSWORD`              | `backend/.env`                      | superuser password, used once in step 3                                                                                                                                                                                                                                                                    |
-| `PB_ENCRYPTION_KEY`              | `backend/.env`                      | exactly 32 characters (`openssl rand -hex 16`); encrypts the PocketBase settings table (SMTP/S3 credentials) at rest. Only takes effect once the `command:` block in `docker-compose.yml` is uncommented. **Once enabled the key must never be lost** — without it PocketBase cannot read its own settings |
-| `PB_VERSION`                     | `docker-compose.yml` (`build.args`) | the PocketBase release that goes into the image, currently `0.40.4`                                                                                                                                                                                                                                        |
-| `PB_HTTP`                        | local development only              | listen address of `backend/scripts/serve.sh`, default `127.0.0.1:8090`                                                                                                                                                                                                                                     |
-| `PB_VERSION`, `FILMNOTES_PB_BIN` | local development only              | read by `npm run fetch-pb -w @filmnotes/backend` — see `backend/README.md`                                                                                                                                                                                                                                 |
+| Variable                         | Where                         | Meaning                                                                                                                                                                                                                                                                                              |
+| -------------------------------- | ----------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `PB_ADMIN_EMAIL`                 | `backend/.env`                | superuser address, used once by the bootstrap command in step 3                                                                                                                                                                                                                                      |
+| `PB_ADMIN_PASSWORD`              | `backend/.env`                | superuser password, used once in step 3                                                                                                                                                                                                                                                              |
+| `PB_ENCRYPTION_KEY`              | `backend/.env`                | exactly 32 characters (`openssl rand -hex 16`); encrypts the PocketBase settings table (SMTP/S3 credentials) at rest. Only takes effect once the `command:` block in `compose.yaml` is uncommented. **Once enabled the key must never be lost** — without it PocketBase cannot read its own settings |
+| `PB_VERSION`                     | `compose.yaml` (`build.args`) | the PocketBase release that goes into the image, currently `0.40.4`                                                                                                                                                                                                                                  |
+| `PB_HTTP`                        | local development only        | listen address of `backend/scripts/serve.sh`, default `127.0.0.1:8090`                                                                                                                                                                                                                               |
+| `PB_VERSION`, `FILMNOTES_PB_BIN` | local development only        | read by `npm run fetch-pb -w @filmnotes/backend` — see `backend/README.md`                                                                                                                                                                                                                           |
 
 The app itself needs no environment variables: server URL, account and WordPress credentials are
 entered in the UI and stored on the device.
@@ -83,7 +83,7 @@ Forward the public host to `127.0.0.1:8090` and keep it boring:
 
 PocketBase's `serve` defaults to `--origins` = `[*]`, so it answers cross-origin requests from
 any host and the web build can be served from a different name than the API without any change.
-If you want to narrow it down, uncomment the `command:` block in `docker-compose.yml` and add the
+If you want to narrow it down, uncomment the `command:` block in `compose.yaml` and add the
 flag to the argument list:
 
 ```yaml
@@ -143,7 +143,7 @@ that does that (nginx `try_files $uri /index.html;`, Caddy `try_files`, GitHub P
 
 PocketBase can serve it itself — `serve` has `--publicDir` (default `pb_public` next to the
 binary) and `--indexFallback` is on by default, which is exactly the SPA rule. The shipped
-`docker-compose.yml` does **not** mount such a directory, so if you want that, add a bind mount
+`compose.yaml` does **not** mount such a directory, so if you want that, add a bind mount
 and copy the build in:
 
 ```yaml
@@ -160,7 +160,7 @@ Migrations are applied automatically (`--automigrate` defaults to true), so a sc
 with a new image and needs no manual step.
 
 1. Back the volume up first (§6).
-2. Bump `PB_VERSION` in `backend/docker-compose.yml` — both under `build.args` and in the `image:`
+2. Bump `PB_VERSION` in `backend/compose.yaml` — both under `build.args` and in the `image:`
    tag — and `PB_VERSION_DEFAULT` in `backend/scripts/fetch-pocketbase.mjs`, so local development
    uses the same release.
 3. `docker compose up -d --build`, then `docker compose logs -f filmnotes-pb`.

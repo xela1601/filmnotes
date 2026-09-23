@@ -10,7 +10,7 @@ backend/
   scripts/fetch-pocketbase.mjs                   provides bin/pocketbase for local dev
   scripts/serve.sh                               local dev server (mise task `backend`)
   test/smoke.test.mjs                            integration test against the real binary
-  docker-compose.yml, .env.example                deployment (the image is built from the repository root Dockerfile)
+  compose.yaml, .env.example                      deployment (the image is built from the repository root Dockerfile)
 ```
 
 `bin/` and `pb_data/` are git-ignored: the binary is fetched, the data is local.
@@ -122,7 +122,7 @@ and forward to that port — the app needs the public HTTPS URL, and PocketBase'
 endpoints need normal proxying (no buffering limits below 50 MB, so uploads are not truncated).
 
 To encrypt the settings table (SMTP/S3 credentials) at rest, set a 32-character
-`PB_ENCRYPTION_KEY` in `.env` and uncomment the `command:` block in `docker-compose.yml`. Once
+`PB_ENCRYPTION_KEY` in `.env` and uncomment the `command:` block in `compose.yaml`. Once
 enabled, the key must never be lost: without it PocketBase cannot read its own settings.
 
 ### Backups
@@ -144,6 +144,6 @@ with the project directory name.
 
 ### Upgrading PocketBase
 
-Bump `PB_VERSION` in `docker-compose.yml` (and `PB_VERSION_DEFAULT` in
+Bump `PB_VERSION` in `compose.yaml` (and `PB_VERSION_DEFAULT` in
 `scripts/fetch-pocketbase.mjs` so local dev matches), then `docker compose pull && docker compose up -d`. Back
 up the volume first; PocketBase migrates its own system tables on start.
