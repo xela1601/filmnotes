@@ -1,8 +1,13 @@
-// A fixed, non-UTC time zone for every app test. The screens show local wall-clock time now
-// (see localTime.ts in the domain), so a suite running in UTC would pass while the app writes
-// the wrong calendar day for anyone east or west of Greenwich. The sandbox itself reports a
-// POSIX zone without DST rules, which would be just as useless a baseline.
-process.env.TZ = "Europe/Berlin";
+// The time zone is pinned in jest.globalSetup.js (setting it here is too late: the worker has
+// already read it). This is the guard - a run in the wrong zone would quietly assert the wrong
+// timestamps, which is exactly what happened before: green here, two hours off in CI.
+const noonUtcInBerlin = new Date("2026-09-18T10:00:00.000Z").getHours();
+if (noonUtcInBerlin !== 12) {
+  throw new Error(
+    `Tests must run in Europe/Berlin (10:00 UTC is 12:00 there, this process says ${noonUtcInBerlin}:00). ` +
+      "Run them through `npm test` / `mise run test`, which loads jest.globalSetup.js.",
+  );
+}
 
 // The official AsyncStorage mock; the real native module is not available in Jest.
 jest.mock("@react-native-async-storage/async-storage", () =>

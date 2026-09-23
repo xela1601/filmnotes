@@ -19,4 +19,8 @@ const projects = workspaceRoots.flatMap((root) => {
     .filter((path) => existsSync(join(path, "jest.config.js")));
 });
 
-module.exports = { projects };
+module.exports = {
+  projects,
+  // Before the workers exist, so they inherit it - see the file for why that matters.
+  globalSetup: "<rootDir>/jest.globalSetup.js",
+};
