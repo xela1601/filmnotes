@@ -111,19 +111,30 @@ history, not the current state.
 - [x] **Step 6c: rewrite the history** so the old values are gone from every commit, not just from
       the tip. Verified: all 15 real refs are clean. A bundle of the pre-rewrite state and
       `refs/original/*` are the way back.
-- [ ] **Step 6d: replace the remote, do not force-push it.** A force-push leaves the old objects
-      on GitHub: unreachable, but still retrievable by SHA, and GitHub does not garbage-collect
-      them on request. For a repository that is about to be public that is the whole gap. With no
-      collaborators, no issues and no stars, deleting and recreating is cheap and complete:
+- [ ] **Step 6d: force-push, and delete the two refs that would keep the old history alive.**
 
-      1. github.com/xela1601/filmnotes → Settings → Danger Zone → Delete this repository
-      2. New repository, same name, **Public**, no README, no .gitignore, no licence
-      3. Deploy keys → add `id_filmnotes_deploy.pub` again, **Allow write access**
-         (a deploy key belongs to the repository, so it goes with it)
-      4. Settings → Rules → the two rulesets from steps 6 and 7 — now they are enforced
-      5. From the host, in this checkout: `git push -u origin main`
-      6. **Do not push the old tag.** `v0.2.0-alpha.0` points at a commit that fails CI, and its
-         SHA changed in the rewrite anyway. Cut `v0.2.0-alpha.1` once main is green.
+      The owner weighed replacing the repository against force-pushing and chose the force-push:
+      the scrubbed values are a mail host and a shop code, not credentials, and recreating the
+      repository would mean setting up the deploy key and both rulesets again. The residual risk
+      is accepted and is written down here rather than left implicit: objects that a force-push
+      makes unreachable are still retrievable by SHA, and GitHub does not collect them on request.
+
+      What is **not** optional is the other two refs. Both descend from the commit that introduced
+      the values, so as long as they exist the old commits are not merely lingering — they are
+      reachable, and in a public repository anyone can simply browse to them. Deleting them is
+      what makes the rewrite worth anything:
+
+          git push --force origin main
+          git push origin :refs/tags/v0.2.0-alpha.0
+          git push origin --delete changeset-release/main
+
+      The tag was due to go anyway: it points at a commit that fails CI, and its SHA changed in
+      the rewrite. `v0.2.0-alpha.1` gets cut once main is green. The changeset branch is a stale
+      release PR and regenerates itself on the next run.
+
+- [ ] **Step 6e: make the repository public**, so the two rulesets from steps 6 and 7 start being
+      enforced. Then, in this checkout, `refs/original/*` and the reflog still hold the old values
+      locally; clearing them and running `git gc --prune=now` finishes the job on this side.
 
 ### Back in the sandbox — for the agent, after step 8
 
