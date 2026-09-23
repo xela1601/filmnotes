@@ -5,10 +5,6 @@
 **Owns:** `sbxenv.yaml`, `sandbox/kit/spec.yaml`, `.git/config` (the remote), plus steps on the
 host and in the GitHub web interface that no agent can perform
 
-> **Next session starts here.** The sandbox is recreated at step 8, which ends the session that
-> wrote this. Everything needed to continue is in this ticket: steps 9 to 11 are the verification,
-> and step 6e is the local cleanup that is still outstanding.
-
 **Goal:** The agent can push from inside the sandbox, and the credential it uses opens exactly one
 repository. `main` cannot be changed without a pull request, and no release can be triggered by
 accident.
@@ -117,7 +113,7 @@ history, not the current state.
 - [x] **Step 6c: rewrite the history** so the old values are gone from every commit, not just from
       the tip. Verified: all 15 real refs are clean. A bundle of the pre-rewrite state and
       `refs/original/*` are the way back.
-- [ ] **Step 6d: force-push, and delete the two refs that would keep the old history alive.**
+- [x] **Step 6d: force-push, and delete the two refs that would keep the old history alive.**
 
       The owner weighed replacing the repository against force-pushing and chose the force-push:
       the scrubbed values are a mail host and a shop code, not credentials, and recreating the
@@ -138,27 +134,46 @@ history, not the current state.
       the rewrite. `v0.2.0-alpha.1` gets cut once main is green. The changeset branch is a stale
       release PR and regenerates itself on the next run.
 
-- [ ] **Step 6e: make the repository public**, so the two rulesets from steps 6 and 7 start being
+- [x] **Step 6e: make the repository public**, so the two rulesets from steps 6 and 7 start being
       enforced. Then, in this checkout, `refs/original/*` and the reflog still hold the old values
       locally; clearing them and running `git gc --prune=now` finishes the job on this side.
 
 ### Back in the sandbox — for the agent, after step 8
 
-- [ ] **Step 9:** add the remote and prove the key works and is scoped:
+- [x] **Step 9:** add the remote and prove the key works and is scoped:
 
       git remote add deploy github-xela1601:xela1601/filmnotes.git
       eval "$GIT_SSH_COMMAND -T git@github.com"   # must say: Hi xela1601/filmnotes!
 
-- [ ] **Step 10:** push a branch and confirm that a direct push to `main` is refused:
+  `.git/config` turned out to be mounted read-only into the sandbox (same protection as
+  `sbxenv.yaml` in step 2), so the agent could verify the key (`Hi xela1601/filmnotes!`, confirmed
+  repository-scoped) and push by URL, but not persist a named remote from inside the sandbox. The
+  owner ran `git remote add deploy git@github.com:xela1601/filmnotes.git` on the host instead - it
+  lives in `.git/config`, which the sandbox only mounts, so it survives a sandbox recreation. No
+  alias needed: the sandbox's own `~/.ssh/config` already matches plain `github.com` and routes
+  through the deploy key regardless of which remote name is used.
+
+- [x] **Step 10:** push a branch and confirm that a direct push to `main` is refused:
 
       git push deploy HEAD:refs/heads/test/push-access
       git push deploy HEAD:main                  # must be rejected by the ruleset
 
-- [ ] **Step 11:** delete the test branch, and record the working agreement in `CLAUDE.md`: the
+  Both verified after the repository went public (step 6e): the branch push succeeded, and
+  `HEAD:main` came back `GH013 … Changes must be made through a pull request.`
+
+- [x] **Step 11:** delete the test branch, and record the working agreement in `CLAUDE.md`: the
       agent pushes branches to `deploy` and never to `main`.
+
+  Also recorded: `gh pr create` fails with `Bad credentials` from inside the sandbox (the
+  `GH_TOKEN` env var doesn't carry a valid token) - the deploy key's lack of API access, predicted
+  above, holds. Opening a PR is the "Create a pull request" URL `git push` prints, or the owner.
 
 **Done when:** `Hi xela1601/filmnotes!` is what GitHub answers, a branch push succeeds, a `main`
 push is refused, and `~/.ssh/id_github` is no longer visible inside the sandbox.
+
+**Status:** Done, verified 2026-09-23. The repository is public, both rulesets are active,
+`deploy` pushes branches with a repository-scoped key, and a direct push to `main` is rejected
+with `GH013`.
 
 ## Afterwards
 

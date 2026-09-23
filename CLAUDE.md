@@ -31,6 +31,19 @@ The repository is bind-mounted from macOS, so `rollForm.ts` and `RollForm.tsx` a
 path for module resolution: imports resolve to the wrong file and `tsc` reports TS1149. Never let
 two files in one directory differ only in case – suffix the component (`RollFormScreen.tsx`).
 
+## Git remotes
+
+- `origin` is the default HTTPS remote. Reads work; a direct push depends on whatever credential
+  the sandbox happens to have at the time and is not guaranteed.
+- `deploy` (`git@github.com:xela1601/filmnotes.git`) is the remote to push through. Inside the
+  sandbox it resolves via SSH to a deploy key scoped to just this repository - see
+  `docs/tickets/done/T-019-sandbox-push-access.md`.
+- `main` is protected by a branch ruleset (PR required, no force pushes, no branch/tag deletion):
+  a direct push to `main` on either remote is rejected. Push a feature branch to `deploy`, then
+  open the PR - `gh pr create` does not work from inside the sandbox (the deploy key has no GitHub
+  API access), so use the "Create a pull request" URL that `git push` prints, or ask the owner to
+  open it.
+
 ## Tooling (mise)
 
 CLI tooling and the task runner are managed with [mise](https://mise.jdx.dev); `mise.toml` pins
