@@ -1,5 +1,7 @@
 # T-003 – Presets package (`@filmnotes/presets`)
 
+**Status:** delivered. Verified on 2026-09-23: every file the ticket names exists and the full gate is green (`npm test`, `npm run lint`, `npm run format:check`, `npm run typecheck`).
+
 **Wave:** 1
 **Depends on:** T-001 (types only)
 **Owns:** `packages/presets/**`
@@ -68,11 +70,11 @@ Kodak Gold 200 · Kodak ColorPlus 200 · Kodak Ultramax 400 · Kodak Portra 400 
 
 ## Steps
 
-- [ ] **Step 1: package files** (mirror T-001's domain package; `"dependencies": {"@filmnotes/domain": "*", "zod": "^3.23.8"}`). `npm install` at root. Commit `chore(presets): add package skeleton`.
-- [ ] **Step 2: schema.ts with zod schemas** for `PresetRecord<Camera|Lens|Filter|Flash|FilmStock>` and `PresetBundle`; export `ID_SCHEMA = z.string().regex(/^[a-z0-9]{15}$/)`.
-- [ ] **Step 3: data.test.ts (failing)** – loads both JSON files with `require`, parses with the schemas (`safeParse` → `expect(result.success).toBe(true)` and print `result.error` on failure), asserts: all ids unique across the bundle; every `defaultFilterIds`, `mountedOnLensId`, `defaultsForNewFrame.lensId/filterIds` reference existing ids; each filter's `threadMm` equals the `filterThreadMm` of `mountedOnLensId` when set; at least 20 film stocks; `Kodak Gold 200` exists with `iso 200, process 'C41', color true`.
-- [ ] **Step 4: write the JSON data** until the test passes. Commit `feat(presets): Minolta 7000 AF kit and film stock catalogue`.
-- [ ] **Step 5: presets.test.ts (failing)** – `loadEquipmentPresets()` returns 1 bundle with 1 camera, 3 lenses, 7 filters, 1 flash; `materialize(rec, now)` adds `created=updated=now, deleted=null, owner=null`; `seedRecords(now).filmStocks.length ≥ 20`; every seeded record satisfies `ID_PATTERN`.
-- [ ] **Step 6: implement index.ts** (`import kit from '../data/minolta-7000af-kit.json'` needs `resolveJsonModule`, already in base tsconfig). Run, commit `feat(presets): loader and seed helpers`.
+- [x] **Step 1: package files** (mirror T-001's domain package; `"dependencies": {"@filmnotes/domain": "*", "zod": "^3.23.8"}`). `npm install` at root. Commit `chore(presets): add package skeleton`.
+- [x] **Step 2: schema.ts with zod schemas** for `PresetRecord<Camera|Lens|Filter|Flash|FilmStock>` and `PresetBundle`; export `ID_SCHEMA = z.string().regex(/^[a-z0-9]{15}$/)`.
+- [x] **Step 3: data.test.ts (failing)** – loads both JSON files with `require`, parses with the schemas (`safeParse` → `expect(result.success).toBe(true)` and print `result.error` on failure), asserts: all ids unique across the bundle; every `defaultFilterIds`, `mountedOnLensId`, `defaultsForNewFrame.lensId/filterIds` reference existing ids; each filter's `threadMm` equals the `filterThreadMm` of `mountedOnLensId` when set; at least 20 film stocks; `Kodak Gold 200` exists with `iso 200, process 'C41', color true`.
+- [x] **Step 4: write the JSON data** until the test passes. Commit `feat(presets): Minolta 7000 AF kit and film stock catalogue`.
+- [x] **Step 5: presets.test.ts (failing)** – `loadEquipmentPresets()` returns 1 bundle with 1 camera, 3 lenses, 7 filters, 1 flash; `materialize(rec, now)` adds `created=updated=now, deleted=null, owner=null`; `seedRecords(now).filmStocks.length ≥ 20`; every seeded record satisfies `ID_PATTERN`.
+- [x] **Step 6: implement index.ts** (`import kit from '../data/minolta-7000af-kit.json'` needs `resolveJsonModule`, already in base tsconfig). Run, commit `feat(presets): loader and seed helpers`.
 
 **Done when:** `npm test -w @filmnotes/presets` green; `npx tsc -p packages/presets --noEmit` clean.

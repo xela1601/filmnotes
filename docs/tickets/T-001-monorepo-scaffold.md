@@ -1,5 +1,7 @@
 # T-001 – Monorepo scaffold + domain type contracts
 
+**Status:** delivered. Verified on 2026-09-23: every file the ticket names exists and the full gate is green (`npm test`, `npm run lint`, `npm run format:check`, `npm run typecheck`).
+
 **Wave:** 0 (integrator, run alone before anything else)
 **Depends on:** none
 **Owns:** all root files, `packages/domain/package.json`, `packages/domain/tsconfig.json`, `packages/domain/jest.config.js`, `packages/domain/src/types.ts`, `packages/domain/src/id.ts`, `packages/domain/src/index.ts`, `.gitignore`, `CLAUDE.md`
@@ -28,7 +30,7 @@ packages/domain/src/index.ts
 
 ## Steps
 
-- [ ] **Step 1: root package.json**
+- [x] **Step 1: root package.json**
 
 ```json
 {
@@ -54,7 +56,7 @@ packages/domain/src/index.ts
 
 (Use the current stable versions `npm view <pkg> version` reports; the ones above are floors.)
 
-- [ ] **Step 2: tsconfig.base.json**
+- [x] **Step 2: tsconfig.base.json**
 
 ```json
 {
@@ -74,7 +76,7 @@ packages/domain/src/index.ts
 }
 ```
 
-- [ ] **Step 3: root jest.config.js**
+- [x] **Step 3: root jest.config.js**
 
 ```js
 /** Runs every workspace's own jest config as a project. */
@@ -83,7 +85,7 @@ module.exports = {
 };
 ```
 
-- [ ] **Step 4: .gitignore**
+- [x] **Step 4: .gitignore**
 
 ```
 node_modules/
@@ -104,7 +106,7 @@ backend/test/pb_data_*/
 .claude/worktrees/
 ```
 
-- [ ] **Step 5: packages/domain package files**
+- [x] **Step 5: packages/domain package files**
 
 `packages/domain/package.json`
 
@@ -140,7 +142,7 @@ module.exports = {
 };
 ```
 
-- [ ] **Step 6: Write the failing test for `newId`**
+- [x] **Step 6: Write the failing test for `newId`**
 
 `packages/domain/src/id.test.ts`
 
@@ -161,9 +163,9 @@ describe("newId", () => {
 });
 ```
 
-- [ ] **Step 7: Run it – must fail** – `npm test -w @filmnotes/domain` → "Cannot find module './id'".
+- [x] **Step 7: Run it – must fail** – `npm test -w @filmnotes/domain` → "Cannot find module './id'".
 
-- [ ] **Step 8: Implement `id.ts`**
+- [x] **Step 8: Implement `id.ts`**
 
 ```ts
 /** PocketBase's default record id format: 15 lowercase alphanumerics. */
@@ -186,9 +188,9 @@ export function newId(): string {
 }
 ```
 
-- [ ] **Step 9: Run – must pass.**
+- [x] **Step 9: Run – must pass.**
 
-- [ ] **Step 10: Write `types.ts` – THE contract for all other tickets. Copy verbatim.**
+- [x] **Step 10: Write `types.ts` – THE contract for all other tickets. Copy verbatim.**
 
 ```ts
 /** 15-char lowercase alphanumeric, see id.ts */
@@ -440,14 +442,14 @@ export interface FrameContext {
 }
 ```
 
-- [ ] **Step 11: `index.ts`**
+- [x] **Step 11: `index.ts`**
 
 ```ts
 export * from "./types";
 export * from "./id";
 ```
 
-- [ ] **Step 12: CLAUDE.md (repo root)**
+- [x] **Step 12: CLAUDE.md (repo root)**
 
 ```markdown
 # filmnotes – agent conventions
@@ -461,9 +463,9 @@ export * from "./id";
 - Never commit secrets, `pb_data`, `node_modules`, or `backend/bin`.
 ```
 
-- [ ] **Step 13: Install and verify** – `npm install` (root), then `npm test` → domain tests pass. `npx tsc -p packages/domain --noEmit` → no errors.
+- [x] **Step 13: Install and verify** – `npm install` (root), then `npm test` → domain tests pass. `npx tsc -p packages/domain --noEmit` → no errors.
 
-- [ ] **Step 14: Commit**
+- [x] **Step 14: Commit**
 
 ```bash
 git add package.json package-lock.json tsconfig.base.json jest.config.js .gitignore .npmrc CLAUDE.md packages/domain

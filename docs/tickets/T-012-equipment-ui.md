@@ -1,5 +1,7 @@
 # T-012 – Equipment management UI (extensibility)
 
+**Status:** delivered. Verified on 2026-09-23: every file the ticket names exists and the full gate is green (`npm test`, `npm run lint`, `npm run format:check`, `npm run typecheck`).
+
 **Wave:** 3
 **Depends on:** T-005, T-003
 **Owns:** `apps/mobile/src/features/equipment/**`, `apps/mobile/app/(tabs)/equipment.tsx`, `apps/mobile/app/equipment/**`
@@ -39,9 +41,9 @@ app/(tabs)/equipment.tsx, app/equipment/[type]/[id].tsx, app/equipment/[type]/ne
 
 ## Steps
 
-- [ ] **Step 1: descriptors.test.ts** – every descriptor key exists on the corresponding empty record; `emptyRecord('lenses')` has `apertureValues []`, `hasHood false`; `validateRecord` requires make/model (name/maker for film), positive iso, `focalMinMm <= focalMaxMm`, parseable shutter strings in shutter lists (use `parseShutterSpeed` from domain; `bulb` allowed). Implement, commit `feat(app): equipment field descriptors`.
-- [ ] **Step 2: EquipmentListScreen.test.tsx** – shows seeded Minolta camera under "Cameras", 3 lenses under "Lenses", 20+ film stocks; tapping opens `/equipment/<type>/<id>`; "+" opens `/equipment/<type>/new`. Implement, commit `feat(app): equipment list`.
-- [ ] **Step 3: EquipmentEditScreen.test.tsx** – new film stock "Kodak Portra 800", iso 800, C41, colour → saved and appears in list; editing the 50 mm lens `handheldMinShutter` to `1/125` persists; invalid shutter string shows error and blocks save; delete confirms and soft-deletes (list no longer shows it). Implement generic renderer (switch on `kind`), commit `feat(app): equipment editor`.
-- [ ] **Step 4: translations + routes** (`equipment.de.json`: `types.cameras: "Kameras"`, `types.lenses: "Objektive"`, `types.filters: "Filter"`, `types.flashes: "Blitze"`, `types.filmStocks: "Filme"`, field labels …). Commit `feat(app): equipment routes and translations`.
+- [x] **Step 1: descriptors.test.ts** – every descriptor key exists on the corresponding empty record; `emptyRecord('lenses')` has `apertureValues []`, `hasHood false`; `validateRecord` requires make/model (name/maker for film), positive iso, `focalMinMm <= focalMaxMm`, parseable shutter strings in shutter lists (use `parseShutterSpeed` from domain; `bulb` allowed). Implement, commit `feat(app): equipment field descriptors`.
+- [x] **Step 2: EquipmentListScreen.test.tsx** – shows seeded Minolta camera under "Cameras", 3 lenses under "Lenses", 20+ film stocks; tapping opens `/equipment/<type>/<id>`; "+" opens `/equipment/<type>/new`. Implement, commit `feat(app): equipment list`.
+- [x] **Step 3: EquipmentEditScreen.test.tsx** – new film stock "Kodak Portra 800", iso 800, C41, colour → saved and appears in list; editing the 50 mm lens `handheldMinShutter` to `1/125` persists; invalid shutter string shows error and blocks save; delete confirms and soft-deletes (list no longer shows it). Implement generic renderer (switch on `kind`), commit `feat(app): equipment editor`.
+- [x] **Step 4: translations + routes** (`equipment.de.json`: `types.cameras: "Kameras"`, `types.lenses: "Objektive"`, `types.filters: "Filter"`, `types.flashes: "Blitze"`, `types.filmStocks: "Filme"`, field labels …). Commit `feat(app): equipment routes and translations`.
 
 **Done when:** tests green, `tsc` clean; a new camera created in the UI can be chosen in the roll form (T-006) without code changes.

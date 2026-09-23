@@ -1,5 +1,7 @@
 # T-008 – Sync engine (app ↔ PocketBase)
 
+**Status:** delivered. Verified on 2026-09-23: every file the ticket names exists and the full gate is green (`npm test`, `npm run lint`, `npm run format:check`, `npm run typecheck`).
+
 **Wave:** 2
 **Depends on:** T-004 (schema), T-005 (store)
 **Owns:** `apps/mobile/src/sync/**`, `apps/mobile/app/settings/server.tsx`
@@ -57,8 +59,8 @@ Dependency: `pocketbase` (JS SDK ≥ 0.26) in `apps/mobile/package.json`.
 
 ## Steps
 
-- [ ] **Step 1: mapping.test.ts (failing)** – round trip for a `Frame` and a `Roll` keeps all fields; `toRemote` sets `owner`, `clientUpdated`; `fromRemote` prefers `clientUpdated`; `location` object survives JSON field. Implement, commit `feat(app): sync record mapping`.
-- [ ] **Step 2: engine.test.ts (failing)** with a `FakeSyncClient` (Map per collection, records get `updated = fakeServerNow()` on write):
+- [x] **Step 1: mapping.test.ts (failing)** – round trip for a `Frame` and a `Roll` keeps all fields; `toRemote` sets `owner`, `clientUpdated`; `fromRemote` prefers `clientUpdated`; `location` object survives JSON field. Implement, commit `feat(app): sync record mapping`.
+- [x] **Step 2: engine.test.ts (failing)** with a `FakeSyncClient` (Map per collection, records get `updated = fakeServerNow()` on write):
   1. pushes 2 outbox entries (one create, one update), clears them, `pushed === 2`.
   2. pulls a remote frame absent locally → applied.
   3. conflict: local roll `updated 10:00`, remote `clientUpdated 10:05` → remote wins locally, not overwritten on server; reverse → local wins.
@@ -67,8 +69,8 @@ Dependency: `pocketbase` (JS SDK ≥ 0.26) in `apps/mobile/package.json`.
   6. a failing `update` (throws) is collected in `errors`, other entries still processed, failed entry stays in outbox.
   7. `setLastSyncAt` called with a timestamp ≤ the start time.
      Implement `engine.ts`, commit `feat(app): sync engine with last-write-wins`.
-- [ ] **Step 3: client.ts** – implement over `pocketbase` SDK (`pb.collection(name).getFullList({ filter: since ? \`updated > "${since}"\` : '' , sort: 'updated' })`, `create`, `update`, `authWithPassword`, `authRefresh`, `pb.files.getURL`). Upload via `FormData` (`{ uri, name, type }`on native,`Blob`on web). No unit test beyond a construction smoke test (SDK is mocked in useSync tests). Commit`feat(app): PocketBase client adapter`.
-- [ ] **Step 4: useSync.test.ts** – `no_server` when `settings.serverUrl` null; `syncNow` runs engine with token from `secureStore` and stores result; AppState foreground triggers sync at most once per 60 s (mock timers). Implement, commit `feat(app): sync hook with foreground auto-sync`.
-- [ ] **Step 5: ServerSettingsScreen.test.tsx** – fields URL, email, password; "Connect" calls `authWithPassword`, stores token + email + URL (`secureStore` mocked), shows "connected as <email>"; "Disconnect" clears; "Sync now" shows result summary `pushed/pulled`; last sync time displayed. Implement + translations (`sync.de.json`: `server: "Server"`, `connect: "Verbinden"`, `syncNow: "Jetzt synchronisieren"`, `lastSync: "Zuletzt: {{time}}"`, …). Commit `feat(app): server settings and manual sync`.
+- [x] **Step 3: client.ts** – implement over `pocketbase` SDK (`pb.collection(name).getFullList({ filter: since ? \`updated > "${since}"\` : '' , sort: 'updated' })`, `create`, `update`, `authWithPassword`, `authRefresh`, `pb.files.getURL`). Upload via `FormData` (`{ uri, name, type }`on native,`Blob`on web). No unit test beyond a construction smoke test (SDK is mocked in useSync tests). Commit`feat(app): PocketBase client adapter`.
+- [x] **Step 4: useSync.test.ts** – `no_server` when `settings.serverUrl` null; `syncNow` runs engine with token from `secureStore` and stores result; AppState foreground triggers sync at most once per 60 s (mock timers). Implement, commit `feat(app): sync hook with foreground auto-sync`.
+- [x] **Step 5: ServerSettingsScreen.test.tsx** – fields URL, email, password; "Connect" calls `authWithPassword`, stores token + email + URL (`secureStore` mocked), shows "connected as <email>"; "Disconnect" clears; "Sync now" shows result summary `pushed/pulled`; last sync time displayed. Implement + translations (`sync.de.json`: `server: "Server"`, `connect: "Verbinden"`, `syncNow: "Jetzt synchronisieren"`, `lastSync: "Zuletzt: {{time}}"`, …). Commit `feat(app): server settings and manual sync`.
 
 **Done when:** tests green, `tsc` clean, manual check by the integrator against the local PocketBase from T-004: create roll offline → connect → sync → record visible in PocketBase admin.

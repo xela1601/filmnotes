@@ -1,5 +1,7 @@
 # T-013 – Scan-import CLI (`@filmnotes/scan-import`)
 
+**Status:** delivered. Verified on 2026-09-23: every file the ticket names exists and the full gate is green (`npm test`, `npm run lint`, `npm run format:check`, `npm run typecheck`).
+
 **Wave:** 3
 **Depends on:** T-002 (`matchScansToFrames`, `naturalCompare`), T-004 (schema)
 **Owns:** `tools/scan-import/**`
@@ -28,11 +30,11 @@ tools/scan-import/src/args.ts, args.test.ts, files.ts, files.test.ts, plan.ts, p
 
 ## Steps
 
-- [ ] **Step 1: args.test.ts** – parses flags, defaults `yes false`, errors on missing `--roll`/source, reads env password. Implement, commit `feat(cli): argument parsing`.
-- [ ] **Step 2: files.test.ts** – temp folder with `b2.JPG`, `a10.jpeg`, `notes.txt`, sub/`c.png` → 3 images with mime types; zip fixture → extracted images; sorted with `naturalCompare`. Implement, commit `feat(cli): list image files from folder or zip`.
-- [ ] **Step 3: plan.test.ts** – renders the table with surplus files marked `(unassigned)`. Implement, commit `feat(cli): import plan rendering`.
-- [ ] **Step 4: upload.test.ts** – fake `pb` object (`collection().create`, `.update` with FormData) → creates scan record then uploads file; failure of one file reported, others continue. Implement, commit `feat(cli): upload scans`.
-- [ ] **Step 5: main.test.ts** – full flow with fakes: prints plan, `prompt` answers `n` → exit 1 nothing uploaded; `--yes` → uploads and prints summary; `--dry-run` never uploads. Implement `main.ts`, `cli.ts` (`main(process.argv.slice(2), realIo).then(process.exit)`). Commit `feat(cli): scan import command`.
-- [ ] **Step 6: README** – usage, env vars, example for the drugstore-CD workflow. Commit `docs(cli): usage`.
+- [x] **Step 1: args.test.ts** – parses flags, defaults `yes false`, errors on missing `--roll`/source, reads env password. Implement, commit `feat(cli): argument parsing`.
+- [x] **Step 2: files.test.ts** – temp folder with `b2.JPG`, `a10.jpeg`, `notes.txt`, sub/`c.png` → 3 images with mime types; zip fixture → extracted images; sorted with `naturalCompare`. Implement, commit `feat(cli): list image files from folder or zip`.
+- [x] **Step 3: plan.test.ts** – renders the table with surplus files marked `(unassigned)`. Implement, commit `feat(cli): import plan rendering`.
+- [x] **Step 4: upload.test.ts** – fake `pb` object (`collection().create`, `.update` with FormData) → creates scan record then uploads file; failure of one file reported, others continue. Implement, commit `feat(cli): upload scans`.
+- [x] **Step 5: main.test.ts** – full flow with fakes: prints plan, `prompt` answers `n` → exit 1 nothing uploaded; `--yes` → uploads and prints summary; `--dry-run` never uploads. Implement `main.ts`, `cli.ts` (`main(process.argv.slice(2), realIo).then(process.exit)`). Commit `feat(cli): scan import command`.
+- [x] **Step 6: README** – usage, env vars, example for the drugstore-CD workflow. Commit `docs(cli): usage`.
 
 **Done when:** tests green; integrator check against the local PocketBase from T-004 with 3 JPEGs.

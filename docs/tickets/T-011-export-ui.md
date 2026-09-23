@@ -1,5 +1,7 @@
 # T-011 – Export UI
 
+**Status:** delivered. Verified on 2026-09-23: every file the ticket names exists and the full gate is green (`npm test`, `npm run lint`, `npm run format:check`, `npm run typecheck`).
+
 **Wave:** 3
 **Depends on:** T-007 (frame screen exists), T-010 (exporters), T-009 (scans for images; optional – export works without image for share text)
 **Owns:** `apps/mobile/src/features/export/**`, `apps/mobile/app/export/**`, `apps/mobile/app/settings/wordpress.tsx`
@@ -40,12 +42,12 @@ Dependencies: `expo-sharing`, `expo-clipboard`, `@filmnotes/exporters "*"`.
 
 ## Steps
 
-- [ ] **Step 1: exportModel.test.ts** – caption uses custom template/hashtags from settings and `de` date format when locale de; null when roll/camera missing. Implement, commit `feat(app): export input model`.
-- [ ] **Step 2: runExport.test.ts** – fake exporter resolves → `ExportLog` upserted with `target`, `externalId`, `url`, `exportedAt = now`; rejects → no log, error propagated. Implement, commit `feat(app): run export and log it`.
-- [ ] **Step 3: loadScanImage.test.ts** – mocked fetch returns bytes with content-type; file name derived from scan `fileName`. Implement, commit `feat(app): load scan image for export`.
-- [ ] **Step 4: WordPressSettingsScreen.test.tsx** – saves site URL/username to settings, app password to `secureStore`; "Test connection" GETs `/wp-json/wp/v2/users/me` with Basic auth (mocked fetch) and shows the display name or the error. Implement, commit `feat(app): WordPress settings`.
-- [ ] **Step 5: ExportFrameScreen.test.tsx** – lists exporters (Share, WordPress); WordPress disabled with hint when not configured; caption preview editable; "Export" with Share calls `shareOut` with text + image (image null when frame has no scan → still allowed); with WordPress calls exporter with config from settings/secure store and shows the resulting link; previous exports listed from `exportLogs`. Implement, commit `feat(app): export frame screen`.
-- [ ] **Step 6: ExportRollScreen.test.tsx** – lists frames that have an uploaded scan with checkboxes (all selected by default), exporter picker, runs exports sequentially with progress `n / total`, collects failures. Implement, commit `feat(app): export roll screen`.
-- [ ] **Step 7: translations + routes** (`export.de.json`: `title: "Exportieren"`, `share: "Teilen (Bild + Text)"`, `wordpress: "WordPress-Entwurf"`, `notConfigured: "WordPress ist nicht eingerichtet."`, …). Commit `feat(app): export routes and translations`.
+- [x] **Step 1: exportModel.test.ts** – caption uses custom template/hashtags from settings and `de` date format when locale de; null when roll/camera missing. Implement, commit `feat(app): export input model`.
+- [x] **Step 2: runExport.test.ts** – fake exporter resolves → `ExportLog` upserted with `target`, `externalId`, `url`, `exportedAt = now`; rejects → no log, error propagated. Implement, commit `feat(app): run export and log it`.
+- [x] **Step 3: loadScanImage.test.ts** – mocked fetch returns bytes with content-type; file name derived from scan `fileName`. Implement, commit `feat(app): load scan image for export`.
+- [x] **Step 4: WordPressSettingsScreen.test.tsx** – saves site URL/username to settings, app password to `secureStore`; "Test connection" GETs `/wp-json/wp/v2/users/me` with Basic auth (mocked fetch) and shows the display name or the error. Implement, commit `feat(app): WordPress settings`.
+- [x] **Step 5: ExportFrameScreen.test.tsx** – lists exporters (Share, WordPress); WordPress disabled with hint when not configured; caption preview editable; "Export" with Share calls `shareOut` with text + image (image null when frame has no scan → still allowed); with WordPress calls exporter with config from settings/secure store and shows the resulting link; previous exports listed from `exportLogs`. Implement, commit `feat(app): export frame screen`.
+- [x] **Step 6: ExportRollScreen.test.tsx** – lists frames that have an uploaded scan with checkboxes (all selected by default), exporter picker, runs exports sequentially with progress `n / total`, collects failures. Implement, commit `feat(app): export roll screen`.
+- [x] **Step 7: translations + routes** (`export.de.json`: `title: "Exportieren"`, `share: "Teilen (Bild + Text)"`, `wordpress: "WordPress-Entwurf"`, `notConfigured: "WordPress ist nicht eingerichtet."`, …). Commit `feat(app): export routes and translations`.
 
 **Done when:** tests green; integrator manual check: share export copies caption and opens the share sheet on iOS simulator / prints payload on web.

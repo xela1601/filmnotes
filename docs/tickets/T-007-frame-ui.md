@@ -1,5 +1,7 @@
 # T-007 – Frame capture & edit UI
 
+**Status:** delivered. Verified on 2026-09-23: every file the ticket names exists and the full gate is green (`npm test`, `npm run lint`, `npm run format:check`, `npm run typecheck`).
+
 **Wave:** 2
 **Depends on:** T-002, T-003, T-005
 **Owns:** `apps/mobile/src/features/frames/**`, `apps/mobile/app/frames/**`
@@ -36,9 +38,9 @@ Add `expo-location` via `npx expo install expo-location` (declare in `apps/mobil
 
 ## Steps
 
-- [ ] **Step 1: frameForm.test.ts (failing)** – the `editableFields` table above; `focalLengthOptions` for 35-70 → `[35,50,70]`, 70-210 → `[70,100,135,150,210]`, 50 → `[50]`, null → `[]`; `filterOptions` filters by thread; `applyLensChange` from 35-70 (UV49) to 70-210 drops the 49 mm UV, adds the 55 mm UV, sets focal 70. Implement, commit `feat(app): frame form rules`.
-- [ ] **Step 2: useLocation.test.ts** – mock `expo-location`: `requestForegroundPermissionsAsync` denied → returns `{status:'denied'}`; granted → returns `{lat, lon}` rounded to 5 decimals. Implement, commit `feat(app): on-demand GPS lookup`.
-- [ ] **Step 3: FrameEditScreen.test.tsx (failing)** – store with seeded presets, one roll (Minolta, Kodak Gold 200) and one frame from `newFrame`. Assertions:
+- [x] **Step 1: frameForm.test.ts (failing)** – the `editableFields` table above; `focalLengthOptions` for 35-70 → `[35,50,70]`, 70-210 → `[70,100,135,150,210]`, 50 → `[50]`, null → `[]`; `filterOptions` filters by thread; `applyLensChange` from 35-70 (UV49) to 70-210 drops the 49 mm UV, adds the 55 mm UV, sets focal 70. Implement, commit `feat(app): frame form rules`.
+- [x] **Step 2: useLocation.test.ts** – mock `expo-location`: `requestForegroundPermissionsAsync` denied → returns `{status:'denied'}`; granted → returns `{lat, lon}` rounded to 5 decimals. Implement, commit `feat(app): on-demand GPS lookup`.
+- [x] **Step 3: FrameEditScreen.test.tsx (failing)** – store with seeded presets, one roll (Minolta, Kodak Gold 200) and one frame from `newFrame`. Assertions:
   1. header shows `#1 / 36`; time field prefilled with `takenAt` (editable `HH:mm` + date).
   2. mode P: shutter and aperture selects are disabled/hidden, program-shift switch visible; switching to M enables both and hides compensation.
   3. shutter options in M include `bulb`, in S they do not.
@@ -49,7 +51,7 @@ Add `expo-location` via `npx expo install expo-location` (declare in `apps/mobil
   8. "Save" writes the frame to the store (`updated` changed) and `router.back()`; "Save & next" saves and creates frame #2 carrying over lens/filters/mode (assert via store) then `router.replace('/frames/<newId>')`; "Save & next" is hidden when `frameNo === roll.exposures`.
   9. "Delete frame" confirms then soft-deletes.
   10. errors (level `error`) disable Save; warnings/info do not.
-- [ ] **Step 4: implement FrameEditScreen.tsx** – sections: _Exposure_ (mode segmented, shutter, aperture, compensation −4…+4 step 0.5, program shift, AE lock), _Optics_ (lens, focal length segmented from `focalLengthOptions`, filters multi-select, lens hood switch only when `lens.hasHood`), _Focus & drive_ (focus mode, AF result, drive), _Flash_ (flash select, head, power, flash OK), _Context_ (support, light, subject, location name + "Use current position" button showing `lat, lon` when set, date/time, notes multiline), _Issues_ (`IssueList` from `validateFrame` recomputed on every change). Keep the screen a thin composition: state = local `Frame` copy; `issues = useMemo(() => validateFrame(frame, ctx))`. Commit `feat(app): frame edit screen`.
-- [ ] **Step 5: translations + route file.** `frames.de.json`: `title: "Bild {{no}} / {{total}}"`, `sections.exposure: "Belichtung"`, `fields.shutter: "Zeit"`, `fields.aperture: "Blende"`, `light.sun: "Sonne"`, …, `saveNext: "Speichern & nächstes"`; en likewise. Run tests, commit `feat(app): frame route and translations`.
+- [x] **Step 4: implement FrameEditScreen.tsx** – sections: _Exposure_ (mode segmented, shutter, aperture, compensation −4…+4 step 0.5, program shift, AE lock), _Optics_ (lens, focal length segmented from `focalLengthOptions`, filters multi-select, lens hood switch only when `lens.hasHood`), _Focus & drive_ (focus mode, AF result, drive), _Flash_ (flash select, head, power, flash OK), _Context_ (support, light, subject, location name + "Use current position" button showing `lat, lon` when set, date/time, notes multiline), _Issues_ (`IssueList` from `validateFrame` recomputed on every change). Keep the screen a thin composition: state = local `Frame` copy; `issues = useMemo(() => validateFrame(frame, ctx))`. Commit `feat(app): frame edit screen`.
+- [x] **Step 5: translations + route file.** `frames.de.json`: `title: "Bild {{no}} / {{total}}"`, `sections.exposure: "Belichtung"`, `fields.shutter: "Zeit"`, `fields.aperture: "Blende"`, `light.sun: "Sonne"`, …, `saveNext: "Speichern & nächstes"`; en likewise. Run tests, commit `feat(app): frame route and translations`.
 
 **Done when:** tests 1–10 green, `tsc` clean, core scenario step 4 (spec §2.1) works in the web build.

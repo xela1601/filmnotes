@@ -1,5 +1,7 @@
 # T-010 – Exporters package (`@filmnotes/exporters`)
 
+**Status:** delivered. Verified on 2026-09-23: every file the ticket names exists and the full gate is green (`npm test`, `npm run lint`, `npm run format:check`, `npm run typecheck`).
+
 **Wave:** 2
 **Depends on:** T-002 (`buildCaption`, types)
 **Owns:** `packages/exporters/**`
@@ -40,16 +42,16 @@ packages/exporters/src/types.ts, registry.ts, registry.test.ts, share.ts, share.
 
 ## Steps
 
-- [ ] **Step 1: package skeleton** like T-003. Commit `chore(exporters): package skeleton`.
-- [ ] **Step 2: registry.test.ts** – register/get/list, duplicate id overwrites. Implement, commit `feat(exporters): exporter registry`.
-- [ ] **Step 3: share.test.ts** – returns caption as text and passes the image through; `requiresImage false`. Implement, commit `feat(exporters): share package exporter`.
-- [ ] **Step 4: wordpress.test.ts (failing)** with a fake `fetch` recording requests:
+- [x] **Step 1: package skeleton** like T-003. Commit `chore(exporters): package skeleton`.
+- [x] **Step 2: registry.test.ts** – register/get/list, duplicate id overwrites. Implement, commit `feat(exporters): exporter registry`.
+- [x] **Step 3: share.test.ts** – returns caption as text and passes the image through; `requiresImage false`. Implement, commit `feat(exporters): share package exporter`.
+- [x] **Step 4: wordpress.test.ts (failing)** with a fake `fetch` recording requests:
   1. with image: first `POST {siteUrl}/wp-json/wp/v2/media` with header `Authorization: Basic base64(username:appPassword)`, `Content-Disposition: attachment; filename="<fileName>"`, `Content-Type: <mimeType>`, body = bytes → fake returns `{ id: 55, source_url: 'https://…/img.jpg' }`; then `POST …/wp-json/wp/v2/posts` JSON `{ title, content, status, featured_media: 55, categories, tags }` → returns `{ id: 101, link: 'https://…/?p=101' }`; result `{ externalId: '101', url: link }`.
   2. without image: no media call, no `featured_media`.
   3. non-2xx → throws `WordPressError` with status and body message.
   4. `siteUrl` trailing slash is normalised.
   5. `buildPostHtml` contains `<figure>` when media url given, a `<table>` with rows for film, camera, lens, focal, aperture, shutter, mode, filters, location, date (only present ones), and notes wrapped in `<p>` with line breaks → `<br>`; HTML-escapes `<`, `&`, `"`.
      Implement, commit `feat(exporters): WordPress draft post exporter`.
-- [ ] **Step 5: index.ts** registers both exporters on import and re-exports everything. Root `npm test` green. Commit `chore(exporters): public API`.
+- [x] **Step 5: index.ts** registers both exporters on import and re-exports everything. Root `npm test` green. Commit `chore(exporters): public API`.
 
 **Done when:** tests green, `tsc` clean, no React Native or Expo imports in this package.
