@@ -51,6 +51,7 @@ Wave 3 (parallel)
 ```
 Backlog (refined, not scheduled - pick one up when it is worth the time)
   T-015 Frame metadata into the scans     packages/domain, packages/exporters, tools/scan-import
+  T-016 Native tab bar (Liquid Glass)     apps/mobile/app/(tabs), apps/mobile/e2e
 ```
 
 Integrator merges each finished ticket branch into `main` in wave order, runs `npm test`, then starts the next wave. Waves 0-3 are merged; what is in the backlog needs a decision from the owner before it starts (each such ticket says which).
@@ -78,3 +79,4 @@ anyone starts (see the ticket).
 | [T-013](T-013-scan-import-cli.md)    | Scan-import CLI                                      | `tools/scan-import/**`                                                                                          | done    |
 | [T-014](T-014-docs.md)               | Workflow & deployment docs                           | `docs/workflow.md`, `docs/deployment.md`, `README.md`                                                           | done    |
 | [T-015](T-015-scan-metadata.md)      | Frame metadata into the scans (EXIF/XMP) — _backlog_ | `packages/domain/src/frameMetadata.*`, `packages/exporters/src/embedMetadata.*`, `tools/scan-import/src/tag.*`  | backlog |
+| [T-016](T-016-native-tab-bar.md)     | Native tab bar, Liquid Glass on iOS 26 — _backlog_   | `apps/mobile/app/(tabs)/_layout.tsx`, `apps/mobile/e2e/**`                                                      | backlog |
