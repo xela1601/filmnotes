@@ -23,6 +23,7 @@ import {
   Section,
   SelectField,
   TextField,
+  fontWeight,
   spacing,
   useTheme,
   type SelectOption,
@@ -290,5 +291,5 @@ function RollFormFields({ existing }: { existing: Roll | null }) {
 }
 
 const styles = StyleSheet.create({
-  error: { fontWeight: "600", marginTop: spacing.xs },
+  error: { fontWeight: fontWeight.semibold, marginTop: spacing.xs },
 });

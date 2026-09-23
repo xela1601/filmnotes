@@ -33,6 +33,7 @@ import {
   Screen,
   Section,
   SelectField,
+  fontWeight,
   radius,
   spacing,
   useTheme,
@@ -372,7 +373,7 @@ const styles = StyleSheet.create({
   },
   thumb: { width: 72, height: 72, borderRadius: radius.sm },
   body: { flex: 1, gap: spacing.xs },
-  name: { fontWeight: "600" },
+  name: { fontWeight: fontWeight.semibold },
   controls: { gap: spacing.xs },
   summary: { gap: spacing.xs },
 });

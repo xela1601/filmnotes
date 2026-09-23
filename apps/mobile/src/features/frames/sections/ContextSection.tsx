@@ -12,7 +12,7 @@ import { StyleSheet, Text } from "react-native";
 import { useLabelledOptions } from "./labels";
 import { LIGHT_OPTIONS, SUBJECT_OPTIONS, type TakenAt } from "../frameForm";
 import { FRAMES_NAMESPACE } from "../i18n";
-import { Button, Section, SelectField, TextField, useTheme } from "../../../ui";
+import { Button, Section, SelectField, TextField, fontWeight, useTheme } from "../../../ui";
 
 /** How the camera was held - the input of the camera-shake rule. */
 const SUPPORTS: Support[] = ["handheld", "braced", "tripod", "beanbag"];
@@ -132,5 +132,5 @@ export function ContextSection({
 }
 
 const styles = StyleSheet.create({
-  hint: { fontWeight: "500" },
+  hint: { fontWeight: fontWeight.medium },
 });

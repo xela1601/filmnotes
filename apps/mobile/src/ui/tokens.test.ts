@@ -32,6 +32,9 @@ const files = [join(APP, "src"), join(APP, "app")].flatMap(sourceFiles);
 /** `gap: 12`, `paddingHorizontal: 8`, `borderRadius: 6` - a scale value written out by hand. */
 const HARD_CODED = /\b(?:(?:padding|margin|gap)[A-Za-z]*|borderRadius):\s*\d+\b/g;
 
+/** `fontWeight: "600"`, `letterSpacing: 0.5` - the typographic half of the same problem. */
+const HARD_CODED_TYPE = /\bfontWeight:\s*["']\d+["']|\bletterSpacing:\s*[\d.]+/g;
+
 /** `#rrggbb`, `rgb(…)`, `rgba(…)` outside the palette. */
 const HARD_CODED_COLOR = /#[0-9a-fA-F]{6}\b|\brgba?\(/g;
 
@@ -50,6 +53,19 @@ describe("the design tokens", () => {
       .map(({ path, hits }) => `${path}: ${hits?.join(", ") ?? ""}`);
 
     // Use spacing.xs/sm/md/lg/xl and radius.sm/md/full from `../ui` instead.
+    expect(offenders).toEqual([]);
+  });
+
+  it("are not duplicated as font weights in screens", () => {
+    const offenders = files
+      .map((path) => ({
+        path: path.slice(APP.length + 1),
+        hits: readFileSync(path, "utf8").match(HARD_CODED_TYPE),
+      }))
+      .filter(({ hits }) => hits !== null)
+      .map(({ path, hits }) => `${path}: ${hits?.join(", ") ?? ""}`);
+
+    // Use fontWeight.medium/semibold/bold and letterSpacing.wide from `../ui`.
     expect(offenders).toEqual([]);
   });
 

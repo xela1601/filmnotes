@@ -1,7 +1,7 @@
 import { Pressable, StyleSheet, Text } from "react-native";
 
 import { useTheme } from "./theme";
-import { radius, spacing } from "./themes";
+import { fontWeight, radius, spacing } from "./themes";
 
 export type ButtonVariant = "primary" | "secondary" | "danger";
 
@@ -56,5 +56,5 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
-  label: { fontWeight: "600" },
+  label: { fontWeight: fontWeight.semibold },
 });

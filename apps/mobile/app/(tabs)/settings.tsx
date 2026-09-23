@@ -3,7 +3,7 @@ import { router } from "expo-router";
 import { useTranslation } from "react-i18next";
 import { Text } from "react-native";
 
-import { setAppLanguage, type LocaleSetting } from "../../src/i18n";
+import { SUPPORTED_LANGUAGES, setAppLanguage, type LocaleSetting } from "../../src/i18n";
 import { confirmDestructive } from "../../src/lib/confirm";
 import { useStore } from "../../src/store/store";
 import {
@@ -27,10 +27,14 @@ export default function SettingsScreen() {
   const updateSettings = useStore((state) => state.updateSettings);
   const resetAll = useStore((state) => state.resetAll);
 
+  // Derived from SUPPORTED_LANGUAGES, like the theme list below: a language added to the
+  // resource table has to appear here by existing, not by someone remembering this screen.
   const languageOptions: SelectOption<LocaleSetting>[] = [
     { value: "system", label: t("settings.languages.system") },
-    { value: "de", label: t("settings.languages.de") },
-    { value: "en", label: t("settings.languages.en") },
+    ...SUPPORTED_LANGUAGES.map((language) => ({
+      value: language,
+      label: t(`settings.languages.${language}`),
+    })),
   ];
 
   // Built from THEME_IDS rather than listed here, so a new theme appears by existing.

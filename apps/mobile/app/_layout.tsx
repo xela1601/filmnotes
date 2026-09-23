@@ -10,6 +10,7 @@ import { now } from "../src/lib/clock";
 import { useStore } from "../src/store/store";
 import { useSync } from "../src/sync/useSync";
 import { useTheme } from "../src/ui/theme";
+import { fontWeight } from "../src/ui";
 
 /**
  * True once the persisted state has been read back from storage.
@@ -54,7 +55,7 @@ export default function RootLayout() {
           screenOptions={{
             headerStyle: { backgroundColor: palette.background },
             headerTintColor: palette.text,
-            headerTitleStyle: { fontWeight: "700" },
+            headerTitleStyle: { fontWeight: fontWeight.bold },
             contentStyle: { backgroundColor: palette.background },
           }}
         >

@@ -13,7 +13,7 @@ import { useShallow } from "zustand/react/shallow";
 import { useActive } from "../../store/hooks";
 import { useStore } from "../../store/store";
 import { selectFramesForRoll } from "../../store/selectors";
-import { EmptyState, ListItem, Screen, radius, spacing, useTheme } from "../../ui";
+import { EmptyState, ListItem, Screen, fontWeight, radius, spacing, useTheme } from "../../ui";
 import { rollProgress, rollTitle } from "./rollLabel";
 
 export function RollsListScreen() {
@@ -59,7 +59,11 @@ function NewRollAction({ label }: { label: string }) {
       onPress={() => router.push("/rolls/new")}
       style={[styles.action, { borderColor: palette.border, backgroundColor: palette.primary }]}
     >
-      <Text style={{ color: palette.onPrimary, fontSize: fontSize.lg, fontWeight: "700" }}>+</Text>
+      <Text
+        style={{ color: palette.onPrimary, fontSize: fontSize.lg, fontWeight: fontWeight.bold }}
+      >
+        +
+      </Text>
     </Pressable>
   );
 }
@@ -111,7 +115,7 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     gap: spacing.md,
   },
-  title: { fontWeight: "700" },
+  title: { fontWeight: fontWeight.bold },
   action: {
     minWidth: 48,
     minHeight: 48,
@@ -126,6 +130,6 @@ const styles = StyleSheet.create({
     borderWidth: StyleSheet.hairlineWidth,
     paddingHorizontal: spacing.sm,
     paddingVertical: spacing.xs,
-    fontWeight: "600",
+    fontWeight: fontWeight.semibold,
   },
 });

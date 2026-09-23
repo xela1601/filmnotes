@@ -3,7 +3,7 @@ import { Modal, Pressable, ScrollView, StyleSheet, Text, View } from "react-nati
 
 import { FieldLabel } from "./FieldLabel";
 import { useTheme } from "./theme";
-import { radius, spacing } from "./themes";
+import { fontWeight, radius, spacing } from "./themes";
 
 export interface SelectOption<T> {
   value: T;
@@ -208,7 +208,7 @@ const styles = StyleSheet.create({
   },
   modal: { flex: 1, padding: spacing.lg, gap: spacing.sm },
   modalOptions: { gap: spacing.sm, paddingBottom: spacing.xl },
-  modalTitle: { fontWeight: "700", marginBottom: spacing.sm },
+  modalTitle: { fontWeight: fontWeight.bold, marginBottom: spacing.sm },
   modalOption: {
     minHeight: 48,
     justifyContent: "center",

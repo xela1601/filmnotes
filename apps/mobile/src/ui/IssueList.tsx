@@ -3,7 +3,7 @@ import { useTranslation } from "react-i18next";
 import { StyleSheet, Text, View } from "react-native";
 
 import { useTheme } from "./theme";
-import { spacing } from "./themes";
+import { fontWeight, spacing } from "./themes";
 
 export interface IssueListProps {
   issues: ValidationIssue[];
@@ -40,5 +40,5 @@ export function IssueList({ issues, testID }: IssueListProps) {
 
 const styles = StyleSheet.create({
   list: { gap: spacing.xs },
-  issue: { fontWeight: "500" },
+  issue: { fontWeight: fontWeight.medium },
 });

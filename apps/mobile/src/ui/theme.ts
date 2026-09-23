@@ -13,7 +13,9 @@ import { useStore } from "../store/store";
 import {
   DEFAULT_THEME_ID,
   fontSize,
+  fontWeight,
   isThemeId,
+  letterSpacing,
   paletteFor,
   radius,
   resolveScheme,
@@ -27,7 +29,9 @@ import {
 export {
   DEFAULT_THEME_ID,
   fontSize,
+  fontWeight,
   isThemeId,
+  letterSpacing,
   paletteFor,
   radius,
   resolveScheme,
@@ -48,6 +52,8 @@ export interface Theme {
   palette: Palette;
   spacing: typeof spacing;
   fontSize: typeof fontSize;
+  fontWeight: typeof fontWeight;
+  letterSpacing: typeof letterSpacing;
   radius: typeof radius;
 }
 
@@ -68,6 +74,8 @@ export function useTheme(): Theme {
     palette: paletteFor(id, deviceScheme),
     spacing,
     fontSize,
+    fontWeight,
+    letterSpacing,
     radius,
   };
 }

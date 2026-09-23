@@ -32,6 +32,7 @@ import {
   Screen,
   Section,
   SelectField,
+  fontWeight,
   spacing,
   useTheme,
   type SelectOption,
@@ -210,5 +211,5 @@ function FrameRow({ frame }: { frame: Frame }) {
 
 const styles = StyleSheet.create({
   head: { gap: spacing.xs },
-  title: { fontWeight: "700" },
+  title: { fontWeight: fontWeight.bold },
 });

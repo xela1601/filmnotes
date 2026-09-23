@@ -2,7 +2,7 @@ import type { ReactNode } from "react";
 import { StyleSheet, Text, View } from "react-native";
 
 import { useTheme } from "./theme";
-import { radius, spacing } from "./themes";
+import { fontWeight, letterSpacing, radius, spacing } from "./themes";
 
 export interface SectionProps {
   title: string;
@@ -30,7 +30,7 @@ export function Section({ title, children, testID }: SectionProps) {
 
 const styles = StyleSheet.create({
   section: { gap: spacing.sm },
-  title: { fontWeight: "600", letterSpacing: 0.5 },
+  title: { fontWeight: fontWeight.semibold, letterSpacing: letterSpacing.wide },
   body: {
     borderRadius: radius.md,
     borderWidth: StyleSheet.hairlineWidth,

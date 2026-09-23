@@ -7,7 +7,7 @@
 # backend *and* a new app in the same step - so shipping them together means a version that cannot
 # be half-updated, and app and API on one origin, which is also the end of the CORS question.
 #
-# Built and pushed by .github/workflows/publish.yml on a semver tag; `docker build .` from a
+# Built and pushed by .github/workflows/publish.yaml on a semver tag; `docker build .` from a
 # checkout does the same thing.
 
 ARG PB_VERSION=0.40.4

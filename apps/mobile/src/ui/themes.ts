@@ -19,6 +19,15 @@ export const spacing = { xs: 4, sm: 8, md: 12, lg: 16, xl: 24 } as const;
 /** 14/16/20/28. */
 export const fontSize = { sm: 14, md: 16, lg: 20, xl: 28 } as const;
 
+/**
+ * The three weights the app uses. React Native wants them as strings, and naming them keeps the
+ * meaning ("this is a heading") rather than the number, which is what a designer changes.
+ */
+export const fontWeight = { medium: "500", semibold: "600", bold: "700" } as const;
+
+/** Letter spacing. `wide` is the small, upper-cased section heading. */
+export const letterSpacing = { normal: 0, wide: 0.5 } as const;
+
 /** 6/10, plus `full` for anything that should read as a pill. */
 export const radius = { sm: 6, md: 10, full: 999 } as const;
 

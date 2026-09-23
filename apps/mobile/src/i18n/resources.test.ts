@@ -21,6 +21,18 @@ function keyPaths(bundle: Bundle, prefix = ""): string[] {
 }
 
 describe("the translation table", () => {
+  it("names every language it ships, in every language", () => {
+    // The settings picker builds its list from SUPPORTED_LANGUAGES and labels each entry with
+    // `settings.languages.<code>`. A language without that key would show up as its own key.
+    for (const language of SUPPORTED_LANGUAGES) {
+      for (const inLanguage of SUPPORTED_LANGUAGES) {
+        const names = (RESOURCES[inLanguage].common as { settings: { languages: object } }).settings
+          .languages;
+        expect({ inLanguage, named: language in names }).toEqual({ inLanguage, named: true });
+      }
+    }
+  });
+
   it("ships more than one language", () => {
     expect(SUPPORTED_LANGUAGES.length).toBeGreaterThan(1);
     expect(SUPPORTED_LANGUAGES).toContain(DEFAULT_LANGUAGE);

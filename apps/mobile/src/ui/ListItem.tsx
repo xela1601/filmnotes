@@ -2,7 +2,7 @@ import type { ReactNode } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import { useTheme } from "./theme";
-import { spacing } from "./themes";
+import { fontWeight, spacing } from "./themes";
 
 export interface ListItemProps {
   title: string;
@@ -44,5 +44,5 @@ const styles = StyleSheet.create({
     borderBottomWidth: StyleSheet.hairlineWidth,
   },
   texts: { flexShrink: 1, gap: spacing.xs },
-  title: { fontWeight: "600" },
+  title: { fontWeight: fontWeight.semibold },
 });

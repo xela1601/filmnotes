@@ -13,7 +13,7 @@ import { EQUIPMENT_NAMESPACE } from "./i18n";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import { useActive } from "../../store/hooks";
-import { EmptyState, ListItem, Screen, radius, spacing, useTheme } from "../../ui";
+import { EmptyState, ListItem, Screen, fontWeight, radius, spacing, useTheme } from "../../ui";
 import {
   EQUIPMENT_TYPES,
   displayName,
@@ -127,7 +127,11 @@ function AddAction({ label, type }: { label: string; type: EquipmentType }) {
       onPress={() => router.push(`/equipment/${type}/new`)}
       style={[styles.action, { borderColor: palette.border, backgroundColor: palette.primary }]}
     >
-      <Text style={{ color: palette.onPrimary, fontSize: fontSize.lg, fontWeight: "700" }}>+</Text>
+      <Text
+        style={{ color: palette.onPrimary, fontSize: fontSize.lg, fontWeight: fontWeight.bold }}
+      >
+        +
+      </Text>
     </Pressable>
   );
 }
@@ -184,7 +188,7 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     gap: spacing.md,
   },
-  title: { fontWeight: "700" },
+  title: { fontWeight: fontWeight.bold },
   action: {
     minWidth: 48,
     minHeight: 48,
