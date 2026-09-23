@@ -47,14 +47,15 @@ setup:
         	autocrlf = input
         [safe]
         	directory = *
-    # GitHub with the deploy key that sbxenv.yaml mounts read-only at its host path.
+    # GitHub through the repository's own deploy key, which sbxenv.yaml mounts read-only at its
+    # host path. Scoped to xela1601/filmnotes alone - see docs/tickets/T-019.
     - path: /home/agent/.ssh/config
       onlyIfMissing: false
       content: |
         Host github-xela1601 github.com
             HostName github.com
             User git
-            IdentityFile /Users/alexander.schreiner/.ssh/id_github
+            IdentityFile /Users/alexander.schreiner/.ssh/id_filmnotes_deploy
             IdentitiesOnly yes
             StrictHostKeyChecking accept-new
 
