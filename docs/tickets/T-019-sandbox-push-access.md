@@ -5,6 +5,10 @@
 **Owns:** `sbxenv.yaml`, `sandbox/kit/spec.yaml`, `.git/config` (the remote), plus steps on the
 host and in the GitHub web interface that no agent can perform
 
+> **Next session starts here.** The sandbox is recreated at step 8, which ends the session that
+> wrote this. Everything needed to continue is in this ticket: steps 9 to 11 are the verification,
+> and step 6e is the local cleanup that is still outstanding.
+
 **Goal:** The agent can push from inside the sandbox, and the credential it uses opens exactly one
 repository. `main` cannot be changed without a pull request, and no release can be triggered by
 accident.
@@ -89,8 +93,10 @@ rewrite history".
       ✓ Restrict creations, bypass: Repository admin. The Publish workflow is triggered by a
       `v*` tag, so this is what keeps the agent from ever starting a release build.
 
-- [ ] **Step 8: recreate the sandbox** so the new mount takes effect (`sbx env run`, or however
-      this sandbox is started). The old key disappears from it at that moment.
+- [x] **Step 8: recreate the sandbox** so the new mount takes effect. `sbx env run` alone is not
+      enough — `sandbox/README.md` says it "creates (or **re-attaches to**) the sandbox", and a
+      re-attach keeps the old mount. The sandbox has to be removed first, then `sbx env run`. The
+      old account key disappears from it at that moment.
 
 ### The rulesets are not enforced — and what that changed
 
