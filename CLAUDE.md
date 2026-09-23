@@ -1,6 +1,21 @@
 # filmnotes – agent conventions
 
 - Read `docs/superpowers/specs/2026-09-18-analogue-photography-app-design.md` and your ticket in `docs/tickets/` before touching code.
+
+## The tickets are the requirements
+
+- `docs/tickets/` is the primary source of what is to be built. Open tickets live there; a
+  delivered one moves to `docs/tickets/done/` with every step ticked and a `**Status:**` line
+  saying when it was verified and how. `docs/tickets/README.md` is the index and carries a status
+  column.
+- **A new requirement becomes a ticket before it becomes code** - including one that arrives in
+  conversation. Write it up, and ask the owner what is genuinely ambiguous _before_ starting:
+  what the thing is for, what is explicitly out of scope, which decisions only they can make. A
+  ticket that starts with an unasked question produces the wrong software politely.
+- **Tick the checkbox when the step is done**, in the same commit as the work, not afterwards from
+  memory. An unticked box means open; that is only true if it is kept true.
+- A ticket records the decisions behind it, not just the steps: where the requirement came from,
+  what was chosen instead of what, and what is deliberately left out.
 - TDD: failing test → run → implement → run → commit. Root `npm test` must pass before you report done.
 - Before reporting done also run `npm run lint` and `npm run format` (ESLint 10 + Prettier; double quotes, semicolons, two spaces, 100 columns).
 - English everywhere in code/docs/commits; UI text only via i18n keys (`de` default, `en`).

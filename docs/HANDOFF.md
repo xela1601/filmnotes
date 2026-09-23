@@ -50,7 +50,7 @@ name the session reports).
 
 ## 3. Wave 0 – T-001 yourself (sequential)
 
-Execute `docs/tickets/T-001-monorepo-scaffold.md` step by step in the main session. It creates the
+Execute `docs/tickets/done/T-001-monorepo-scaffold.md` step by step in the main session. It creates the
 type contracts everything else depends on. Verify `npm test` and commit as specified.
 
 ## 4. Waves 1–3 – parallel subagents in worktrees

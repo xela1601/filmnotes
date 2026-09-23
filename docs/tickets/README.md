@@ -52,9 +52,15 @@ Wave 3 (parallel)
 Backlog (refined, not scheduled - pick one up when it is worth the time)
   T-015 Frame metadata into the scans     packages/domain, packages/exporters, tools/scan-import
   T-016 Native tab bar (Liquid Glass)     apps/mobile/app/(tabs), apps/mobile/e2e
+  T-018 Domain package outside the repo?   packages/domain          (one owner decision)
 ```
 
 Integrator merges each finished ticket branch into `main` in wave order, runs `npm test`, then starts the next wave. Waves 0-3 are merged; what is in the backlog needs a decision from the owner before it starts (each such ticket says which).
+
+**How this board is kept:** a delivered ticket moves to [`done/`](done/), with every step ticked
+and a `**Status:**` line saying when it was verified. What is left in this directory is what is
+open. Every new requirement becomes a ticket here _before_ it becomes code — including the ones
+that arrive in conversation, which is how T-016, T-017 and T-018 came about.
 
 **Where things stand (audited 2026-09-23):** T-001 to T-014 are delivered - every file those
 tickets name exists, and the full gate is green. Their step checkboxes had simply never been
@@ -62,21 +68,23 @@ ticked, which is bookkeeping and not open work; they are ticked now. **T-015 is 
 ticket**, and it sits in the backlog on purpose: it needs three decisions from the owner before
 anyone starts (see the ticket).
 
-| Ticket                               | Title                                                | Owns                                                                                                            | Status  |
-| ------------------------------------ | ---------------------------------------------------- | --------------------------------------------------------------------------------------------------------------- | ------- |
-| [T-001](T-001-monorepo-scaffold.md)  | Monorepo scaffold + type contracts                   | root files, `packages/domain/src/types.ts`, `packages/domain/src/id.ts`                                         | done    |
-| [T-002](T-002-domain-rules.md)       | Domain rules & helpers                               | `packages/domain/**` (except `types.ts`, `id.ts`)                                                               | done    |
-| [T-003](T-003-presets-package.md)    | Presets package                                      | `packages/presets/**`                                                                                           | done    |
-| [T-004](T-004-pocketbase-backend.md) | PocketBase backend                                   | `backend/**`                                                                                                    | done    |
-| [T-005](T-005-app-skeleton.md)       | Expo app skeleton, store, i18n                       | `apps/mobile/**` except `src/features/**`                                                                       | done    |
-| [T-006](T-006-roll-ui.md)            | Roll management UI                                   | `apps/mobile/src/features/rolls/**`, `apps/mobile/app/(tabs)/index.tsx`, `apps/mobile/app/rolls/**`             | done    |
-| [T-007](T-007-frame-ui.md)           | Frame capture & edit UI                              | `apps/mobile/src/features/frames/**`, `apps/mobile/app/frames/**`                                               | done    |
-| [T-008](T-008-sync-engine.md)        | Sync engine                                          | `apps/mobile/src/sync/**`, `apps/mobile/app/settings/server.tsx`                                                | done    |
-| [T-009](T-009-scan-import-ui.md)     | Scan import & review UI                              | `apps/mobile/src/features/scans/**`, `apps/mobile/app/scans/**`                                                 | done    |
-| [T-010](T-010-exporters-package.md)  | Exporters package                                    | `packages/exporters/**`                                                                                         | done    |
-| [T-011](T-011-export-ui.md)          | Export UI                                            | `apps/mobile/src/features/export/**`, `apps/mobile/app/export/**`, `apps/mobile/app/settings/wordpress.tsx`     | done    |
-| [T-012](T-012-equipment-ui.md)       | Equipment management UI                              | `apps/mobile/src/features/equipment/**`, `apps/mobile/app/(tabs)/equipment.tsx`, `apps/mobile/app/equipment/**` | done    |
-| [T-013](T-013-scan-import-cli.md)    | Scan-import CLI                                      | `tools/scan-import/**`                                                                                          | done    |
-| [T-014](T-014-docs.md)               | Workflow & deployment docs                           | `docs/workflow.md`, `docs/deployment.md`, `README.md`                                                           | done    |
-| [T-015](T-015-scan-metadata.md)      | Frame metadata into the scans (EXIF/XMP) — _backlog_ | `packages/domain/src/frameMetadata.*`, `packages/exporters/src/embedMetadata.*`, `tools/scan-import/src/tag.*`  | backlog |
-| [T-016](T-016-native-tab-bar.md)     | Native tab bar, Liquid Glass on iOS 26 — _backlog_   | `apps/mobile/app/(tabs)/_layout.tsx`, `apps/mobile/e2e/**`                                                      | backlog |
+| Ticket                                      | Title                                                   | Owns                                                                                                            | Status  |
+| ------------------------------------------- | ------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------- | ------- |
+| [T-001](done/T-001-monorepo-scaffold.md)    | Monorepo scaffold + type contracts                      | root files, `packages/domain/src/types.ts`, `packages/domain/src/id.ts`                                         | done    |
+| [T-002](done/T-002-domain-rules.md)         | Domain rules & helpers                                  | `packages/domain/**` (except `types.ts`, `id.ts`)                                                               | done    |
+| [T-003](done/T-003-presets-package.md)      | Presets package                                         | `packages/presets/**`                                                                                           | done    |
+| [T-004](done/T-004-pocketbase-backend.md)   | PocketBase backend                                      | `backend/**`                                                                                                    | done    |
+| [T-005](done/T-005-app-skeleton.md)         | Expo app skeleton, store, i18n                          | `apps/mobile/**` except `src/features/**`                                                                       | done    |
+| [T-006](done/T-006-roll-ui.md)              | Roll management UI                                      | `apps/mobile/src/features/rolls/**`, `apps/mobile/app/(tabs)/index.tsx`, `apps/mobile/app/rolls/**`             | done    |
+| [T-007](done/T-007-frame-ui.md)             | Frame capture & edit UI                                 | `apps/mobile/src/features/frames/**`, `apps/mobile/app/frames/**`                                               | done    |
+| [T-008](done/T-008-sync-engine.md)          | Sync engine                                             | `apps/mobile/src/sync/**`, `apps/mobile/app/settings/server.tsx`                                                | done    |
+| [T-009](done/T-009-scan-import-ui.md)       | Scan import & review UI                                 | `apps/mobile/src/features/scans/**`, `apps/mobile/app/scans/**`                                                 | done    |
+| [T-010](done/T-010-exporters-package.md)    | Exporters package                                       | `packages/exporters/**`                                                                                         | done    |
+| [T-011](done/T-011-export-ui.md)            | Export UI                                               | `apps/mobile/src/features/export/**`, `apps/mobile/app/export/**`, `apps/mobile/app/settings/wordpress.tsx`     | done    |
+| [T-012](done/T-012-equipment-ui.md)         | Equipment management UI                                 | `apps/mobile/src/features/equipment/**`, `apps/mobile/app/(tabs)/equipment.tsx`, `apps/mobile/app/equipment/**` | done    |
+| [T-013](done/T-013-scan-import-cli.md)      | Scan-import CLI                                         | `tools/scan-import/**`                                                                                          | done    |
+| [T-014](done/T-014-docs.md)                 | Workflow & deployment docs                              | `docs/workflow.md`, `docs/deployment.md`, `README.md`                                                           | done    |
+| [T-015](T-015-scan-metadata.md)             | Frame metadata into the scans (EXIF/XMP) — _backlog_    | `packages/domain/src/frameMetadata.*`, `packages/exporters/src/embedMetadata.*`, `tools/scan-import/src/tag.*`  | backlog |
+| [T-016](T-016-native-tab-bar.md)            | Native tab bar, Liquid Glass on iOS 26 — _backlog_      | `apps/mobile/app/(tabs)/_layout.tsx`, `apps/mobile/e2e/**`                                                      | backlog |
+| [T-017](done/T-017-themes.md)               | Themes and design tokens                                | `apps/mobile/src/ui/themes.ts`, every `StyleSheet` under `apps/mobile`                                          | done    |
+| [T-018](T-018-domain-package-consumable.md) | Domain package consumable outside the repo? — _backlog_ | `packages/domain/package.json`, `packages/domain/tsconfig.json`                                                 | backlog |
