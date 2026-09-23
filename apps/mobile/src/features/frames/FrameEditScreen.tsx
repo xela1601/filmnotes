@@ -17,7 +17,7 @@ import { now } from "../../lib/clock";
 import { useActive, useEntity } from "../../store/hooks";
 import { selectFramesForRoll } from "../../store/selectors";
 import { useStore } from "../../store/store";
-import { Button, EmptyState, IssueList, Screen, Section } from "../../ui";
+import { Button, EmptyState, IssueList, Screen, Section, spacing } from "../../ui";
 import { FRAMES_NAMESPACE } from "./i18n";
 import { applyLensChange, parseTakenAt, takenAtFields } from "./frameForm";
 import { ContextSection } from "./sections/ContextSection";
@@ -272,6 +272,6 @@ function FrameEditor({ initial, roll, camera }: FrameEditorProps) {
 }
 
 const styles = StyleSheet.create({
-  actions: { gap: 8 },
-  details: { gap: 16 },
+  actions: { gap: spacing.sm },
+  details: { gap: spacing.lg },
 });

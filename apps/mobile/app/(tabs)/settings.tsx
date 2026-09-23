@@ -12,14 +12,18 @@ import {
   Screen,
   Section,
   SelectField,
+  THEMES,
+  THEME_IDS,
   useTheme,
   type SelectOption,
+  type ThemeId,
 } from "../../src/ui";
 
 export default function SettingsScreen() {
   const { t } = useTranslation();
   const { palette, fontSize } = useTheme();
   const locale = useStore((state) => state.settings.locale);
+  const themeId = useStore((state) => state.settings.themeId);
   const updateSettings = useStore((state) => state.updateSettings);
   const resetAll = useStore((state) => state.resetAll);
 
@@ -28,6 +32,12 @@ export default function SettingsScreen() {
     { value: "de", label: t("settings.languages.de") },
     { value: "en", label: t("settings.languages.en") },
   ];
+
+  // Built from THEME_IDS rather than listed here, so a new theme appears by existing.
+  const themeOptions: SelectOption<ThemeId>[] = THEME_IDS.map((id) => ({
+    value: id,
+    label: t(THEMES[id].nameKey),
+  }));
 
   const changeLanguage = (next: LocaleSetting | null) => {
     const value = next ?? "system";
@@ -55,6 +65,19 @@ export default function SettingsScreen() {
           onChange={changeLanguage}
           testID="settings-language"
         />
+      </Section>
+
+      <Section title={t("settings.theme")}>
+        <SelectField
+          label={t("settings.theme")}
+          value={themeId}
+          options={themeOptions}
+          onChange={(next) => updateSettings({ themeId: next ?? "classic" })}
+          testID="settings-theme"
+        />
+        <Text style={{ color: palette.textMuted, fontSize: fontSize.sm }}>
+          {t("settings.themeHint")}
+        </Text>
       </Section>
 
       <Section title={t("app.title")}>

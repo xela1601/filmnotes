@@ -18,11 +18,12 @@ import { now } from "../../lib/clock";
 import {
   Button,
   EmptyState,
+  NumberField,
   Screen,
   Section,
   SelectField,
-  NumberField,
   TextField,
+  spacing,
   useTheme,
   type SelectOption,
 } from "../../ui";
@@ -289,5 +290,5 @@ function RollFormFields({ existing }: { existing: Roll | null }) {
 }
 
 const styles = StyleSheet.create({
-  error: { fontWeight: "600", marginTop: 4 },
+  error: { fontWeight: "600", marginTop: spacing.xs },
 });

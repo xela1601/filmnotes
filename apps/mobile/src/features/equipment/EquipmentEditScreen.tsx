@@ -27,6 +27,7 @@ import {
   SelectField,
   SwitchField,
   TextField,
+  spacing,
   useTheme,
   type SelectOption,
 } from "../../ui";
@@ -317,5 +318,5 @@ function EquipmentFields({
 }
 
 const styles = StyleSheet.create({
-  error: { fontWeight: "600", marginTop: 4 },
+  error: { fontWeight: "600", marginTop: spacing.xs },
 });

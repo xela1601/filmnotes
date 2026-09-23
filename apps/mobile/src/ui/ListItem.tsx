@@ -2,6 +2,7 @@ import type { ReactNode } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import { useTheme } from "./theme";
+import { spacing } from "./themes";
 
 export interface ListItemProps {
   title: string;
@@ -39,9 +40,9 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    gap: 12,
+    gap: spacing.md,
     borderBottomWidth: StyleSheet.hairlineWidth,
   },
-  texts: { flexShrink: 1, gap: 2 },
+  texts: { flexShrink: 1, gap: spacing.xs },
   title: { fontWeight: "600" },
 });

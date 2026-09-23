@@ -1,6 +1,7 @@
 import { Pressable, StyleSheet, Text } from "react-native";
 
 import { useTheme } from "./theme";
+import { radius, spacing } from "./themes";
 
 export type ButtonVariant = "primary" | "secondary" | "danger";
 
@@ -49,8 +50,8 @@ export function Button({
 const styles = StyleSheet.create({
   button: {
     minHeight: 48,
-    paddingHorizontal: 16,
-    borderRadius: 6,
+    paddingHorizontal: spacing.lg,
+    borderRadius: radius.sm,
     borderWidth: StyleSheet.hairlineWidth,
     alignItems: "center",
     justifyContent: "center",

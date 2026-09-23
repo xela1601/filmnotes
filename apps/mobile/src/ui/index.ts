@@ -11,13 +11,21 @@ export { SelectField, type SelectFieldProps, type SelectOption } from "./SelectF
 export { SwitchField, type SwitchFieldProps } from "./SwitchField";
 export { TextField, type TextFieldProps } from "./TextField";
 export {
+  DEFAULT_THEME_ID,
   darkPalette,
   fontSize,
+  isThemeId,
   lightPalette,
+  paletteFor,
   radius,
+  resolveScheme,
   spacing,
+  THEME_IDS,
+  THEMES,
   useTheme,
   type ColorScheme,
   type Palette,
   type Theme,
+  type ThemeDefinition,
+  type ThemeId,
 } from "./theme";

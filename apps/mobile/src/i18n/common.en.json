@@ -26,7 +26,19 @@
     "wordpress": "WordPress",
     "reset": "Reset local data",
     "resetConfirm": "All locally stored data will be deleted. Continue?",
-    "version": "Version"
+    "version": "Version",
+    "theme": "Appearance",
+    "themeHint": "Darkroom and OLED are always dark, whatever the system is set to.",
+    "themes": {
+      "classic": "Classic",
+      "kodachrome": "Kodachrome – warm red on cream",
+      "silver": "Silver gelatin – black and white",
+      "agfa": "Agfa – cool green",
+      "polaroid": "Polaroid – pale pastels",
+      "darkroom": "Darkroom – safelight red",
+      "contrast": "Maximum contrast",
+      "oled": "OLED – true black"
+    }
   },
   "validation": {
     "bulb_only_in_m": "Bulb is only available in mode M.",

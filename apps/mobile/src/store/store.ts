@@ -20,6 +20,9 @@ import {
   loadFilmStockPresets,
   materialize,
 } from "../lib/presets";
+// From `themes`, not from `theme`: the hook in `theme` reads this store, and importing it back
+// here would close the circle.
+import { DEFAULT_THEME_ID, type ThemeId } from "../ui/themes";
 
 /** Storage key of the persisted slice; bump the suffix on a breaking state change. */
 export const PERSIST_KEY = "filmnotes-v1";
@@ -76,6 +79,13 @@ export interface Settings {
    * from the previous one and usually needs nothing but time and aperture.
    */
   frameDetailsExpanded: boolean;
+  /**
+   * The look of the app, from `src/ui/themes.ts`.
+   *
+   * Device-local like the other display settings: which theme you want on the phone in the sun
+   * is not the one you want on the laptop at night, and neither is worth syncing.
+   */
+  themeId: ThemeId;
 }
 
 export interface AppState {
@@ -117,6 +127,7 @@ export const DEFAULT_SETTINGS: Settings = {
   captionTemplate: null,
   hashtags: [],
   frameDetailsExpanded: false,
+  themeId: DEFAULT_THEME_ID,
 };
 
 export function emptyEntities(): Entities {

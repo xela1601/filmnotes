@@ -12,6 +12,7 @@ import SettingsScreen from "../app/(tabs)/settings";
 import { i18n } from "../src/i18n";
 import { useStore } from "../src/store/store";
 import { makeRoll } from "../src/testing/fixtures";
+import { THEME_IDS } from "../src/ui";
 
 describe("settings screen", () => {
   beforeEach(async () => {
@@ -26,6 +27,24 @@ describe("settings screen", () => {
     expect(screen.getByTestId("settings-server")).toBeOnTheScreen();
     expect(screen.getByTestId("settings-wordpress")).toBeOnTheScreen();
     expect(screen.getByTestId("settings-version")).toBeOnTheScreen();
+  });
+
+  it("offers every theme and remembers the chosen one", () => {
+    render(<SettingsScreen />);
+
+    expect(screen.getByText(i18n.t("settings.theme"))).toBeOnTheScreen();
+
+    // Eight themes are past the segmented-control threshold, so they live behind the picker.
+    fireEvent.press(screen.getByTestId("settings-theme-open"));
+
+    // Built from THEME_IDS, so a theme added to the table shows up here without a screen change.
+    for (const id of THEME_IDS) {
+      expect(screen.getByTestId(`settings-theme-option-${id}`)).toBeOnTheScreen();
+    }
+
+    fireEvent.press(screen.getByTestId("settings-theme-option-kodachrome"));
+
+    expect(useStore.getState().settings.themeId).toBe("kodachrome");
   });
 
   it("persists the chosen language and switches i18next", async () => {

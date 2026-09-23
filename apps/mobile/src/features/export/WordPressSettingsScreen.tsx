@@ -14,7 +14,7 @@ import { StyleSheet, Text, View } from "react-native";
 import { EXPORT_NAMESPACE } from "./i18n";
 import { getSecret, setSecret } from "../../lib/secureStore";
 import { useStore } from "../../store/store";
-import { Button, Screen, Section, TextField, useTheme } from "../../ui";
+import { Button, Screen, Section, TextField, spacing, useTheme } from "../../ui";
 
 /** The fields of `/wp-json/wp/v2/users/me` this screen looks at. */
 interface WordPressUser {
@@ -210,5 +210,5 @@ export function WordPressSettingsScreen() {
 }
 
 const styles = StyleSheet.create({
-  row: { flexDirection: "row", gap: 12, flexWrap: "wrap" },
+  row: { flexDirection: "row", gap: spacing.md, flexWrap: "wrap" },
 });

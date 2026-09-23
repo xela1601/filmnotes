@@ -13,7 +13,7 @@ import { EQUIPMENT_NAMESPACE } from "./i18n";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import { useActive } from "../../store/hooks";
-import { EmptyState, ListItem, Screen, useTheme } from "../../ui";
+import { EmptyState, ListItem, Screen, radius, spacing, useTheme } from "../../ui";
 import {
   EQUIPMENT_TYPES,
   displayName,
@@ -178,22 +178,27 @@ function TypeSwitch({
 }
 
 const styles = StyleSheet.create({
-  header: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: 12 },
+  header: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    gap: spacing.md,
+  },
   title: { fontWeight: "700" },
   action: {
     minWidth: 48,
     minHeight: 48,
-    borderRadius: 6,
+    borderRadius: radius.sm,
     borderWidth: StyleSheet.hairlineWidth,
     alignItems: "center",
     justifyContent: "center",
   },
-  switchRow: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
+  switchRow: { flexDirection: "row", flexWrap: "wrap", gap: spacing.sm },
   segment: {
     minHeight: 44,
-    paddingHorizontal: 12,
+    paddingHorizontal: spacing.md,
     borderWidth: StyleSheet.hairlineWidth,
-    borderRadius: 6,
+    borderRadius: radius.sm,
     alignItems: "center",
     justifyContent: "center",
   },

@@ -3,6 +3,7 @@ import { Modal, Pressable, ScrollView, StyleSheet, Text, View } from "react-nati
 
 import { FieldLabel } from "./FieldLabel";
 import { useTheme } from "./theme";
+import { radius, spacing } from "./themes";
 
 export interface SelectOption<T> {
   value: T;
@@ -187,27 +188,27 @@ function ModalOption({ label, active, onPress, testID }: OptionProps) {
 }
 
 const styles = StyleSheet.create({
-  field: { gap: 4 },
-  segments: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
+  field: { gap: spacing.xs },
+  segments: { flexDirection: "row", flexWrap: "wrap", gap: spacing.sm },
   segment: {
     minHeight: 44,
     minWidth: 48,
-    paddingHorizontal: 12,
+    paddingHorizontal: spacing.md,
     borderWidth: StyleSheet.hairlineWidth,
-    borderRadius: 6,
+    borderRadius: radius.sm,
     alignItems: "center",
     justifyContent: "center",
   },
   trigger: {
     minHeight: 44,
     justifyContent: "center",
-    paddingHorizontal: 12,
+    paddingHorizontal: spacing.md,
     borderWidth: StyleSheet.hairlineWidth,
-    borderRadius: 6,
+    borderRadius: radius.sm,
   },
-  modal: { flex: 1, padding: 16, gap: 8 },
-  modalOptions: { gap: 8, paddingBottom: 24 },
-  modalTitle: { fontWeight: "700", marginBottom: 8 },
+  modal: { flex: 1, padding: spacing.lg, gap: spacing.sm },
+  modalOptions: { gap: spacing.sm, paddingBottom: spacing.xl },
+  modalTitle: { fontWeight: "700", marginBottom: spacing.sm },
   modalOption: {
     minHeight: 48,
     justifyContent: "center",

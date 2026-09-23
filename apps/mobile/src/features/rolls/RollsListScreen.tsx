@@ -13,7 +13,7 @@ import { useShallow } from "zustand/react/shallow";
 import { useActive } from "../../store/hooks";
 import { useStore } from "../../store/store";
 import { selectFramesForRoll } from "../../store/selectors";
-import { EmptyState, ListItem, Screen, useTheme } from "../../ui";
+import { EmptyState, ListItem, Screen, radius, spacing, useTheme } from "../../ui";
 import { rollProgress, rollTitle } from "./rollLabel";
 
 export function RollsListScreen() {
@@ -105,22 +105,27 @@ export function StatusChip({ status, testID }: { status: string; testID?: string
 }
 
 const styles = StyleSheet.create({
-  header: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: 12 },
+  header: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    gap: spacing.md,
+  },
   title: { fontWeight: "700" },
   action: {
     minWidth: 48,
     minHeight: 48,
-    borderRadius: 6,
+    borderRadius: radius.sm,
     borderWidth: StyleSheet.hairlineWidth,
     alignItems: "center",
     justifyContent: "center",
   },
   chip: {
     overflow: "hidden",
-    borderRadius: 6,
+    borderRadius: radius.sm,
     borderWidth: StyleSheet.hairlineWidth,
-    paddingHorizontal: 8,
-    paddingVertical: 4,
+    paddingHorizontal: spacing.sm,
+    paddingVertical: spacing.xs,
     fontWeight: "600",
   },
 });

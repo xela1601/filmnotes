@@ -14,7 +14,7 @@ import { SYNC_NAMESPACE } from "./i18n";
 import { useSync } from "./useSync";
 import { setSecret } from "../lib/secureStore";
 import { useStore } from "../store/store";
-import { Button, Screen, Section, TextField, useTheme } from "../ui";
+import { Button, Screen, Section, TextField, spacing, useTheme } from "../ui";
 
 /** Formats the last sync timestamp in the device's own format. */
 function formatTime(iso: string, language: string): string {
@@ -174,6 +174,6 @@ export function ServerSettingsScreen() {
 }
 
 const styles = StyleSheet.create({
-  row: { flexDirection: "row", gap: 12, flexWrap: "wrap" },
-  summary: { gap: 4 },
+  row: { flexDirection: "row", gap: spacing.md, flexWrap: "wrap" },
+  summary: { gap: spacing.xs },
 });

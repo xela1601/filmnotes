@@ -2,6 +2,7 @@ import { StyleSheet, TextInput, View } from "react-native";
 
 import { FieldLabel } from "./FieldLabel";
 import { useTheme } from "./theme";
+import { radius, spacing } from "./themes";
 
 export interface TextFieldProps {
   label: string;
@@ -51,7 +52,12 @@ export function TextField({
 }
 
 const styles = StyleSheet.create({
-  field: { gap: 4 },
-  input: { borderWidth: StyleSheet.hairlineWidth, borderRadius: 6, padding: 12, minHeight: 44 },
+  field: { gap: spacing.xs },
+  input: {
+    borderWidth: StyleSheet.hairlineWidth,
+    borderRadius: radius.sm,
+    padding: spacing.md,
+    minHeight: 44,
+  },
   multiline: { minHeight: 88, textAlignVertical: "top" },
 });

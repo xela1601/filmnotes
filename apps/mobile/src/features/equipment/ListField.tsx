@@ -12,7 +12,7 @@ import { useTranslation } from "react-i18next";
 import { EQUIPMENT_NAMESPACE } from "./i18n";
 import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 
-import { Button, FieldLabel, useTheme } from "../../ui";
+import { Button, FieldLabel, radius, spacing, useTheme } from "../../ui";
 
 export interface ListFieldProps {
   label: string;
@@ -104,22 +104,22 @@ export function ListField({ label, values, onChange, numeric = false, testID }: 
 }
 
 const styles = StyleSheet.create({
-  field: { gap: 8 },
-  chips: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
+  field: { gap: spacing.sm },
+  chips: { flexDirection: "row", flexWrap: "wrap", gap: spacing.sm },
   chip: {
     minHeight: 44,
-    paddingHorizontal: 12,
+    paddingHorizontal: spacing.md,
     borderWidth: StyleSheet.hairlineWidth,
-    borderRadius: 6,
+    borderRadius: radius.sm,
     alignItems: "center",
     justifyContent: "center",
   },
-  row: { flexDirection: "row", alignItems: "center", gap: 8 },
+  row: { flexDirection: "row", alignItems: "center", gap: spacing.sm },
   input: {
     flex: 1,
     borderWidth: StyleSheet.hairlineWidth,
-    borderRadius: 6,
-    paddingHorizontal: 12,
+    borderRadius: radius.sm,
+    paddingHorizontal: spacing.md,
     minHeight: 44,
   },
 });

@@ -3,6 +3,7 @@ import { Pressable, StyleSheet, Text, View } from "react-native";
 import { FieldLabel } from "./FieldLabel";
 import type { SelectOption } from "./SelectField";
 import { useTheme } from "./theme";
+import { radius, spacing } from "./themes";
 
 export interface MultiSelectFieldProps<T> {
   label: string;
@@ -61,13 +62,13 @@ export function MultiSelectField<T extends string | number>({
 }
 
 const styles = StyleSheet.create({
-  field: { gap: 4 },
-  chips: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
+  field: { gap: spacing.xs },
+  chips: { flexDirection: "row", flexWrap: "wrap", gap: spacing.sm },
   chip: {
     minHeight: 44,
-    paddingHorizontal: 12,
+    paddingHorizontal: spacing.md,
     borderWidth: StyleSheet.hairlineWidth,
-    borderRadius: 6,
+    borderRadius: radius.sm,
     alignItems: "center",
     justifyContent: "center",
   },

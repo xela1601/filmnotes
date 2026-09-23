@@ -33,6 +33,8 @@ import {
   Screen,
   Section,
   SelectField,
+  radius,
+  spacing,
   useTheme,
   type SelectOption,
 } from "../../ui";
@@ -364,13 +366,13 @@ function ScanRow({ file, assignment, frames, onMove, onAssign }: ScanRowProps) {
 const styles = StyleSheet.create({
   row: {
     flexDirection: "row",
-    gap: 12,
-    paddingBottom: 12,
+    gap: spacing.md,
+    paddingBottom: spacing.md,
     borderBottomWidth: StyleSheet.hairlineWidth,
   },
-  thumb: { width: 72, height: 72, borderRadius: 6 },
-  body: { flex: 1, gap: 4 },
+  thumb: { width: 72, height: 72, borderRadius: radius.sm },
+  body: { flex: 1, gap: spacing.xs },
   name: { fontWeight: "600" },
-  controls: { gap: 4 },
-  summary: { gap: 4 },
+  controls: { gap: spacing.xs },
+  summary: { gap: spacing.xs },
 });

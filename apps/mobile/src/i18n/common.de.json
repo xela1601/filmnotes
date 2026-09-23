@@ -26,7 +26,19 @@
     "wordpress": "WordPress",
     "reset": "Lokale Daten zurücksetzen",
     "resetConfirm": "Alle lokal gespeicherten Daten werden gelöscht. Fortfahren?",
-    "version": "Version"
+    "version": "Version",
+    "theme": "Erscheinungsbild",
+    "themeHint": "Dunkelkammer und OLED sind immer dunkel, unabhängig vom Systemmodus.",
+    "themes": {
+      "classic": "Klassisch",
+      "kodachrome": "Kodachrome – warmes Rot auf Creme",
+      "silver": "Silbergelatine – Schwarzweiß",
+      "agfa": "Agfa – kühles Grün",
+      "polaroid": "Polaroid – helle Pastelltöne",
+      "darkroom": "Dunkelkammer – Rotlicht",
+      "contrast": "Maximaler Kontrast",
+      "oled": "OLED – echtes Schwarz"
+    }
   },
   "validation": {
     "bulb_only_in_m": "Bulb ist nur im Modus M verfügbar.",

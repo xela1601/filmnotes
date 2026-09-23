@@ -3,6 +3,7 @@ import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 
 import { FieldLabel } from "./FieldLabel";
 import { useTheme } from "./theme";
+import { radius, spacing } from "./themes";
 
 export interface NumberFieldProps {
   label: string;
@@ -112,21 +113,21 @@ export function NumberField({
 }
 
 const styles = StyleSheet.create({
-  field: { gap: 4 },
-  row: { flexDirection: "row", alignItems: "center", gap: 8 },
+  field: { gap: spacing.xs },
+  row: { flexDirection: "row", alignItems: "center", gap: spacing.sm },
   stepper: {
     width: 48,
     height: 44,
     borderWidth: StyleSheet.hairlineWidth,
-    borderRadius: 6,
+    borderRadius: radius.sm,
     alignItems: "center",
     justifyContent: "center",
   },
   input: {
     flex: 1,
     borderWidth: StyleSheet.hairlineWidth,
-    borderRadius: 6,
-    paddingHorizontal: 12,
+    borderRadius: radius.sm,
+    paddingHorizontal: spacing.md,
     minHeight: 44,
     textAlign: "center",
   },

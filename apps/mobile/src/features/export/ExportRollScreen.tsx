@@ -23,7 +23,7 @@ import { useFrameExporter } from "./useFrameExporter";
 import { useEntity, useSettings } from "../../store/hooks";
 import { selectFramesForRoll, selectScansForRoll } from "../../store/selectors";
 import { useStore } from "../../store/store";
-import { Button, EmptyState, Screen, Section, SwitchField, useTheme } from "../../ui";
+import { Button, EmptyState, Screen, Section, SwitchField, spacing, useTheme } from "../../ui";
 
 /** One frame that could not be exported, with the message to show for it. */
 interface ExportFailure {
@@ -220,7 +220,7 @@ function ExportRoll({ roll }: { roll: Roll }) {
 }
 
 const styles = StyleSheet.create({
-  row: { flexDirection: "row", gap: 12, flexWrap: "wrap" },
-  actions: { gap: 12 },
-  failures: { gap: 4 },
+  row: { flexDirection: "row", gap: spacing.md, flexWrap: "wrap" },
+  actions: { gap: spacing.md },
+  failures: { gap: spacing.xs },
 });

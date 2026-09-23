@@ -21,7 +21,16 @@ import { useFrameExporter } from "./useFrameExporter";
 import { selectScanForFrame } from "../../store/selectors";
 import { useEntity, useSettings } from "../../store/hooks";
 import { useStore } from "../../store/store";
-import { Button, EmptyState, ListItem, Screen, Section, TextField, useTheme } from "../../ui";
+import {
+  Button,
+  EmptyState,
+  ListItem,
+  Screen,
+  Section,
+  TextField,
+  spacing,
+  useTheme,
+} from "../../ui";
 
 export interface ExportFrameScreenProps {
   frameId: Id;
@@ -202,5 +211,5 @@ function ExportFrame({ frame }: { frame: Frame }) {
 }
 
 const styles = StyleSheet.create({
-  actions: { gap: 12 },
+  actions: { gap: spacing.md },
 });

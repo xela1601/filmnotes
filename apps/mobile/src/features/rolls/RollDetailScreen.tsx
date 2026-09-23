@@ -32,6 +32,7 @@ import {
   Screen,
   Section,
   SelectField,
+  spacing,
   useTheme,
   type SelectOption,
 } from "../../ui";
@@ -208,6 +209,6 @@ function FrameRow({ frame }: { frame: Frame }) {
 }
 
 const styles = StyleSheet.create({
-  head: { gap: 4 },
+  head: { gap: spacing.xs },
   title: { fontWeight: "700" },
 });

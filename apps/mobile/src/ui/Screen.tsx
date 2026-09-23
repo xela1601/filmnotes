@@ -3,6 +3,7 @@ import { ScrollView, StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { useTheme } from "./theme";
+import { spacing } from "./themes";
 
 export interface ScreenProps {
   title?: string;
@@ -57,6 +58,6 @@ export function Screen({ title, scroll = true, children, testID }: ScreenProps) 
 
 const styles = StyleSheet.create({
   flex: { flex: 1 },
-  container: { gap: 16 },
+  container: { gap: spacing.lg },
   title: { fontWeight: "700" },
 });

@@ -1,6 +1,7 @@
 import { StyleSheet, Text, View } from "react-native";
 
 import { useTheme } from "./theme";
+import { spacing } from "./themes";
 
 export interface EmptyStateProps {
   title: string;
@@ -24,7 +25,7 @@ export function EmptyState({ title, hint, testID }: EmptyStateProps) {
 }
 
 const styles = StyleSheet.create({
-  container: { alignItems: "center", gap: 8, paddingVertical: 24 },
+  container: { alignItems: "center", gap: spacing.sm, paddingVertical: spacing.xl },
   title: { fontWeight: "600", textAlign: "center" },
   hint: { textAlign: "center" },
 });
