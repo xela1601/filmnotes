@@ -71,7 +71,11 @@ jobs:
   checks:
     name: Checks
     needs: verify
+    # Explicitly the tagged commit: a manual re-publish is dispatched from a branch, so the
+    # default ref would check the branch and vouch for something else entirely.
     uses: ./.github/workflows/checks.yml
+    with:
+      ref: ${{ github.event.inputs.tag || github.ref }}
 
   image:
     name: Build and push

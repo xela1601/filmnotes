@@ -7,6 +7,11 @@ name: Checks
 
 on:
   workflow_call:
+    inputs:
+      ref:
+        description: "What to check out. Defaults to whatever triggered the caller."
+        type: string
+        required: false
 
 jobs:
   check:
@@ -14,6 +19,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
+        with:
+          ref: ${{ inputs.ref || github.ref }}
       - uses: jdx/mise-action@v2
         with:
           install: true
@@ -34,6 +41,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
+        with:
+          ref: ${{ inputs.ref || github.ref }}
       - uses: jdx/mise-action@v2
         with:
           install: true
@@ -49,6 +58,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
+        with:
+          ref: ${{ inputs.ref || github.ref }}
       - uses: jdx/mise-action@v2
         with:
           install: true
