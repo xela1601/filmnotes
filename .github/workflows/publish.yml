@@ -3,9 +3,10 @@
 #   git tag v0.2.0-alpha.0 && git push origin v0.2.0-alpha.0
 #     -> ghcr.io/<owner>/filmnotes:0.2.0-alpha.0
 #
-# Three things are checked before anything is built, because a wrong image is worse than no image:
-# the tag has to be valid semver, it has to sit on main (which is what CI runs on), and it has to
-# match the version the release actually produced.
+# Nothing is built before it has earned it: the tag has to be valid semver, it has to sit on main,
+# it has to match the version the release produced - and the full checks run again on exactly that
+# commit. A tag can be pushed days after the commit was green, and "it was green then" is not the
+# same statement as "it is green now".
 name: Publish
 
 on:
@@ -26,9 +27,11 @@ permissions:
   packages: write
 
 jobs:
-  image:
-    name: Build and push
+  verify:
+    name: The tag is publishable
     runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.version.outputs.version }}
     steps:
       - uses: actions/checkout@v5
         with:
@@ -64,6 +67,20 @@ jobs:
             echo "::error::tag says ${{ steps.version.outputs.version }}, the workspaces say $released - run 'npm run release' and commit before tagging"
             exit 1
           fi
+
+  checks:
+    name: Checks
+    needs: verify
+    uses: ./.github/workflows/checks.yml
+
+  image:
+    name: Build and push
+    needs: [verify, checks]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          ref: ${{ github.event.inputs.tag || github.ref }}
 
       - uses: docker/setup-qemu-action@v3
       - uses: docker/setup-buildx-action@v3
