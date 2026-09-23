@@ -46,7 +46,7 @@ rewrite history".
 
 - [x] **Step 1:** `sandbox/kit/spec.yaml` points `IdentityFile` at
       `~/.ssh/id_filmnotes_deploy`.
-- [ ] **Step 2: `sbxenv.yaml`, one line — the owner has to do this.** The agent cannot: the
+- [x] **Step 2: `sbxenv.yaml`, one line — the owner has to do this.** The agent cannot: the
       sandbox mounts its own definition read-only (`Errno 30: Read-only file system`), which is
       correct, since that file decides what enters the sandbox in the first place. Change
 
@@ -58,24 +58,24 @@ rewrite history".
 
 ### On the host — for the owner
 
-- [ ] **Step 3: push what is already here.** Eight commits are unpushed, and after step 6 a direct
+- [x] **Step 3: push what is already here.** Eight commits are unpushed, and after step 6 a direct
       push to `main` is no longer possible. From the host, in this checkout:
 
       git push origin main
 
-- [ ] **Step 4: create the deploy key.** It must have no passphrase — the sandbox has no agent to
+- [x] **Step 4: create the deploy key.** It must have no passphrase — the sandbox has no agent to
       unlock it:
 
       ssh-keygen -t ed25519 -f ~/.ssh/id_filmnotes_deploy -C "filmnotes sandbox" -N ""
 
-- [ ] **Step 5: register it, with write access.** Copy the **public** half:
+- [x] **Step 5: register it, with write access.** Copy the **public** half:
 
       pbcopy < ~/.ssh/id_filmnotes_deploy.pub
 
   Then github.com/xela1601/filmnotes → Settings → Deploy keys → Add deploy key. Title e.g.
   "filmnotes sandbox", tick **Allow write access**.
 
-- [ ] **Step 6: protect `main`.** github.com/xela1601/filmnotes → Settings → Rules → Rulesets →
+- [x] **Step 6: protect `main`.** github.com/xela1601/filmnotes → Settings → Rules → Rulesets →
       New branch ruleset:
 
   - Name `main`, Enforcement **Active**, Target branches → Include default branch
@@ -85,12 +85,45 @@ rewrite history".
   - Bypass list → add **Repository admin**, so your own pushes from the host still work. A deploy
     key can never be given a bypass, so the agent stays inside the rule.
 
-- [ ] **Step 7: protect the release tags.** New ruleset, Target **tags**, pattern `v*`:
+- [x] **Step 7: protect the release tags.** New ruleset, Target **tags**, pattern `v*`:
       ✓ Restrict creations, bypass: Repository admin. The Publish workflow is triggered by a
       `v*` tag, so this is what keeps the agent from ever starting a release build.
 
 - [ ] **Step 8: recreate the sandbox** so the new mount takes effect (`sbx env run`, or however
       this sandbox is started). The old key disappears from it at that moment.
+
+### The rulesets are not enforced — and what that changed
+
+Steps 6 and 7 were done, and GitHub answered: _"Your rulesets won't be enforced on this private
+repository until you move to GitHub Team organization account."_ Branch and tag rules only take
+effect on private repositories under a paid plan; on public ones they are free. The two rulesets
+are saved and will start working the moment the repository is public.
+
+The owner chose to make the repository public rather than pay for a plan. That turns the
+scrubbing of private data from a nicety into a precondition, because publishing exposes the whole
+history, not the current state.
+
+- [x] **Step 6a: scan the entire history.** No `.env` was ever committed; no blob of any commit
+      contains a token, a key or a real password (the password-shaped strings are test fixtures).
+- [x] **Step 6b: scrub what is not secret but is private.** The mail host, the sender address and
+      the lab's shop identifiers are placeholders now; `automation/n8n/local-values.md` keeps the
+      mapping and is git-ignored.
+- [x] **Step 6c: rewrite the history** so the old values are gone from every commit, not just from
+      the tip. Verified: all 15 real refs are clean. A bundle of the pre-rewrite state and
+      `refs/original/*` are the way back.
+- [ ] **Step 6d: replace the remote, do not force-push it.** A force-push leaves the old objects
+      on GitHub: unreachable, but still retrievable by SHA, and GitHub does not garbage-collect
+      them on request. For a repository that is about to be public that is the whole gap. With no
+      collaborators, no issues and no stars, deleting and recreating is cheap and complete:
+
+      1. github.com/xela1601/filmnotes → Settings → Danger Zone → Delete this repository
+      2. New repository, same name, **Public**, no README, no .gitignore, no licence
+      3. Deploy keys → add `id_filmnotes_deploy.pub` again, **Allow write access**
+         (a deploy key belongs to the repository, so it goes with it)
+      4. Settings → Rules → the two rulesets from steps 6 and 7 — now they are enforced
+      5. From the host, in this checkout: `git push -u origin main`
+      6. **Do not push the old tag.** `v0.2.0-alpha.0` points at a commit that fails CI, and its
+         SHA changed in the rewrite anyway. Cut `v0.2.0-alpha.1` once main is green.
 
 ### Back in the sandbox — for the agent, after step 8
 
