@@ -17,7 +17,7 @@ workspace:
 # GitHub deploy key, read-only, at the same absolute path inside the sandbox
 # (the kit's ~/.ssh/config points IdentityFile there). No SSH agent is needed.
 additionalWorkspaces:
-  - path: /Users/alexander.schreiner/.ssh/id_github
+  - path: /Users/alexander.schreiner/.ssh/id_filmnotes_deploy
     readOnly: true
 
 sandboxOptions:

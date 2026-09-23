@@ -15,6 +15,8 @@ backend/test/pb_data_*/
 .env
 .env.*
 !.env.example
+# Real host names and lab identifiers, kept out of a public repository - see docs/automation.md
+automation/n8n/local-values.md
 .claude/worktrees/
 
 # mise: the binary is fetched per sandbox, tool installs live under $TMPDIR

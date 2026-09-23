@@ -30,7 +30,9 @@ any roll, or the same number twice, and the workflow mails you instead of guessi
    [`automation/n8n/filmnotes-scan-import.json`](../automation/n8n/filmnotes-scan-import.json).
    n8n may upgrade the node versions on import; that is fine.
 
-2. **Two credentials**, both on `mail.example.org`:
+2. **Two credentials**, both on your own mail host (`mail.example.org` below stands in for it -
+   this file is public, so the real names live in the git-ignored
+   `automation/n8n/local-values.md`, and the passwords only in n8n's own credential store):
    - an **IMAP** credential for the mailbox the lab writes to (node "Lab mail arrives")
    - an **SMTP** credential for the three mail nodes
      Replace the `REPLACE_IMAP_CREDENTIAL` / `REPLACE_SMTP_CREDENTIAL` placeholders by picking the
@@ -47,6 +49,11 @@ any roll, or the same number twice, and the workflow mails you instead of guessi
    FILMNOTES_NOTIFY_EMAIL=alex@example.com              # where the summary goes
    FILMNOTES_LAB_STATUS_URL=https://spot.photoprintit.com/spotapi/orderInfo/forShop?config=<config>&shop=<shop>&order={order}
    ```
+
+   `<config>` and `<shop>` identify your lab's branch. Both are visible in the order confirmation
+   the lab sends, and they are kept out of this file for the same reason as the mail host: they
+   say which shop, and therefore roughly where, you are. `automation/n8n/local-values.md` holds
+   yours and is git-ignored.
 
    The first three are the same variables the CLI reads from `.env`, so a shell on that machine can
    run the import by hand with the identical configuration.
