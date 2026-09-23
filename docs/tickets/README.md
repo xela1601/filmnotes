@@ -57,6 +57,10 @@ Backlog (refined, not scheduled - pick one up when it is worth the time)
 
 Integrator merges each finished ticket branch into `main` in wave order, runs `npm test`, then starts the next wave. Waves 0-3 are merged; what is in the backlog needs a decision from the owner before it starts (each such ticket says which).
 
+**The review behind T-016 and T-018:**
+[`docs/reviews/2026-09-23-adversarial-review.md`](../reviews/2026-09-23-adversarial-review.md) —
+what was attacked, what was upheld, and what was deliberately not attacked.
+
 **How this board is kept:** a delivered ticket moves to [`done/`](done/), with every step ticked
 and a `**Status:**` line saying when it was verified. What is left in this directory is what is
 open. Every new requirement becomes a ticket here _before_ it becomes code — including the ones
