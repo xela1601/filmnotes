@@ -40,9 +40,11 @@ two files in one directory differ only in case – suffix the component (`RollFo
   `docs/tickets/done/T-019-sandbox-push-access.md`.
 - `main` is protected by a branch ruleset (PR required, no force pushes, no branch/tag deletion):
   a direct push to `main` on either remote is rejected. Push a feature branch to `deploy`, then
-  open the PR - `gh pr create` does not work from inside the sandbox (the deploy key has no GitHub
-  API access), so use the "Create a pull request" URL that `git push` prints, or ask the owner to
-  open it.
+  `gh pr create --repo xela1601/filmnotes --fill` to open the PR.
+- `gh` works, but not because of anything configured for this repo: the sandbox's outbound proxy
+  transparently authenticates all `api.github.com` traffic (TLS interception, independent of
+  `GH_TOKEN` or any locally set token), with account-wide access, not scoped to this repository -
+  see `docs/tickets/T-020-sandbox-gh-cli-access.md`. Only use it for this repository.
 
 ## Tooling (mise)
 

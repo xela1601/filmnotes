@@ -40,7 +40,7 @@ transport.
 
 ### On the host — for the owner
 
-- [ ] **Step 1: create the fine-grained PAT.** github.com → Settings → Developer settings →
+- [x] **Step 1: create the fine-grained PAT.** github.com → Settings → Developer settings →
       Personal access tokens → Fine-grained tokens → Generate new token.
 
   - Resource owner: `xela1601`
@@ -50,37 +50,53 @@ transport.
   - Expiration: **No expiration**
   - Generate, copy the token (`github_pat_…`) — GitHub shows it exactly once.
 
-- [ ] **Step 2: set it for this sandbox** (takes effect immediately, no recreate needed):
+- [x] **Step 2: set it for this sandbox** (takes effect immediately, no recreate needed):
 
       sbx secret set github --sandbox $SANDBOX_NAME -t "<paste the token>"
 
   Find `$SANDBOX_NAME` from inside the sandbox (also available as `hostname`) — don't guess it
   from the branch name or working-tree path.
 
-- [ ] **Step 3: set it globally too**, so the next sandbox recreate doesn't need this repeated:
+- [ ] **Step 3: set it globally too**, so the next sandbox recreate doesn't need this repeated.
 
-      sbx secret set github -t "<paste the token>"
-
-  This takes effect on the *next* recreate, not the current sandbox — that's what step 2 is for.
+  Left undone — step 4 below found that this whole PAT doesn't do what the ticket assumed, so
+  there is nothing worth persisting globally yet. See "What actually happened" below.
 
 ### Back in the sandbox — for the agent, after step 2
 
-- [ ] **Step 4:** confirm the identity and the scope:
+- [x] **Step 4:** confirm the identity and the scope. This did **not** go as planned — see below.
 
-      gh auth status
-      gh api repos/xela1601/filmnotes --jq .permissions
+- [x] **Step 5:** prove the whole loop with a real PR — push a branch via `deploy`, then
+      `gh pr create --repo xela1601/filmnotes --fill`. This PR (and the T-019 close-out PR
+      alongside it) is the proof: both were opened this way.
 
-  Expect a logged-in account, and confirm the token can't reach anything outside this repo (e.g.
-  a call that lists the owner's repositories should not enumerate anything beyond `filmnotes`,
-  the way an account-scoped token would).
+- [ ] **Step 6:** record the working agreement in `CLAUDE.md`. Partly done — `gh pr create` is
+      now documented as working, but the scoping claim that motivated this ticket had to be
+      corrected rather than confirmed (see below), so this needs a second look once step 3's
+      question is resolved.
 
-- [ ] **Step 5:** prove the whole loop with a real PR — push a branch via `deploy`, then
+### What actually happened
 
-      gh pr create --repo xela1601/filmnotes --fill
+Step 4 (`gh auth status`, `gh api repos/xela1601/filmnotes --jq .permissions`) did not show the
+PAT from step 1 at all: `GH_TOKEN` was `gho_sbxproxymanaged…`, a placeholder, and permissions
+came back `admin: true` — full access, not `pull-requests: write`. Chasing it down:
 
-- [ ] **Step 6:** record the working agreement in `CLAUDE.md`: push branches via `deploy`,
-      open/manage PRs via `gh` now that it works; merging stays the owner's call unless they ask
-      the agent to do it directly.
+    curl -s https://api.github.com/user      # no token, no Authorization header, nothing
+    → {"login":"xela1601", ...}               # answers anyway
 
-**Done when:** `gh auth status` succeeds, `gh pr create` opens a real PR against `filmnotes`, and
-a spot-check confirms the token cannot see or act on the owner's other repositories.
+`/usr/local/share/ca-certificates/proxy-ca.crt` is a **Docker Sandboxes Proxy CA**: the sandbox
+does full TLS interception on outbound traffic, and for `api.github.com` it re-signs every
+request with its own credential before it leaves — independent of `GH_TOKEN`, `gh auth login`,
+or the `sbx secret set github` value from step 2. That credential is not scoped to this repo: it
+sees every repository the owner has, including another org's.
+
+So the PAT this ticket asked for is not what makes `gh pr create` work, and can't be, because
+nothing running inside the sandbox controls what the proxy injects for that host. The access
+that opened this PR was already there before this ticket existed. Step 3 (persisting the PAT
+globally) is on hold until it's clear whether it does anything at all, or whether the right next
+step lives outside the sandbox entirely — in however Docker Sandboxes' own GitHub connection for
+this account is configured.
+
+**Done when:** `gh auth status` succeeds and `gh pr create` opens a real PR against `filmnotes` —
+both true, but not for the reason this ticket assumed. Left open: whether the proxy's
+account-wide GitHub access can be narrowed to this repo, and if not, whether that's accepted.
