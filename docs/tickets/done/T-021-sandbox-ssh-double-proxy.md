@@ -97,8 +97,8 @@ sandbox's `settings.json` at every start, idempotently.
 
 Two consequences worth knowing:
 
-- `make doctor` on an older sandbox reports `sandbox-doctor missing: the sandbox predates this
-  kit - make sbx-recreate` rather than a bare "command not found".
+- `make doctor` on a sandbox that predates this kit says so and names the fix
+  (`make sbx-recreate`), rather than failing with a bare "command not found".
 - Run `sandbox-doctor` from a Claude Code Bash call and its GitHub check reports
   `[info] … Temporary failure in name resolution`: the script as a whole is not in
   `excludedCommands`, so its inner `ssh` is back inside the tunnel this ticket is about. Via

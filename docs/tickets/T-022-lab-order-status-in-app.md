@@ -1,6 +1,6 @@
 # T-022 – Show the lab's order status in the app
 
-**Wave:** backlog, not scheduled — needs the owner decisions below before it starts
+**Wave:** backlog, ready to start — the owner's decisions were taken on 2026-09-25
 **Depends on:** nothing
 **Owns:** `packages/domain/src/types.ts` (`Roll`), `apps/mobile/src/features/rolls/**`
 
@@ -36,25 +36,51 @@ from a dm order:
   `labOrderId`: the order number (already exists) and a shop id (`shop` in the URL, e.g. `D4J0`).
   The owner's own call, against the alternative of one global settings screen - a roll can move
   between shops, and most people use more than one branch over time.
-- **The shop id needs a friendly label.** `D4J0` means nothing on its own; the owner wants a
-  mapping to something like "DM Gauting Bahnhofstr. 27" shown instead of the raw code wherever it
-  appears. Not decided: where that mapping lives (see open questions).
+- **The shop id needs a friendly label, and the API already provides one.** `D4J0` means nothing
+  on its own. Rather than a mapping the owner maintains - a settings screen with a list, or a
+  free-text label typed on every roll - the answer takes the branch's name and address from
+  `deliveryText` in the response itself and stores it on the roll after the first successful
+  check. No list to curate, no code to transcribe, and the label is the lab's own spelling
+  instead of ours. Owner's decision, 2026-09-25.
 
-## Open questions - ask the owner before starting
+  The cost of it: a roll shows the raw code until it has been checked once. Acceptable, because
+  the code is only ever typed together with an order number that is about to be checked anyway.
+  The stored label is a cache, not a source - a later check overwrites it.
 
-- **The notification.** The owner also wants to be told when the status *changed* since the last
-  check, not just see it on demand - which needs somewhere to remember the last-seen status per
-  roll (a new field?) and something that triggers the comparison (on app open? a manual
-  refresh-all?). This is more than "on demand" as scoped above and needs its own shape before it's
-  buildable.
-- **`config` (e.g. `1320` in the URL).** `docs/automation.md` treats `config` and `shop` as a
-  pair that "identify your lab's branch", but the owner only asked for a per-roll *shop* field.
-  Is `config` the same for every dm branch (so one constant, or one app-level setting, is enough),
-  or does it vary too and belongs on the roll alongside `shop`?
-- **Where the shop-id → label mapping lives.** A small settings screen the owner maintains
-  themselves (pick a label when adding a shop id once, then choose from a list on each roll after
-  that), or something simpler (free-text label typed alongside the code on the roll form, no
-  shared list)? The mapping is inherently personal - it names the owner's own local labs, not
-  something with a public registry.
+- **Change detection is out of scope, deliberately.** The owner does want to be told when a
+  status _changed_ since the last check, but that needs somewhere to remember the last-seen
+  status per roll and something that triggers the comparison (on app open? a refresh-all?). That
+  is a second shape, not a detail of this one. T-022 delivers the manual check; the notification
+  becomes its own ticket once this is in the owner's hands and it is clear what "changed" should
+  actually do. Owner's decision, 2026-09-25.
 
-**Done when:** these are answered and turned into steps; until then this stays in the backlog.
+## Open question, to be answered by measurement rather than by the owner
+
+**Does `config` (e.g. `1320`) vary per branch, the way `shop` does?** `docs/automation.md` treats
+`config` and `shop` as a pair identifying the lab's branch, but the owner only asked for a
+per-roll _shop_ field and does not know whether `config` is constant. This is a fact about dm's
+API, not a preference, so step 1 below settles it empirically instead of asking again.
+
+## Steps
+
+- [ ] **Step 0: find out what `config` is.** Call `orderInfo/forShop` for a known order with the
+      known `config` and then with a deliberately wrong one; call it for an order from a second
+      branch with the same `config`. If the answer does not depend on it, `config` is one
+      constant in the app; if it does, it becomes a third field on the roll next to the order
+      number and the shop id. Record the finding here before writing any code - the rest of the
+      ticket's shape depends on it.
+- [ ] **Step 1: the domain fields.** `shopId` (optional) and the cached `labShopLabel` on `Roll`,
+      plus `config` if step 0 says so. Failing test first, in `packages/domain`.
+- [ ] **Step 2: the lab client.** A function that takes the identifiers and returns
+      `{ stateCode, stateText, date, orderNo, deliveryText }` or a typed error (no order, network
+      down, unexpected shape). Pure, tested against the recorded fixture in "Why" above.
+- [ ] **Step 3: the roll form.** Shop id next to the existing order number. The label shown is
+      the cached one where there is one, the raw code otherwise.
+- [ ] **Step 4: the action.** "Laborstatus prüfen" on the roll detail screen: fetch, show
+      `summaryStateText` + `summaryDate`, store `deliveryText` as the label. Offline and
+      not-found say so instead of failing silently. i18n keys, `de` and `en`.
+- [ ] **Step 5:** changeset (`minor` - new capability), `docs/automation.md` gets a line saying
+      the app can now ask the same endpoint the n8n workflow polls.
+
+**Done when:** a roll with an order number and a shop id shows its live lab status on demand, the
+branch is named rather than coded after the first check, and the full gate is green.

@@ -61,7 +61,7 @@ transport.
 
       sbx secret set github -t "<paste the token>"
 
-  This takes effect on the *next* recreate, not the current sandbox — that's what step 2 is for.
+  This takes effect on the _next_ recreate, not the current sandbox — that's what step 2 is for.
 
 ### Back in the sandbox — for the agent, after step 2
 
