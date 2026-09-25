@@ -4,6 +4,15 @@ name: filmnotes-dev
 displayName: filmnotes development mixin
 description: Git identity, tools, network allow-list and agent instructions for developing the filmnotes monorepo inside a Docker Sandbox.
 
+# Both arguments are set by sbxenv.yaml: home from --env-arg, repo from the project directory.
+args:
+  home:
+    required: true
+    description: Home directory on the host; the deploy key ~/.ssh/id_filmnotes_deploy lives under it
+  repo:
+    required: true
+    description: Absolute host path of the filmnotes checkout (mounted at the same path)
+
 environment:
   variables:
     EXPO_NO_TELEMETRY: "1"
@@ -11,6 +20,9 @@ environment:
     NPM_CONFIG_FUND: "false"
     FILMNOTES_PB_BIN: /opt/pocketbase/pocketbase
     GIT_EDITOR: "true"
+    # Host paths as seen inside the sandbox, for the self-test (sandbox-doctor) and scripts.
+    FILMNOTES_REPO: "${{ kit.args.repo }}"
+    FILMNOTES_HOST_HOME: "${{ kit.args.home }}"
 
 setup:
   install:
@@ -55,7 +67,7 @@ setup:
         Host github-xela1601 github.com
             HostName github.com
             User git
-            IdentityFile /Users/alexander.schreiner/.ssh/id_filmnotes_deploy
+            IdentityFile ${{ kit.args.home }}/.ssh/id_filmnotes_deploy
             IdentitiesOnly yes
             StrictHostKeyChecking accept-new
 

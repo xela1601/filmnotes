@@ -1,10 +1,8 @@
 # Custom Docker Sandboxes template for developing filmnotes with Claude Code.
 # Build and load into the sandbox runtime's own image store (on the host, outside any sandbox):
-#   docker build -t filmnotes-sbx:latest sandbox/
-#   docker save filmnotes-sbx:latest -o /tmp/filmnotes-sbx.tar
-#   sbx template load /tmp/filmnotes-sbx.tar
+#   make -C sandbox sbx-build      (= docker build + sbx template load)
 # Use:
-#   sbx env run            (sbxenv.yaml references this tag)
+#   make -C sandbox sbx-run        (sbxenv.yaml references this tag)
 #   sbx run -t filmnotes-sbx:latest claude --kit ./sandbox/kit
 FROM docker/sandbox-templates:claude-code
 
@@ -34,6 +32,10 @@ RUN mkdir -p /opt/pocketbase \
  && rm /tmp/pb.zip \
  && chmod 755 /opt/pocketbase/pocketbase \
  && /opt/pocketbase/pocketbase --version
+
+# Self-test (make -C sandbox doctor).
+COPY scripts/doctor.sh /usr/local/bin/sandbox-doctor
+RUN chmod 0755 /usr/local/bin/sandbox-doctor
 
 ENV FILMNOTES_PB_BIN=/opt/pocketbase/pocketbase \
     EXPO_NO_TELEMETRY=1 \

@@ -94,3 +94,4 @@ anyone starts (see the ticket).
 | [T-017](done/T-017-themes.md)               | Themes and design tokens                                | `apps/mobile/src/ui/themes.ts`, every `StyleSheet` under `apps/mobile`                                          | done    |
 | [T-018](T-018-domain-package-consumable.md) | Domain package consumable outside the repo? — _backlog_ | `packages/domain/package.json`, `packages/domain/tsconfig.json`                                                 | backlog |
 | [T-019](done/T-019-sandbox-push-access.md)  | Repository-scoped push access                           | `sbxenv.yaml`, `sandbox/kit/spec.yaml`, `.git/config` (the remote)                                              | done    |
+| [T-021](T-021-sandbox-ssh-double-proxy.md)  | SSH to GitHub double-proxied inside the command sandbox  | `.claude/settings.json`, `sandbox/Dockerfile`, `sandbox/kit/spec.yaml`, `sbxenv.yaml`, `sandbox/Makefile`       | open    |

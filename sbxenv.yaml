@@ -1,13 +1,29 @@
 # Docker Sandboxes environment for filmnotes (sbx >= 0.43).
-#   sbx env plan      # preview
-#   sbx env run       # create sandbox + attach Claude Code
-# Prerequisite (optional but recommended): docker build -t filmnotes-sbx:latest sandbox/
+#   make -C sandbox sbx-plan      # preview
+#   make -C sandbox sbx-run       # create sandbox + attach Claude Code
+# Prerequisite: make -C sandbox sbx-build (template image), see sandbox/README.md.
+#
+# The file names no user: the home directory (the deploy key lives under it) arrives as
+# the argument "home", the host port for Expo as "expoPort". The Makefile passes both;
+# calling sbx directly: sbx env run --env-arg home=$HOME --env-arg expoPort=8081
 schemaVersion: "1"
 name: filmnotes
 agent: claude
 
+args:
+  home:
+    required: true
+    description: Home directory on the host, e.g. /Users/<user>; the deploy key ~/.ssh/id_filmnotes_deploy lives under it
+  expoPort:
+    default: "8081"
+    pattern: "[1-9][0-9]*"
+    description: Host port for Expo web / Metro (the sandbox side stays 8081)
+
 kits:
   - source: ./sandbox/kit
+    args:
+      home: ${{ env.args.home }}
+      repo: ${{ env.projectDir }}
 
 # Bind-mount the repository itself (not clone mode) so git commits land directly in this checkout.
 workspace:
@@ -17,7 +33,7 @@ workspace:
 # GitHub deploy key, read-only, at the same absolute path inside the sandbox
 # (the kit's ~/.ssh/config points IdentityFile there). No SSH agent is needed.
 additionalWorkspaces:
-  - path: /Users/alexander.schreiner/.ssh/id_filmnotes_deploy
+  - path: ${{ env.args.home }}/.ssh/id_filmnotes_deploy
     readOnly: true
 
 sandboxOptions:
@@ -27,8 +43,8 @@ sandboxOptions:
   skills: readonly
 
 ports:
-  - sandbox: 8081   # Expo web / Metro
-    host: 8081
+  - sandbox: 8081   # Expo web / Metro; host side via --env-arg expoPort (default 8081)
+    host: ${{ env.args.expoPort }}
     hostIP: 127.0.0.1
   - sandbox: 8090   # PocketBase (backend/bin or $FILMNOTES_PB_BIN)
     host: 8090
