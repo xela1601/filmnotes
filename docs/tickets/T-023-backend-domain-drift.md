@@ -1,6 +1,6 @@
 # T-023 – The backend copies the domain's constants, and only a comment holds them together
 
-**Wave:** backlog, not scheduled — needs the owner decision below before it starts
+**Wave:** backlog, ready to start — the owner's decisions were taken on 2026-09-25
 **Depends on:** nothing
 **Owns:** `backend/pb_migrations/**` (a new migration only, never an edit to a released one),
 `packages/domain/src/**` (a guard test), possibly `scripts/`
@@ -37,32 +37,51 @@ in those columns and PocketBase will accept it. That is arguably the bigger risk
 it is a separate choice from the drift guard — enforcing them means the schema has to be changed,
 not just checked.
 
-## The decision the owner has to make
+## Decisions taken by the owner, 2026-09-25
 
-1. **A guard test, or codegen?**
-   - **(a) A test that compares the two.** It reads the migration and asserts that its enum
-     values and MIME list match the domain's. Cheap, no new build step, and it fails loudly the
-     moment somebody changes one side. It does not stop the drift, it reports it. _Proposed._
-   - **(b) Generate the migration's constants from `types.ts`.** A script writes the enum lists
-     and the MIME list into a generated file the migration imports, so drift is impossible by
-     construction. More machinery, and generated code inside `pb_migrations/` sits awkwardly next
-     to the rule that a released migration is never edited.
-2. **Enforce the unions server-side, or leave validation to the client?** Turning those `text()`
-   fields into `select()` fields with the domain's values would make the server reject nonsense —
-   but it needs a _new_ migration against live data (`pb_data` may already hold values that a
-   stricter schema rejects), and it hard-codes the unions in a place that then has to be migrated
-   again every time one gains a member. Leaving it is defensible if the app stays the only writer.
-   This can also be split off into its own ticket if the answer is "yes, but not now".
+**Codegen was dropped before it reached the owner.** Migrations here are additive — there are
+three, and every schema change is a new file — so `1758150000_init_collections.js` is frozen and
+cannot be generated from `types.ts` after the fact. Generating would only ever apply to future
+migrations, which leaves today's duplication exactly as it is. Detection is the only thing that
+helps the existing schema, so the guard is a test and there was nothing left to choose.
 
-## Steps, once (1) is answered
+1. **The guard covers field names too, not only the enums.** The migration's header comment
+   claims it mirrors `types.ts` _"exactly"_; the test holds it to that. It costs more test code
+   and has to be extended whenever a field is added — accepted, because a renamed or forgotten
+   field is the same class of bug as a diverged enum and fails just as late.
 
-- [ ] **Step 1:** the guard — test or generator, per the decision. It must cover the MIME list and
-      the four enums in the table above.
-- [ ] **Step 2:** make it fail on purpose once (change one side, watch it break), then restore.
-      A guard nobody has seen fail is not known to work.
-- [ ] **Step 3:** delete the two prose comments that were standing in for it, or reduce them to a
-      pointer at the guard.
-- [ ] **Step 4 (only if decision 2 says so):** a new migration turning the union fields into
-      `select()`, with a check of what `pb_data` currently holds before it runs.
+2. **The server will reject invalid values.** A new migration turns the five untyped `text()`
+   fields into `select()` fields carrying the domain's values, so PocketBase refuses nonsense
+   instead of storing it. Chosen over leaving validation to the client, which was defensible only
+   while the app is the single writer.
 
-**Done when:** changing an enum value on one side and not the other fails the gate.
+   What it costs, stated plainly: the migration runs against live data, so whatever `pb_data`
+   already holds has to be inspected before it does — a stricter schema rejects a record it
+   previously accepted. And every future member added to one of these unions needs a migration,
+   not just a TypeScript edit. That is the price of the server knowing the rule.
+
+## Steps
+
+- [ ] **Step 1: the guard test.** Failing test first, in `packages/domain`. It reads
+      `backend/pb_migrations/1758150000_init_collections.js` as text and asserts against the
+      domain: the four enum lists (`status`, `process`, `isoSource`, `afCompatible`), the
+      `scans.file` MIME list, and every collection's field names. Commit
+      `test(domain): the backend schema has to match the domain types`.
+- [ ] **Step 2: watch it fail on purpose.** Change one side, confirm the test breaks and names
+      which list and which value, restore. A guard nobody has seen fail is not known to work.
+- [ ] **Step 3: retire the prose.** The comments standing in for the guard —
+      `packages/domain/src/scanFormats.ts:9` ("Change one, change the other") and the migration's
+      header claim — become pointers at the test instead of promises nobody can keep.
+- [ ] **Step 4: find out what the live data holds.** Before writing the migration, query the
+      distinct values of `exposureMode`, `focusMode`, `afResult`, `driveMode` and `support` in
+      `pb_data`. Record them here. If anything outside the unions is already stored, decide what
+      happens to it — the migration cannot simply be applied over it.
+- [ ] **Step 5: the migration.** A new file turning those five fields into `select()` with the
+      domain's values, up and down. The backend smoke test covers that a valid record still
+      writes and an invalid one is now refused. Commit
+      `feat(backend): the server enforces the domain's unions`.
+- [ ] **Step 6:** changeset (`minor` — it carries a migration), and a line in the backend docs
+      saying that adding a union member now needs one too.
+
+**Done when:** changing an enum value on one side and not the other fails the gate, and the
+server refuses a roll whose `exposureMode` is not one of the four the domain allows.
