@@ -13,6 +13,12 @@ EXPO_PORT ?= 8082
 SBX_ENV_ARGS = --env-arg home=$(HOME) --env-arg expoPort=$(EXPO_PORT)
 EXEC := sbx exec $(SANDBOX) -- sh -lc
 
+# Bitwarden: "sbx env create" runs sandbox/host/bw-github-token.sh on the host and inherits
+# this recipe shell's environment, so the vault is unlocked here first when needed. A
+# separate "make bw-unlock" could not hand BW_SESSION back to the caller's shell.
+BW_SESSION_CMD = if [ "$$(bw status 2>/dev/null | jq -r .status)" != "unlocked" ]; then \
+	echo "Bitwarden: unlocking the vault (master password) ..."; BW_SESSION="$$(bw unlock --raw)" || exit 1; export BW_SESSION; fi
+
 .DEFAULT_GOAL := help
 .PHONY: help sbx-build sbx-plan sbx-create sbx-run sbx-rm sbx-recreate skills-import doctor shell ports
 
@@ -29,11 +35,11 @@ sbx-build: ## Build the template image and load it into the sbx VM (again after 
 sbx-plan: ## Show what "make sbx-create" would create (mounts, args, ports)
 	sbx env plan $(ENV_DIR) $(SBX_ENV_ARGS)
 
-sbx-create: ## Create the sandbox "filmnotes"
-	sbx env create -y $(ENV_DIR) $(SBX_ENV_ARGS)
+sbx-create: ## Create the sandbox "filmnotes" (reads the GitHub token from Bitwarden)
+	@$(BW_SESSION_CMD); sbx env create -y $(ENV_DIR) $(SBX_ENV_ARGS)
 
 sbx-run: ## Start Claude Code in the sandbox (creates it when missing)
-	sbx env run $(ENV_DIR) $(SBX_ENV_ARGS)
+	@$(BW_SESSION_CMD); sbx env run $(ENV_DIR) $(SBX_ENV_ARGS)
 
 sbx-rm: ## Remove the sandbox and everything it provisioned
 	sbx env rm $(ENV_DIR) $(SBX_ENV_ARGS)

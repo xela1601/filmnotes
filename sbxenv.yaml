@@ -37,6 +37,22 @@ additionalWorkspaces:
   - path: ${{ env.args.home }}/.ssh/id_filmnotes_deploy
     readOnly: true
 
+# GitHub token for the built-in "github" service: read from Bitwarden on the host when the
+# sandbox is created ("My Vault" > GitHub > "sbx-filmnotes", see sandbox/host/bw-github-token.sh).
+# The proxy injects it for GitHub; inside the sandbox GH_TOKEN holds a placeholder only.
+# The vault has to be unlocked (BW_SESSION); make -C sandbox sbx-create takes care of that.
+# Declarative equivalent of: sbx secret set github --sandbox filmnotes -t "$GH_TOKEN"
+secrets:
+  github:
+    command: ./sandbox/host/bw-github-token.sh
+
+bindings:
+  github:
+    apiKey:
+      domains:
+        - api.github.com
+        - github.com
+
 sandboxOptions:
   template: filmnotes-sbx:latest
   cpus: 4
