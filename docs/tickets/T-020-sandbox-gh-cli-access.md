@@ -12,7 +12,8 @@ API instead of git.
 ## Why
 
 `gh auth status` fails with `Bad credentials` from inside the sandbox: whatever `GH_TOKEN` it
-currently carries is invalid. Beyond just fixing that, a deploy key can never cover this either
+currently carries is invalid — see "What is actually broken" below for what it turned out to be.
+Beyond just fixing that, a deploy key can never cover this either
 way — GitHub deploy keys authenticate git-over-SSH only, not the REST/GraphQL API `gh` uses.
 Opening or merging a PR needs a second, independent kind of credential.
 
@@ -35,6 +36,47 @@ transport.
   fix `origin`'s HTTPS push too, which the same invalid token was presumably breaking.
 - **`deploy` remains the push path.** This ticket only adds what's needed for
   `gh pr create` / `gh pr merge`; nothing about pushing branches changes.
+
+## What is actually broken — measured 2026-09-25
+
+The owner asked why this still fails after a sandbox restart. Measured from inside the sandbox:
+
+| Probe                                              | Result                                                 |
+| -------------------------------------------------- | ------------------------------------------------------ |
+| `curl https://api.github.com/user`, no auth header | **401 Requires authentication**                        |
+| `curl …/repos/xela1601/filmnotes`, no auth header  | 200 — but the repo is public now, so this is anonymous |
+| `curl` with a bogus `Authorization: Bearer`        | 401 — the proxy does not replace a header that exists  |
+| `git push --dry-run origin`                        | **`could not read Username for 'https://github.com'`** |
+| `ssh -T git@github.com`, `git push deploy`         | works                                                  |
+
+So **the proxy's GitHub credential injection is dead altogether**, not just for `gh`: HTTPS git
+is gone with it. What still works is the T-019 deploy key over SSH, which is a separate
+mechanism and never depended on this.
+
+The token the sandbox carries is 40 characters and starts `gho_` — an OAuth token, i.e. the
+output of `gh auth token` on the owner's host. That is precisely the path this ticket rejected
+in "Why", arriving through the root `CLAUDE.md`'s documented
+`sbx secret set github -t "$(gh auth token)"`. It was fresh on 2026-09-24, which is why `gh`
+worked then and reported `admin` permissions (the finding recorded on the branch
+`docs/t-020-sandbox-gh-cli-access`, commit `9443de9`, which is **not merged into main**).
+`gho_` tokens rotate on the host; the snapshot handed to the sandbox aged out with it. One
+expired token takes out both paths at once.
+
+This strengthens the case for the fine-grained PAT rather than weakening it: per the decision
+above it has **no expiration**, so it cannot rot the way the `gho_` snapshot did.
+
+Two things to know when doing the steps below:
+
+- **Step 2 is the one that matters right now.** `sbx secret set github --sandbox filmnotes`
+  takes effect immediately; step 3 (global) only applies at the next **recreate**, and the
+  sandbox was merely restarted. If step 3 was already done, that is why nothing changed.
+- **The PAT will fix `gh`, not `git push origin`.** With only `Pull requests: Read and write`
+  there is no `Contents` permission, so HTTPS push stays broken. That is by design — pushing
+  goes through `deploy` over SSH.
+
+The branch `docs/t-020-sandbox-gh-cli-access` also claims the proxy authenticates API traffic
+account-wide. That was true when it was written and is demonstrably false now, so it must not be
+merged as it stands.
 
 ## Steps
 

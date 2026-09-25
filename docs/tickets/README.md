@@ -83,8 +83,12 @@ source-only, and the survey behind that answer turned up a new ticket, T-023, wh
 one still waiting on a decision.
 
 T-020 is blocked on three steps only the owner can do in the GitHub web interface; `gh` still
-fails with `Bad credentials`. The infrastructure tickets T-019 and T-021 are closed - pushing to
-GitHub and `ssh` both work from an ordinary Bash tool call inside the sandbox.
+fails with `Bad credentials`. Measured on 2026-09-25: the sandbox's GitHub credential injection
+is dead for the API _and_ for HTTPS git, because the secret behind it is an expired `gho_`
+snapshot of the host's `gh auth token` - the very path T-020 rejected. Details in the ticket.
+The infrastructure tickets T-019 and T-021 are closed - pushing to GitHub over the deploy key
+and `ssh` both work from an ordinary Bash tool call inside the sandbox, and neither depends on
+that secret.
 
 One thing no agent can finish: **T-016 step 4** needs `npx expo run:ios` on a Mac with Xcode.
 There is no simulator in the sandbox, so the native tab bar can be built and tested here but not
