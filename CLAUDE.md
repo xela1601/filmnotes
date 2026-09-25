@@ -40,9 +40,14 @@ two files in one directory differ only in case – suffix the component (`RollFo
   `docs/tickets/done/T-019-sandbox-push-access.md`.
 - `main` is protected by a branch ruleset (PR required, no force pushes, no branch/tag deletion):
   a direct push to `main` on either remote is rejected. Push a feature branch to `deploy`, then
-  open the PR - `gh pr create` does not work from inside the sandbox (the deploy key has no GitHub
-  API access), so use the "Create a pull request" URL that `git push` prints, or ask the owner to
-  open it.
+  open the PR with `gh pr create` - that works from inside the sandbox since T-020, over a
+  fine-grained token scoped to this repository's pull requests. **Merging stays the owner's
+  call** unless they ask for it explicitly.
+- The token only grants `Pull requests: Read and write` on `filmnotes`. Anything else through the
+  API answers `403`, and `git push` over HTTPS (`origin`) still fails - that is intended, not a
+  misconfiguration. Pushing is the deploy key's job (`deploy`, SSH); the API token's job is the
+  PR. If `gh` ever says `Bad credentials` again, the credential on the host is what to look at,
+  not `GH_TOKEN` inside the sandbox - see `docs/tickets/done/T-020-sandbox-gh-cli-access.md`.
 
 ## Tooling (mise)
 
