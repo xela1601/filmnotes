@@ -54,6 +54,7 @@ Backlog (refined, not scheduled - pick one up when it is worth the time)
   T-016 Native tab bar (Liquid Glass)     apps/mobile/app/(tabs), apps/mobile/e2e
   T-018 Domain package outside the repo?   packages/domain          (one owner decision)
   T-020 gh CLI access from the sandbox     CLAUDE.md (host steps for the owner)
+  T-022 Lab order status in the app        packages/domain, apps/mobile/src/features/rolls (owner decisions)
 ```
 
 Integrator merges each finished ticket branch into `main` in wave order, runs `npm test`, then starts the next wave. Waves 0-3 are merged; what is in the backlog needs a decision from the owner before it starts (each such ticket says which).
