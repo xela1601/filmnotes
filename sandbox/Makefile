@@ -9,7 +9,7 @@ SHELL := /bin/bash
 SANDBOX := filmnotes
 ENV_DIR := ..
 TEMPLATE := filmnotes-sbx:latest
-EXPO_PORT ?= 8081
+EXPO_PORT ?= 8082
 SBX_ENV_ARGS = --env-arg home=$(HOME) --env-arg expoPort=$(EXPO_PORT)
 EXEC := sbx exec $(SANDBOX) -- sh -lc
 
@@ -49,7 +49,7 @@ skills-import: ## Copy ~/.claude/skills into the sbx skills store (all sandboxes
 	sbx skills import --force
 
 doctor: ## Self-test inside the running sandbox: tools, mounts, network, git
-	$(EXEC) 'sandbox-doctor'
+	@$(EXEC) 'command -v sandbox-doctor >/dev/null || { echo "sandbox-doctor missing: the sandbox predates this kit - make sbx-recreate"; exit 1; }; sandbox-doctor'
 
 shell: ## Shell in the running sandbox, without the agent
 	sbx exec -it $(SANDBOX) bash -l

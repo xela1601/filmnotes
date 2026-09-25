@@ -14,7 +14,7 @@ Development of filmnotes runs with Claude Code **inside** a Docker Sandbox, not 
 
 Nothing else: no Node on the host, no `op`, no secrets. The environment file names no user;
 `make` passes your home directory (`--env-arg home=$HOME`) and the Expo host port
-(`EXPO_PORT`, default 8081) to `sbxenv.yaml`.
+(`EXPO_PORT`, default 8082; the sandbox side stays 8081) to `sbxenv.yaml`.
 
 | File                                    | Purpose                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
 | --------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -22,9 +22,9 @@ Nothing else: no Node on the host, no `op`, no secrets. The environment file nam
 | `kit/spec.yaml`                         | Mixin kit (spec v2) applied at sandbox creation: env vars, install commands (no-ops when the template already has the tools), network allow-list, agent instructions, and two generated files: `~/.gitconfig` (identity `github@alexander-schreiner.de`, mirrors the host's `~/.gitconfig-github-xela1601`, **no GPG signing** – the private key stays on the host) and `~/.ssh/config` (GitHub via the deploy key that `sbxenv.yaml` mounts read-only). |
 | `proxy/with-proxy.sh`, `proxy/relay.js` | Run a command with a working proxy: the sandbox proxy requires Basic auth on `CONNECT`, which npm cannot send (`407 Proxy Authentication Required`). `relay.js` is a local proxy that injects the credentials; `with-proxy.sh` starts it, exports `http(s)_proxy` and runs the given command. Needed for `npm install`, `npx expo install`, downloads.                                                                                                   |
 | `mise`, `install-mise.sh`               | [mise](https://mise.jdx.dev) wrapper: fetches the binary from GitHub (mise.jdx.dev is not on the allow-list), redirects mise's data dirs to `$TMPDIR` (`$HOME` is read-only, and tar extraction fails on the virtiofs bind mount) and routes downloads through the proxy wrapper. Tools and tasks are declared in `../mise.toml`.                                                                                                                        |
-| `../sbxenv.yaml`                        | Declarative environment: agent, template, kit with its arguments, bind-mounted workspace, read-only mount of `~/.ssh/id_filmnotes_deploy` (under the `home` argument), ports 8081 (host side via the `expoPort` argument) and 8090.                                                                                                                                                                                                                       |
+| `../sbxenv.yaml`                        | Declarative environment: agent, template, kit with its arguments, bind-mounted workspace, read-only mount of `~/.ssh/id_filmnotes_deploy` (under the `home` argument), ports 8081 (host side via the `expoPort` argument, default 8082) and 8090.                                                                                                                                                                                                                       |
 | `Makefile`                              | The host-side handgrips: `sbx-build`, `sbx-plan`, `sbx-create`, `sbx-run`, `sbx-rm`, `sbx-recreate`, `skills-import`, `doctor`, `shell`, `ports`. Passes `home` and `expoPort` so nobody forgets them. Tasks *inside* the sandbox stay in `../mise.toml`.                                                                                                                                                                                              |
-| `scripts/doctor.sh`                     | Self-test baked into the image as `sandbox-doctor` (`make doctor`): tools, mounts, network policy, git identity, GitHub over the deploy key.                                                                                                                                                                                                                                                                                                              |
+| `kit/files/home/`                       | Files the kit drops under `/home/agent` at creation: `sandbox-doctor` (`make doctor`: tools, mounts, network policy, git identity, GitHub over the deploy key) and `statusline.sh`, the Claude Code status line `[filmnotes] model \| repo branch* \| ctx 42% (84k/200k)`, registered in the sandbox `settings.json` at every start. |
 
 ## One-time
 
@@ -51,11 +51,13 @@ make -C sandbox sbx-run          # creates (or re-attaches to) the sandbox and s
 Inside Claude Code: "Follow docs/HANDOFF.md".
 
 Calling sbx directly works too, the arguments just have to come along:
-`sbx env run --env-arg home=$HOME --env-arg expoPort=8081` (from the repo root). Without them sbx asks.
+`sbx env run --env-arg home=$HOME --env-arg expoPort=8082` (from the repo root). Without them sbx asks.
 Changes to `kit/spec.yaml` only take effect in a new sandbox: `make -C sandbox sbx-recreate`.
 
-Port 8081 is taken on the host (JBoss with a port offset, another Metro)? `make -C sandbox sbx-create EXPO_PORT=8082`
-publishes Expo on 8082 instead; the sandbox side stays 8081. Never free a published port with `kill-port`:
+Expo web is therefore at `http://127.0.0.1:8082` on the host (8081 is taken there by a JBoss with a port
+offset); `make -C sandbox sbx-create EXPO_PORT=8083` picks another one. If a create fails with
+"port not available … remove provisioned secrets", run `make -C sandbox sbx-rm` before the next
+attempt: the half-created environment keeps the old port mapping. Never free a published port with `kill-port`:
 the host-side listener belongs to the sbx daemon, killing it takes every sandbox down. Use
 `sbx ports filmnotes --unpublish 8081` or `sbx stop filmnotes`.
 

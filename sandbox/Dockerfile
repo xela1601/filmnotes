@@ -33,10 +33,6 @@ RUN mkdir -p /opt/pocketbase \
  && chmod 755 /opt/pocketbase/pocketbase \
  && /opt/pocketbase/pocketbase --version
 
-# Self-test (make -C sandbox doctor).
-COPY scripts/doctor.sh /usr/local/bin/sandbox-doctor
-RUN chmod 0755 /usr/local/bin/sandbox-doctor
-
 ENV FILMNOTES_PB_BIN=/opt/pocketbase/pocketbase \
     EXPO_NO_TELEMETRY=1 \
     NPM_CONFIG_UPDATE_NOTIFIER=false \

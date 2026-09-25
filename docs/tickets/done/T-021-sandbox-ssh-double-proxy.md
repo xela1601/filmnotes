@@ -1,9 +1,11 @@
 # T-021 – SSH to GitHub died inside Claude Code's own command sandbox
 
 **Wave:** out of band — infrastructure, found while verifying T-019/T-020 on 2026-09-23/25
-**Depends on:** [T-019](done/T-019-sandbox-push-access.md)
+**Depends on:** [T-019](T-019-sandbox-push-access.md)
 **Owns:** `.claude/settings.json`, `sandbox/Dockerfile`, `sandbox/kit/spec.yaml`, `sbxenv.yaml`,
-`sandbox/README.md`, `sandbox/Makefile`, `sandbox/scripts/doctor.sh`
+`sandbox/README.md`, `sandbox/Makefile`, `sandbox/kit/files/**`
+
+**Status:** done — verified 2026-09-25 from inside a Claude Code Bash tool call (see the last step).
 
 **Goal:** `git push`/`git fetch`/`ssh` to GitHub work from inside a normal Claude Code Bash tool
 call in the sandbox, not just when run some other way (`sbx exec`, a shell outside Claude Code).
@@ -66,19 +68,42 @@ never broken; only the doubly-proxied one was.
 - [x] Parameterize `sbxenv.yaml` and `sandbox/kit/spec.yaml` with `home` (required) and
       `expoPort` (default `8081`) instead of the hardcoded path and port.
 - [x] Add `sandbox/Makefile` (`sbx-build`, `sbx-plan`, `sbx-create`, `sbx-run`, `sbx-rm`,
-      `sbx-recreate`, `skills-import`, `doctor`, `shell`, `ports`) and
-      `sandbox/scripts/doctor.sh`, baked into the image via `sandbox/Dockerfile`.
+      `sbx-recreate`, `skills-import`, `doctor`, `shell`, `ports`) and the `sandbox-doctor`
+      self-test.
+- [x] Move `sandbox-doctor` out of the image and into the kit (`sandbox/kit/files/home/`), and
+      put the Claude Code status line next to it. See "Delivered by the kit, not the image".
+- [x] Default the Expo host port to `8082`. `8081` is taken on this host by a JBoss with a port
+      offset, so every `sbx-create` needed `EXPO_PORT=8082` typed from memory; the sandbox side
+      stays `8081`. `sandbox/README.md` also notes that a failed create keeps its port mapping -
+      `make -C sandbox sbx-rm` before retrying.
 - [x] Update `sandbox/README.md`: host requirements table, the `make` targets, the port-conflict
       and skills-store notes, and the excluded-commands explanation under "Notes".
 - [x] Verified via `sbx exec` (outside Claude Code's command sandbox): `ssh -T git@github.com`
       answers `Hi xela1601/filmnotes!`, `git fetch deploy --dry-run` and
       `git push --dry-run deploy main` both exit `0`.
-- [ ] **Verify from inside a Claude Code Bash tool call**, not `sbx exec` - the thing this ticket
-      is actually for. `.claude/settings.json` is read at session start, so this needs the running
-      session restarted (`make -C sandbox sbx-run`), not the sandbox recreated. First real test:
-      push the commit that's been stuck locally since T-020 (`docs/t-020-sandbox-gh-cli-access`,
-      the correction commit `9443de9` mentioned there) via `git push deploy
-      docs/t-020-sandbox-gh-cli-access`.
+- [x] **Verified from inside a Claude Code Bash tool call** on 2026-09-25, after the session
+      restart that makes `.claude/settings.json` take effect: `ssh -T git@github.com` answers
+      `Hi xela1601/filmnotes!`, and the commit stuck since T-020 landed -
+      `git push deploy docs/t-020-sandbox-gh-cli-access` → `9e1f4db..9443de9`.
+
+## Delivered by the kit, not the image
+
+`sandbox-doctor` first lived in `sandbox/Dockerfile` (`COPY scripts/doctor.sh`), which meant every
+change to it needed `make -C sandbox sbx-build` and a recreate. It is a script, not a tool the
+image provides, so it moved to `sandbox/kit/files/home/.local/bin/` - the kit writes it at
+creation, and the same mechanism now also delivers `~/.claude/statusline.sh`
+(`[filmnotes] model | repo branch* | ctx 42% (84k/200k)`), which a setup command registers in the
+sandbox's `settings.json` at every start, idempotently.
+
+Two consequences worth knowing:
+
+- `make doctor` on an older sandbox reports `sandbox-doctor missing: the sandbox predates this
+  kit - make sbx-recreate` rather than a bare "command not found".
+- Run `sandbox-doctor` from a Claude Code Bash call and its GitHub check reports
+  `[info] … Temporary failure in name resolution`: the script as a whole is not in
+  `excludedCommands`, so its inner `ssh` is back inside the tunnel this ticket is about. Via
+  `make doctor` (i.e. `sbx exec`) the same check passes. It is an `[info]`, not a `[FAIL]`, on
+  purpose.
 
 **Done when:** a `git push`/`git fetch`/`ssh` to GitHub, run as an ordinary Claude Code Bash tool
 call (not `sbx exec`, not the host), succeeds - proven by landing the stuck T-020 correction

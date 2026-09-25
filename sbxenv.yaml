@@ -4,8 +4,9 @@
 # Prerequisite: make -C sandbox sbx-build (template image), see sandbox/README.md.
 #
 # The file names no user: the home directory (the deploy key lives under it) arrives as
-# the argument "home", the host port for Expo as "expoPort". The Makefile passes both;
-# calling sbx directly: sbx env run --env-arg home=$HOME --env-arg expoPort=8081
+# the argument "home", the host port for Expo as "expoPort" (default 8082: 8081 is taken on
+# hosts that run a JBoss with port offset). The Makefile passes both; calling sbx directly:
+#   sbx env run --env-arg home=$HOME --env-arg expoPort=8082
 schemaVersion: "1"
 name: filmnotes
 agent: claude
@@ -15,7 +16,7 @@ args:
     required: true
     description: Home directory on the host, e.g. /Users/<user>; the deploy key ~/.ssh/id_filmnotes_deploy lives under it
   expoPort:
-    default: "8081"
+    default: "8082"
     pattern: "[1-9][0-9]*"
     description: Host port for Expo web / Metro (the sandbox side stays 8081)
 
@@ -43,7 +44,7 @@ sandboxOptions:
   skills: readonly
 
 ports:
-  - sandbox: 8081   # Expo web / Metro; host side via --env-arg expoPort (default 8081)
+  - sandbox: 8081   # Expo web / Metro; host side via --env-arg expoPort (default 8082)
     host: ${{ env.args.expoPort }}
     hostIP: 127.0.0.1
   - sandbox: 8090   # PocketBase (backend/bin or $FILMNOTES_PB_BIN)

@@ -68,11 +68,15 @@ and a `**Status:**` line saying when it was verified. What is left in this direc
 open. Every new requirement becomes a ticket here _before_ it becomes code — including the ones
 that arrive in conversation, which is how T-016, T-017 and T-018 came about.
 
-**Where things stand (audited 2026-09-23):** T-001 to T-014 are delivered - every file those
-tickets name exists, and the full gate is green. Their step checkboxes had simply never been
-ticked, which is bookkeeping and not open work; they are ticked now. **T-015 is the only open
-ticket**, and it sits in the backlog on purpose: it needs three decisions from the owner before
-anyone starts (see the ticket).
+**Where things stand (audited 2026-09-23, revised 2026-09-25):** T-001 to T-014 are delivered -
+every file those tickets name exists, and the full gate is green. Their step checkboxes had
+simply never been ticked, which is bookkeeping and not open work; they are ticked now.
+
+Everything still open is **waiting on the owner, not on an agent**: T-015, T-016, T-018 and T-022
+each need decisions before anyone starts (each ticket says which), and T-020 is blocked on three
+steps only the owner can do in the GitHub web interface. The infrastructure tickets T-019 and
+T-021 are closed - pushing to GitHub and `ssh` both work from an ordinary Bash tool call inside
+the sandbox.
 
 | Ticket                                      | Title                                                   | Owns                                                                                                            | Status  |
 | ------------------------------------------- | ------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------- | ------- |
@@ -95,4 +99,6 @@ anyone starts (see the ticket).
 | [T-017](done/T-017-themes.md)               | Themes and design tokens                                | `apps/mobile/src/ui/themes.ts`, every `StyleSheet` under `apps/mobile`                                          | done    |
 | [T-018](T-018-domain-package-consumable.md) | Domain package consumable outside the repo? — _backlog_ | `packages/domain/package.json`, `packages/domain/tsconfig.json`                                                 | backlog |
 | [T-019](done/T-019-sandbox-push-access.md)  | Repository-scoped push access                           | `sbxenv.yaml`, `sandbox/kit/spec.yaml`, `.git/config` (the remote)                                              | done    |
-| [T-021](T-021-sandbox-ssh-double-proxy.md)  | SSH to GitHub double-proxied inside the command sandbox  | `.claude/settings.json`, `sandbox/Dockerfile`, `sandbox/kit/spec.yaml`, `sbxenv.yaml`, `sandbox/Makefile`       | open    |
+| [T-020](T-020-sandbox-gh-cli-access.md)     | A scoped token so `gh` works from the sandbox — _blocked_ | `CLAUDE.md`; the rest is host steps for the owner                                                             | blocked |
+| [T-021](done/T-021-sandbox-ssh-double-proxy.md) | SSH to GitHub double-proxied inside the command sandbox | `.claude/settings.json`, `sandbox/Dockerfile`, `sandbox/kit/**`, `sbxenv.yaml`, `sandbox/Makefile`         | done    |
+| [T-022](T-022-lab-order-status-in-app.md)   | Lab order status in the app — _backlog_                 | `packages/domain/src/types.ts` (`Roll`), `apps/mobile/src/features/rolls/**`                                    | backlog |

@@ -39,6 +39,19 @@ setup:
           "-c",
           "mkdir -p /home/agent/.ssh && chmod 700 /home/agent/.ssh && chmod 600 /home/agent/.ssh/config",
         ]
+    # Files from kit/files/home land under /home/agent: the self-test (sandbox-doctor) and the
+    # Claude Code status line. Make them executable and register the status line in the
+    # sandbox's settings.json; runs on every start, idempotent.
+    - command:
+        - sh
+        - -c
+        - |
+          chmod 0755 /home/agent/.local/bin/sandbox-doctor /home/agent/.claude/statusline.sh 2>/dev/null || true
+          f=/home/agent/.claude/settings.json
+          [ -s "$f" ] || echo '{}' > "$f"
+          tmp=$(mktemp)
+          jq '.statusLine = {type: "command", command: "~/.claude/statusline.sh", padding: 1}' "$f" > "$tmp" && mv "$tmp" "$f"
+      description: Self-test and status line
   files:
     # Mirrors ~/.gitconfig-github-xela1601 on the host. No GPG signing in the sandbox: the private key stays on the host.
     - path: /home/agent/.gitconfig
@@ -102,4 +115,5 @@ agentInstructions:
     - Pushing to GitHub uses the read-only mounted deploy key (host alias `github-xela1601`). Only push when asked.
     - `docker` is not available. The PocketBase binary is at `$FILMNOTES_PB_BIN` for backend tests.
     - Node/npm are provided by the image; use the project-local npm cache (`.npmrc`).
-    - Ports 8081 (Expo web/Metro) and 8090 (PocketBase) are published to the host.
+    - Ports 8081 (Expo web/Metro) and 8090 (PocketBase) are published to the host; the host side of
+      8081 is chosen at creation (argument expoPort, default 8082), so tell the owner the sandbox port.
