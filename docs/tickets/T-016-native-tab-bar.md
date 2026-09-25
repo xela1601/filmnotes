@@ -1,6 +1,6 @@
 # T-016 – Native tab bar (Liquid Glass on iOS 26, Material 3 on Android)
 
-**Wave:** backlog — ready to start, one decision open
+**Wave:** backlog, ready to start — the open decision was taken on 2026-09-25 (see below)
 **Depends on:** nothing. It replaces one file.
 **Owns:** `apps/mobile/app/(tabs)/_layout.tsx`, `apps/mobile/e2e/jsdomApp.mjs`,
 `apps/mobile/e2e/tour.mjs`, `apps/mobile/e2e/screenshots.mjs`
@@ -35,18 +35,21 @@ stopped it, both found by running it rather than by reading:
    machine with Xcode. Whether it renders at all under Expo Go without a native rebuild is
    likewise unverified.
 
-## The decision
+## The decision, taken 2026-09-25: (a) navigate by route
 
-How should the guided tour reach a tab once the bar is the platform's?
+The guided tour reaches a tab by its route, not by pressing its button: the jsdom and Playwright
+drivers both get a `navigate(path)`, and the two affected scenes use it instead of
+`press("tab-equipment")`.
 
-- **(a) Navigate by route.** Give the jsdom and Playwright drivers a `navigate("/equipment")` and
-  use it in the two scenes instead of `press("tab-equipment")`. Honest about what it tests: the
-  tab bar on web is a third-party component we do not control anyway. _Proposed._
-- **(b) Press by accessible name.** Keep pressing, but find the button by its label through the
-  accessibility tree, which both drivers can do. Closer to what a person does; brittle against
-  translation, since the tour runs in English and the labels come from i18n.
-- **(c) Keep the tab bar we draw ourselves.** The current `Tabs` works everywhere and is fully
-  testable, and no Liquid Glass.
+It is honest about what is still covered. The web tab bar is `react-tabs` rendered by
+`expo-router`, third-party code we neither wrote nor can fix; pressing it tested that library, not
+our app. What the tour is for — the screens behind the tabs, and that they render — is unchanged.
+
+Rejected: **(b) press by accessible name**, which is closer to what a person does but finds the
+button through a translated label while the tour runs in English, so a wording change in i18n
+breaks the test run for no real defect. And **(c) keep the tab bar we draw ourselves**, which
+would have closed this ticket unbuilt and given up Liquid Glass and the scroll-minimising bar —
+the two things that cannot be faked and are the whole reason the ticket exists.
 
 ## Steps
 

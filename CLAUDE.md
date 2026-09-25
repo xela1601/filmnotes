@@ -31,6 +31,24 @@ The repository is bind-mounted from macOS, so `rollForm.ts` and `RollForm.tsx` a
 path for module resolution: imports resolve to the wrong file and `tsc` reports TS1149. Never let
 two files in one directory differ only in case – suffix the component (`RollFormScreen.tsx`).
 
+## Git remotes
+
+- `origin` is the default HTTPS remote. Reads work; a direct push depends on whatever credential
+  the sandbox happens to have at the time and is not guaranteed.
+- `deploy` (`git@github.com:xela1601/filmnotes.git`) is the remote to push through. Inside the
+  sandbox it resolves via SSH to a deploy key scoped to just this repository - see
+  `docs/tickets/done/T-019-sandbox-push-access.md`.
+- `main` is protected by a branch ruleset (PR required, no force pushes, no branch/tag deletion):
+  a direct push to `main` on either remote is rejected. Push a feature branch to `deploy`, then
+  open the PR with `gh pr create` - that works from inside the sandbox since T-020, over a
+  fine-grained token scoped to this repository's pull requests. **Merging stays the owner's
+  call** unless they ask for it explicitly.
+- The token only grants `Pull requests: Read and write` on `filmnotes`. Anything else through the
+  API answers `403`, and `git push` over HTTPS (`origin`) still fails - that is intended, not a
+  misconfiguration. Pushing is the deploy key's job (`deploy`, SSH); the API token's job is the
+  PR. If `gh` ever says `Bad credentials` again, the credential on the host is what to look at,
+  not `GH_TOKEN` inside the sandbox - see `docs/tickets/done/T-020-sandbox-gh-cli-access.md`.
+
 ## Tooling (mise)
 
 CLI tooling and the task runner are managed with [mise](https://mise.jdx.dev); `mise.toml` pins

@@ -17,7 +17,8 @@ counts. An opinion is not a finding; an executed attack is.
 `README.md`, `CLAUDE.md`, `docs/*.md` and the project's stated goal of being easy to maintain and
 extend — not invented for the review.
 
-- **A1–A5** layering: the domain package is pure and consumable; the workspace graph is acyclic
+- **A1–A5** layering: the domain package is pure and consumable (A1's second half was withdrawn
+  in T-018 — the package is pure, not portable); the workspace graph is acyclic
   and one-directional; every cross-workspace import is declared; shared logic exists once; every
   workspace's suite runs alone.
 - **B1–B7** extensibility: a film stock is data only; an export target needs one registration
@@ -42,25 +43,25 @@ extend — not invented for the review.
 so none was dropped as a hypothesis. The referee upheld 15, rejected 1 and returned 1 as a gap in
 the specification itself.
 
-| #      | Claim | Verdict  | Severity | Fix                                                              | Re-run                          |
-| ------ | ----- | -------- | -------- | ---------------------------------------------------------------- | ------------------------------- |
-| R1-F1  | A1    | VALID    | major    | not fixed at the cause — see T-018; purity guarded by a new test | guard passes, claim still fails |
-| R1-F2  | A4    | INVALID  | —        | two different transport adapters, not copies                     | —                               |
-| R1-F3  | B2    | VALID    | major    | one table in `features/export/exporterConfig.ts`                 | passes                          |
-| R1-F4  | B6    | VALID    | major    | the language wiring is one file, `i18n/resources.ts`             | passes                          |
-| R1-F5  | B7    | VALID    | major    | `ui/themes.ts` + 23 files converted + two guard tests            | passes                          |
-| R1-F6  | C2    | VALID    | major    | the CLI reads the same accepted-type list as the app             | passes                          |
-| R1-F7  | D6    | VALID    | major    | the ancestry check tests the tagged commit, not `GITHUB_SHA`     | passes                          |
-| R1-F8  | D5    | VALID    | minor    | `scripts/check-release-version.mjs` walks every manifest         | passes                          |
-| R1-F9  | E1    | VALID    | minor    | the README no longer enumerates the mise tasks                   | passes                          |
-| R1-F10 | E2    | VALID    | major    | the Compose project is named, so the volume name is stable       | passes                          |
-| R1-F11 | E4    | VALID    | minor    | the layout tree lists every tracked top-level directory          | passes                          |
-| R1-F12 | E3    | VALID    | major    | README and workflow.md describe the foreground sync correctly    | passes                          |
-| R2-F1  | D7    | VALID    | minor    | the Dockerfile comment names `publish.yaml`                      | passes                          |
-| R2-F2  | D7    | VALID    | minor    | both `.env.example` files name `compose.yaml`                    | passes                          |
-| R2-F3  | E2    | SPEC GAP | —        | fixed anyway: §5 described a build the server does not do        | passes                          |
-| R2-F4  | B6    | VALID    | major    | the language picker derives from `SUPPORTED_LANGUAGES`           | passes                          |
-| R2-F5  | B7    | VALID    | major    | font weight and letter spacing are tokens; guard extended        | passes                          |
+| #      | Claim | Verdict  | Severity | Fix                                                                                                                                                                         | Re-run                        |
+| ------ | ----- | -------- | -------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------- |
+| R1-F1  | A1    | VALID    | major    | not fixed at the cause — [T-018](../tickets/done/T-018-domain-package-consumable.md) closed it by narrowing the claim to "pure, not portable"; purity guarded by a new test | guard passes, claim withdrawn |
+| R1-F2  | A4    | INVALID  | —        | two different transport adapters, not copies                                                                                                                                | —                             |
+| R1-F3  | B2    | VALID    | major    | one table in `features/export/exporterConfig.ts`                                                                                                                            | passes                        |
+| R1-F4  | B6    | VALID    | major    | the language wiring is one file, `i18n/resources.ts`                                                                                                                        | passes                        |
+| R1-F5  | B7    | VALID    | major    | `ui/themes.ts` + 23 files converted + two guard tests                                                                                                                       | passes                        |
+| R1-F6  | C2    | VALID    | major    | the CLI reads the same accepted-type list as the app                                                                                                                        | passes                        |
+| R1-F7  | D6    | VALID    | major    | the ancestry check tests the tagged commit, not `GITHUB_SHA`                                                                                                                | passes                        |
+| R1-F8  | D5    | VALID    | minor    | `scripts/check-release-version.mjs` walks every manifest                                                                                                                    | passes                        |
+| R1-F9  | E1    | VALID    | minor    | the README no longer enumerates the mise tasks                                                                                                                              | passes                        |
+| R1-F10 | E2    | VALID    | major    | the Compose project is named, so the volume name is stable                                                                                                                  | passes                        |
+| R1-F11 | E4    | VALID    | minor    | the layout tree lists every tracked top-level directory                                                                                                                     | passes                        |
+| R1-F12 | E3    | VALID    | major    | README and workflow.md describe the foreground sync correctly                                                                                                               | passes                        |
+| R2-F1  | D7    | VALID    | minor    | the Dockerfile comment names `publish.yaml`                                                                                                                                 | passes                        |
+| R2-F2  | D7    | VALID    | minor    | both `.env.example` files name `compose.yaml`                                                                                                                               | passes                        |
+| R2-F3  | E2    | SPEC GAP | —        | fixed anyway: §5 described a build the server does not do                                                                                                                   | passes                        |
+| R2-F4  | B6    | VALID    | major    | the language picker derives from `SUPPORTED_LANGUAGES`                                                                                                                      | passes                        |
+| R2-F5  | B7    | VALID    | major    | font weight and letter spacing are tokens; guard extended                                                                                                                   | passes                        |
 
 ### The three that were worth the whole exercise
 

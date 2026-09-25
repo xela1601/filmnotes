@@ -1,10 +1,8 @@
 # Custom Docker Sandboxes template for developing filmnotes with Claude Code.
 # Build and load into the sandbox runtime's own image store (on the host, outside any sandbox):
-#   docker build -t filmnotes-sbx:latest sandbox/
-#   docker save filmnotes-sbx:latest -o /tmp/filmnotes-sbx.tar
-#   sbx template load /tmp/filmnotes-sbx.tar
+#   make -C sandbox sbx-build      (= docker build + sbx template load)
 # Use:
-#   sbx env run            (sbxenv.yaml references this tag)
+#   make -C sandbox sbx-run        (sbxenv.yaml references this tag)
 #   sbx run -t filmnotes-sbx:latest claude --kit ./sandbox/kit
 FROM docker/sandbox-templates:claude-code
 

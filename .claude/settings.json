@@ -16,6 +16,18 @@
         "nodejs.org"
       ],
       "allowLocalBinding": true
-    }
+    },
+    "excludedCommands": [
+      "git push *",
+      "git push",
+      "git fetch *",
+      "git fetch",
+      "git pull *",
+      "git pull",
+      "git ls-remote *",
+      "git remote update*",
+      "ssh *",
+      "ssh-keyscan *"
+    ]
   }
 }

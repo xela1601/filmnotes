@@ -1,13 +1,30 @@
 # Docker Sandboxes environment for filmnotes (sbx >= 0.43).
-#   sbx env plan      # preview
-#   sbx env run       # create sandbox + attach Claude Code
-# Prerequisite (optional but recommended): docker build -t filmnotes-sbx:latest sandbox/
+#   make -C sandbox sbx-plan      # preview
+#   make -C sandbox sbx-run       # create sandbox + attach Claude Code
+# Prerequisite: make -C sandbox sbx-build (template image), see sandbox/README.md.
+#
+# The file names no user: the home directory (the deploy key lives under it) arrives as
+# the argument "home", the host port for Expo as "expoPort" (default 8082: 8081 is taken on
+# hosts that run a JBoss with port offset). The Makefile passes both; calling sbx directly:
+#   sbx env run --env-arg home=$HOME --env-arg expoPort=8082
 schemaVersion: "1"
 name: filmnotes
 agent: claude
 
+args:
+  home:
+    required: true
+    description: Home directory on the host, e.g. /Users/<user>; the deploy key ~/.ssh/id_filmnotes_deploy lives under it
+  expoPort:
+    default: "8082"
+    pattern: "[1-9][0-9]*"
+    description: Host port for Expo web / Metro (the sandbox side stays 8081)
+
 kits:
   - source: ./sandbox/kit
+    args:
+      home: ${{ env.args.home }}
+      repo: ${{ env.projectDir }}
 
 # Bind-mount the repository itself (not clone mode) so git commits land directly in this checkout.
 workspace:
@@ -17,8 +34,24 @@ workspace:
 # GitHub deploy key, read-only, at the same absolute path inside the sandbox
 # (the kit's ~/.ssh/config points IdentityFile there). No SSH agent is needed.
 additionalWorkspaces:
-  - path: /Users/alexander.schreiner/.ssh/id_filmnotes_deploy
+  - path: ${{ env.args.home }}/.ssh/id_filmnotes_deploy
     readOnly: true
+
+# GitHub token for the built-in "github" service: read from Bitwarden on the host when the
+# sandbox is created ("My Vault" > GitHub > "sbx-filmnotes", see sandbox/host/bw-github-token.sh).
+# The proxy injects it for GitHub; inside the sandbox GH_TOKEN holds a placeholder only.
+# The vault has to be unlocked (BW_SESSION); make -C sandbox sbx-create takes care of that.
+# Declarative equivalent of: sbx secret set github --sandbox filmnotes -t "$GH_TOKEN"
+secrets:
+  github:
+    command: ./sandbox/host/bw-github-token.sh
+
+bindings:
+  github:
+    apiKey:
+      domains:
+        - api.github.com
+        - github.com
 
 sandboxOptions:
   template: filmnotes-sbx:latest
@@ -27,8 +60,8 @@ sandboxOptions:
   skills: readonly
 
 ports:
-  - sandbox: 8081   # Expo web / Metro
-    host: 8081
+  - sandbox: 8081   # Expo web / Metro; host side via --env-arg expoPort (default 8082)
+    host: ${{ env.args.expoPort }}
     hostIP: 127.0.0.1
   - sandbox: 8090   # PocketBase (backend/bin or $FILMNOTES_PB_BIN)
     host: 8090
