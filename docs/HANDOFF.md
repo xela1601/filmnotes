@@ -1,100 +1,94 @@
 # HANDOFF – how to continue this project in a fresh Claude Code session
 
-This file exists because the planning session ran on the macOS host inside the Claude Code
-sandbox, which forbids creating `.git` in the project directory. Development runs inside a
-Docker Sandbox started with `sbx env run` from this directory (see `sandbox/README.md`;
-`sbxenv.yaml` wires the custom template, the kit with git identity, ports and SSH agent).
-Follow the steps below in order.
+Last rewritten 2026-09-25. It described bootstrapping the repository until then — `git init`,
+waves 0–3 — which has been wrong for weeks and would have told a fresh session to re-initialise
+an existing repository. If what you read here no longer matches what you find, fix this file in
+the same session; a handoff that lies is worse than none.
+
+## Where the project stands
+
+The application is built and merged. T-001 to T-014 delivered the monorepo, the domain rules,
+the presets, the PocketBase backend, the Expo app with roll/frame/equipment/scan/export UI, the
+sync engine, the CLI and the docs; T-017 added themes. The gate is green: **695 tests**, ESLint
+and Prettier clean.
+
+The three sandbox tickets are closed too. Inside the sandbox you can `ssh` and `git push` over
+the deploy key, and open PRs with `gh`, all from an ordinary Bash tool call.
+
+**Nothing is waiting on the owner.** Four tickets are decided and ready to start:
+
+| Ticket                                            | What it is                                  | Note                                               |
+| ------------------------------------------------- | ------------------------------------------- | -------------------------------------------------- |
+| [T-023](tickets/T-023-backend-domain-drift.md)    | Guard the backend schema against `types.ts` | smallest; protects the other three                 |
+| [T-022](tickets/T-022-lab-order-status-in-app.md) | Lab order status in the app                 | step 0 measures the `config` parameter first       |
+| [T-015](tickets/T-015-scan-metadata.md)           | Frame metadata into the scans (EXIF)        | XMP is a later pass                                |
+| [T-016](tickets/T-016-native-tab-bar.md)          | Native tab bar                              | **step 4 needs the owner's Mac**, not this sandbox |
+
+Each ticket carries the owner's decision _and what it costs_. Do not re-open a decision that is
+recorded there; if you think one is wrong, say so and let the owner choose again.
 
 ## 0. Context to load first
 
-1. `prompt.md` – the owner's original brief (German).
-2. `docs/superpowers/specs/2026-09-18-analogue-photography-app-design.md` – the approved design.
-3. `docs/tickets/README.md` – ticket index, waves, ownership rules, global constraints.
-4. `CLAUDE.md` in the repo root (created by T-001; until then the conventions are in the ticket index).
+1. `docs/tickets/README.md` — the board: status of every ticket, the global constraints.
+2. `CLAUDE.md` in the repo root — conventions, git remotes, how to run commands that need the
+   network. Read it before the first `npm install`.
+3. Your ticket in `docs/tickets/`.
+4. `docs/superpowers/specs/2026-09-18-analogue-photography-app-design.md` — the design, when the
+   ticket argues from it.
 
-Owner decisions already taken (do not re-ask): Expo + TypeScript; offline-first with PocketBase sync;
-single user now, multi-user-ready schema; scans via folder/ZIP import (no lab API exists);
-auto-match by filename + manual correction; exporters WordPress + share package, extensible;
-code/docs English, UI de+en; TDD; conventional commits; parallel agents, one ticket each.
+`prompt.md` holds the owner's original brief. Owner decisions already taken, do not re-ask:
+Expo + TypeScript; offline-first with PocketBase sync; single user now, multi-user-ready schema;
+scans via folder/ZIP import; auto-match by filename with manual correction; exporters WordPress
+plus share package; code and docs English, UI `de`+`en`; TDD; conventional commits.
 
-## 1. Environment check (inside the Docker sandbox)
-
-```bash
-node --version      # ≥ 20 required (22 preferred)
-npm --version
-git --version
-unzip -v | head -1  # optional, used by backend fetch script
-```
-
-Docker is **not** available inside the sandbox; the backend is tested with the PocketBase binary.
-The sandbox provides it at `$FILMNOTES_PB_BIN` (`/opt/pocketbase/pocketbase`); T-004's fetch script
-must use that path when the variable is set and only download otherwise.
-
-If `.claude/settings.json` (Claude Code sandbox settings from the host) causes warnings in the
-container (bubblewrap missing), that is expected: `failIfUnavailable` is false. Do not delete the
-file – the owner decides about it.
-
-## 2. Initialise git (first thing, nothing else before)
+## 1. Check the environment
 
 ```bash
-git init -b main
-git config user.name            # must print "Alexander Schreiner" (from the kit's ~/.gitconfig)
-git config user.email           # must print github@alexander-schreiner.de – if not, stop and tell the owner
-git add prompt.md Minolta_7000_AF_Preset.md docs .claude .npmrc sandbox sbxenv.yaml
-git commit -m "docs: project brief, design spec, ticket plan and sandbox setup"
+make -C sandbox doctor     # from the host: tools, mounts, network policy, git identity, GitHub
 ```
 
-Commit trailer for every commit: `Co-Authored-By: Claude <noreply@anthropic.com>` (use the model
-name the session reports).
+From inside a Claude Code Bash call, run `sandbox-doctor` directly — but note its GitHub check
+reports `[info] … name resolution` there, because the script as a whole is not in
+`excludedCommands` and its inner `ssh` lands back in Claude Code's own tunnel. Via `make doctor`
+the same check passes. That is expected, not a fault; see
+`docs/tickets/done/T-021-sandbox-ssh-double-proxy.md`.
 
-## 3. Wave 0 – T-001 yourself (sequential)
+Docker is **not** available inside the sandbox. The PocketBase binary is at `$FILMNOTES_PB_BIN`.
 
-Execute `docs/tickets/done/T-001-monorepo-scaffold.md` step by step in the main session. It creates the
-type contracts everything else depends on. Verify `npm test` and commit as specified.
+## 2. Work the ticket
 
-## 4. Waves 1–3 – parallel subagents in worktrees
+TDD, as the board says: failing test → run → implement → run → commit, ticking the step's
+checkbox in the same commit as the work. Stay inside the paths your ticket lists under **Owns**.
 
-Use the `superpowers:subagent-driven-development` skill. For each ticket of the current wave:
+Before reporting done: `npm test`, `npm run lint`, `npm run format` at the repo root. Anything a
+user would notice also needs a changeset (`mise run changeset`) in the same commit.
 
-1. Create a worktree + branch: `git worktree add .claude/worktrees/T-00X -b ticket/T-00X-<slug> main`
-   (`.claude/worktrees/` is git-ignored by T-001).
-2. Dispatch one subagent with `isolation: "worktree"` or pointing at that path. Its prompt must contain:
-   the ticket file path, the spec path, the ticket index (constraints), the instruction to run
-   `npm install` at its worktree root once, TDD, commits with conventional messages, and to report
-   back: commits made, test output summary, any request for shared-file changes (root config,
-   `app.json`), open questions.
-3. When a wave's agents report done: for each branch in dependency order
-   `git merge --no-ff ticket/T-00X-…` into `main`, resolve conflicts (shared files only:
-   `package-lock.json`, `app.json`, `apps/mobile/package.json`), run `npm install && npm test`
-   at the root, fix or send back to the agent, commit the merge.
-4. Apply the agents' requested shared-file changes yourself (e.g. `expo-location` plugin in
-   `app.json`, `backend` exclusion in root jest config) in a small `chore:` commit.
-5. Remove merged worktrees: `git worktree remove .claude/worktrees/T-00X`.
+Commands that touch the network need the proxy wrapper — `sandbox/proxy/with-proxy.sh npm install`.
+`git`, `curl` and Node's `fetch` do not. `CLAUDE.md` has the details and the Expo `$HOME` caveat.
 
-Wave order and dependencies are in `docs/tickets/README.md`. Wave 1 = T-002, T-003, T-004, T-005
-in parallel. Wave 2 = T-006, T-007, T-008, T-010. Wave 3 = T-009, T-011, T-012, T-013, then T-014.
+## 3. Land the work
 
-Rules for the agents (copy into every prompt):
+`main` is protected: no direct push, no force push, no branch deletion on it. The route is
 
-- Only edit paths under your ticket's **Owns**. Never edit root config or another ticket's files.
-- Failing test first. Root `npm test` green before reporting done.
-- If a needed interface from another ticket is missing in your worktree (because that ticket is not
-  merged yet), stub it locally under your own paths with a `// TODO(T-00X)` comment and tell the
-  integrator; do not implement another ticket's scope.
-- Use `npx expo install` for Expo packages, plain `npm install <pkg> -w <workspace>` otherwise.
-- Do not run `docker`, do not touch `backend/pb_data`, never commit secrets.
+```bash
+git checkout -b <type>/<slug>
+git push -u deploy <branch>                      # deploy = SSH, the deploy key
+gh pr create --repo xela1601/filmnotes --fill    # works since T-020
+```
 
-## 5. Verification before declaring the project done
+`git push origin` over HTTPS fails by design — the API token carries no `Contents` permission.
+**Merging stays the owner's call** unless they ask for it. They squash-merge, so afterwards
+reset your local `main` to `deploy/main` rather than merging it back.
 
-- `npm test` at root is green, `npm run typecheck` clean.
-- `npx expo export --platform web -w @filmnotes/mobile` succeeds.
-- Backend smoke test green with the fetched binary.
-- Core scenario (spec §2.1 steps 1–4) walked through in the web build; steps 5–6 with the local
-  PocketBase and 3 sample JPEGs (generate them with a tiny script; do not download images).
-- `docs/workflow.md` and `docs/deployment.md` exist and match the real scripts.
+## 4. If something about GitHub breaks
 
-## 6. Report to the owner (German is fine)
+Look at the credential on the host, never at `GH_TOKEN` inside the sandbox — that is a
+placeholder the proxy swaps, and reading it tells you nothing. The token comes from Bitwarden at
+sandbox creation (`secrets.github.command` in `sbxenv.yaml`), so a locked vault at
+`make -C sandbox sbx-create` is the usual cause. `docs/tickets/done/T-020-sandbox-gh-cli-access.md`
+records the whole diagnosis, including two measurements that look like evidence and are not.
 
-List: merged tickets, test counts, what was verified manually, decisions taken on their behalf
-(add them to spec §7), open items, and the exact commands to run the web app and the backend.
+## 5. Report to the owner
+
+German is fine. Say what was done, what the tests show, what you decided on their behalf, and
+what is still open — including anything you could not verify from inside the sandbox.
