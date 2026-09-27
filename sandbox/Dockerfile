@@ -2,7 +2,7 @@
 # Build and load into the sandbox runtime's own image store (on the host, outside any sandbox):
 #   make -C sandbox sbx-build      (= docker build + sbx template load)
 # Use:
-#   make -C sandbox sbx-run        (sbxenv.yaml references this tag)
+#   sbx tui / sbx run --name filmnotes   (sbxenv.yaml references this tag)
 #   sbx run -t filmnotes-sbx:latest claude --kit ./sandbox/kit
 FROM docker/sandbox-templates:claude-code
 

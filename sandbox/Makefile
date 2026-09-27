@@ -20,7 +20,7 @@ BW_SESSION_CMD = if [ "$$(bw status 2>/dev/null | jq -r .status)" != "unlocked" 
 	echo "Bitwarden: unlocking the vault (master password) ..."; BW_SESSION="$$(bw unlock --raw)" || exit 1; export BW_SESSION; fi
 
 .DEFAULT_GOAL := help
-.PHONY: help sbx-build sbx-plan sbx-create sbx-run sbx-rm sbx-recreate skills-import doctor shell ports
+.PHONY: help sbx-build sbx-plan sbx-create sbx-attach sbx-rm sbx-recreate skills-import doctor shell ports
 
 help: ## This overview
 	@grep -hE '^[a-zA-Z0-9_-]+:.*?## ' $(MAKEFILE_LIST) \
@@ -35,14 +35,23 @@ sbx-build: ## Build the template image and load it into the sbx VM (again after 
 sbx-plan: ## Show what "make sbx-create" would create (mounts, args, ports)
 	sbx env plan $(ENV_DIR) $(SBX_ENV_ARGS)
 
+# sbx hides the output of a failing secret command ("exit status 1"), so the token script
+# runs once beforehand where its message is visible; only the length is printed.
+BW_PREFLIGHT = set -o pipefail; n=$$(./host/bw-github-token.sh | wc -c | tr -d " ") || exit 1; \
+	[ "$$n" -gt 0 ] || { echo "Bitwarden delivered an empty GitHub token."; exit 1; }; echo "Bitwarden: GitHub token found ($$n characters)."
+
 sbx-create: ## Create the sandbox "filmnotes" (reads the GitHub token from Bitwarden)
-	@$(BW_SESSION_CMD); sbx env create -y $(ENV_DIR) $(SBX_ENV_ARGS)
+	@$(BW_SESSION_CMD); $(BW_PREFLIGHT); sbx env create -y $(ENV_DIR) $(SBX_ENV_ARGS)
 
-sbx-run: ## Start Claude Code in the sandbox (creates it when missing)
-	@$(BW_SESSION_CMD); sbx env run $(ENV_DIR) $(SBX_ENV_ARGS)
+# Entering the sandbox is plain sbx, not make: "sbx tui" (dashboard; the session entered from
+# there shows the changes pane) or "sbx run --name filmnotes" (direct attach).
+sbx-attach: ## Attach to the sandbox directly and start Claude Code (sbx run --name)
+	sbx run --name $(SANDBOX)
 
+# Tolerant: a missing sandbox is not an error, so sbx-recreate also works the first time.
 sbx-rm: ## Remove the sandbox and everything it provisioned
-	sbx env rm $(ENV_DIR) $(SBX_ENV_ARGS)
+	@if sbx ls 2>/dev/null | awk 'NR>1 {print $$1}' | grep -qx "$(SANDBOX)"; then sbx env rm $(ENV_DIR) $(SBX_ENV_ARGS); \
+	else echo "Sandbox $(SANDBOX) does not exist - nothing to remove."; fi
 
 # Kit changes only take effect in a new sandbox; "sbx env plan" compares the environment
 # file, not the kit's content.
