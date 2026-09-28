@@ -1,9 +1,9 @@
 # T-025 – Scans that arrive upside down
 
-**Wave:** backlog — **waiting on the owner** (questions below), written 2026-09-28
+**Wave:** backlog, ready to start — the owner answered on 2026-09-28
 **Depends on:** T-009/T-013 (scan import, app and CLI); touches T-015 (EXIF writing) and T-024
 (lab profiles), see "Decided so far"
-**Owns:** to be settled with the answers — likely `packages/domain/src/scanUpload.*`, the scan
+**Owns:** the scan
 review in `apps/mobile/src/features/scans/**`, `tools/scan-import/src/**`
 
 **Goal:** a roll whose scans come back rotated can be put the right way up once, in filmnotes,
@@ -27,7 +27,21 @@ export and the share package would all show the picture upside down.
 
 ## Decided so far
 
-Nothing — the questions come first. What the ticket proposes, for the owner to accept or change:
+The owner answered on 2026-09-28, in their words: _"alle auf einmal drehen mit einem Knopfdruck
+hört sich gut an"_ and _"Drehrichtung musst du dir nicht merken"_.
+
+- **In the app, one button, all scans of the import at once.** Worth doing (question 1: yes).
+  The button turns every scan of the current import by 180° — the one case measured. Chosen on
+  the owner's behalf, and open to change: a single 180° button rather than a 90° step per press,
+  because a strip scanner rotates the whole roll the same way and 90° only happens to single
+  frames, which nobody has asked for. **Out of scope:** rotating one scan on its own, and 90°.
+- **The pixels are turned, nothing is remembered** (questions 2 and 3). The file that is uploaded
+  is the rotated image; there is no `Orientation` tag, no field on `Scan`, no migration, and no
+  export that has to know. The cost, stated plainly: one JPEG re-encode per scan, written at high
+  quality (0.95) so the loss stays below what a 2.9 MP lab scan shows.
+- **No profile default** — unchanged from the proposal below; one roll proves nothing about dm.
+
+What the ticket had proposed before the answers, kept for the record:
 
 - **A rotation in the scan review**, for all scans of the import at once and for a single scan
   (0 / 90 / 180 / 270), because the evidence says "per roll" and a home scanner can get single
@@ -53,4 +67,12 @@ Nothing — the questions come first. What the ticket proposes, for the owner to
 
 ## Steps
 
-To be written once the questions are answered.
+- [ ] **Step 1: the rotation, pure.** A function in the scan import model that marks the whole
+      import as "turned by 180°" and back (pressing twice restores it). Failing test first.
+- [ ] **Step 2: the app.** A button "Alle drehen" in the scan review; the thumbnails show the
+      turned state before anything is uploaded; the upload writes the rotated JPEG (Expo's image
+      manipulator, which the app does not depend on yet). i18n `de` + `en`.
+- [ ] **Step 3: the CLI.** `filmnotes-import --rotate 180` does the same for the desktop route, so
+      both import paths can produce the same files.
+- [ ] **Step 4:** changeset (`minor`), `npm test`, `npm run lint`, `npm run format`; a line in
+      `docs/workflow.md` next to the dm route.
