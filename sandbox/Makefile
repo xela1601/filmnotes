@@ -27,9 +27,10 @@ help: ## This overview
 		| awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-14s\033[0m %s\n", $$1, $$2}'
 
 # sandboxd has its own image store; images built in Docker Desktop are invisible to it.
+# sbx template load reads a file only, not stdin (sbx 0.45).
 sbx-build: ## Build the template image and load it into the sbx VM (again after Dockerfile changes)
 	docker build -t $(TEMPLATE) .
-	docker save $(TEMPLATE) | sbx template load -
+	@tmp=$$(mktemp -t filmnotes-sbx).tar; docker save $(TEMPLATE) -o "$$tmp" && sbx template load "$$tmp"; rc=$$?; rm -f "$$tmp"; exit $$rc
 	sbx template ls | grep -q "$(TEMPLATE)" && echo "template loaded: $(TEMPLATE)"
 
 sbx-plan: ## Show what "make sbx-create" would create (mounts, args, ports)

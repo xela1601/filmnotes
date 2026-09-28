@@ -52,6 +52,14 @@ setup:
           tmp=$(mktemp)
           jq '.statusLine = {type: "command", command: "~/.claude/statusline.sh", padding: 1}' "$f" > "$tmp" && mv "$tmp" "$f"
       description: Self-test and status line
+    # The base image bakes in one Claude Code version (as of the image build); newer models
+    # require newer versions. The updater may reach downloads.claude.ai (granted by sbx), so
+    # update at every start, before the first session.
+    # Login shell (-l) so /etc/sandbox-persistent.sh with the proxy variables is loaded;
+    # absolute path because PATH does not contain ~/.local/bin at start. Output goes to
+    # /tmp/claude-update.log in case it does not work.
+    - command: ["sh", "-lc", "timeout 180 /home/agent/.local/bin/claude update >/tmp/claude-update.log 2>&1 || true"]
+      description: Bring Claude Code up to date
   files:
     # Mirrors ~/.gitconfig-github-xela1601 on the host. No GPG signing in the sandbox: the private key stays on the host.
     - path: /home/agent/.gitconfig

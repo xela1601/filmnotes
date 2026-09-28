@@ -40,5 +40,8 @@ ENV FILMNOTES_PB_BIN=/opt/pocketbase/pocketbase \
 
 # User-level tools: agent. Expo needs Node >= 20; fail the build early if the base image is older.
 USER agent
+# The base image bakes in one Claude Code version; update at build time so fresh sandboxes
+# do not start with a version that lacks current models (the kit also updates at every start).
+RUN claude update || true; claude --version
 RUN node -e 'const v=+process.versions.node.split(".")[0]; if (v<20) { console.error("Node >= 20 required, got", process.version); process.exit(1) } console.log("node", process.version)' \
  && npm --version
