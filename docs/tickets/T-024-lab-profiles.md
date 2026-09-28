@@ -220,7 +220,7 @@ same day to read it (see "Decisions taken"); it is step 3b.
       one folder per roll, scan in shooting order, `--dry-run` first, then the import. Say plainly
       what the trade is — a standalone scanner bakes its conversion into a JPEG, and the negatives
       remain the archive.
-- [ ] **Step 7:** changeset (`minor` — new capability and a changed workflow), `npm test`,
+- [x] **Step 7:** changeset (`minor` — new capability and a changed workflow), `npm test`,
       `npm run lint`, `npm run format`.
 
 ## What this does to T-022
