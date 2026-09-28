@@ -5,6 +5,7 @@
  * files are sorted naturally and handed to the frames ordered by frame number. The result is a
  * proposal the user corrects in the review screen with `shiftAssignments`.
  */
+import { frameNumberFromFileName } from "./labProfile";
 import type { Frame, Id } from "./types";
 
 export interface ScanAssignment {
@@ -66,12 +67,35 @@ function assign(fileName: string, sortIndex: number, frame: Frame | undefined): 
 /**
  * Proposes one frame per file: the n-th file in natural order goes to the n-th frame of the roll.
  * Surplus files stay unassigned; surplus frames are simply not used.
+ *
+ * With a lab profile's `scanFrameNumberPattern` the file names decide instead, wherever they
+ * carry a number (T-024): a lab that scans only the frames with an image delivers negatives
+ * 25-36 as its first twelve files. A file whose name carries no number, a second file claiming
+ * the same frame, or a number the roll has no frame for stays unassigned rather than guessed at.
+ * If the pattern matches no name at all - a home scanner's `IMG_0001.JPG` - the natural order
+ * applies exactly as without a pattern.
  */
-export function matchScansToFrames(fileNames: string[], frames: Frame[]): ScanAssignment[] {
+export function matchScansToFrames(
+  fileNames: string[],
+  frames: Frame[],
+  frameNumberPattern: string | null = null,
+): ScanAssignment[] {
   const ordered = orderedFrames(frames);
-  return [...fileNames]
-    .sort(naturalCompare)
-    .map((fileName, sortIndex) => assign(fileName, sortIndex, ordered[sortIndex]));
+  const sorted = [...fileNames].sort(naturalCompare);
+  const numbers = sorted.map((fileName) => frameNumberFromFileName(frameNumberPattern, fileName));
+
+  if (numbers.every((frameNo) => frameNo === null)) {
+    return sorted.map((fileName, sortIndex) => assign(fileName, sortIndex, ordered[sortIndex]));
+  }
+
+  const claimed = new Set<number>();
+  return sorted.map((fileName, sortIndex) => {
+    const frameNo = numbers[sortIndex] ?? null;
+    const frame = frameNo === null ? undefined : ordered.find((f) => f.frameNo === frameNo);
+    if (!frame || claimed.has(frame.frameNo)) return assign(fileName, sortIndex, undefined);
+    claimed.add(frame.frameNo);
+    return assign(fileName, sortIndex, frame);
+  });
 }
 
 /**

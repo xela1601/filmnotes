@@ -11,11 +11,19 @@ import type { Frame, Id, ScanAssignment } from "@filmnotes/domain";
 
 import type { PickedFile } from "./pickScans";
 
-/** The initial proposal: the n-th file in natural name order onto the n-th frame. */
-export function buildAssignments(files: PickedFile[], frames: Frame[]): ScanAssignment[] {
+/**
+ * The initial proposal: the n-th file in natural name order onto the n-th frame - or, with the
+ * roll's lab profile pattern, the frame each file name carries (T-024).
+ */
+export function buildAssignments(
+  files: PickedFile[],
+  frames: Frame[],
+  frameNumberPattern: string | null = null,
+): ScanAssignment[] {
   return matchScansToFrames(
     files.map((file) => file.name),
     frames,
+    frameNumberPattern,
   );
 }
 

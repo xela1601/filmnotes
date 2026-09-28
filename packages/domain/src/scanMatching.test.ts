@@ -70,6 +70,54 @@ describe("matchScansToFrames", () => {
   });
 });
 
+describe("matchScansToFrames with the lab's file-name pattern", () => {
+  const DM = "Neg\\.Nr\\.(\\d+)";
+  const roll = Array.from({ length: 36 }, (_, index) => frame(index + 1));
+  // The twelve files of the first dm delivery: negatives 25-36, numbered from 0 by the lab.
+  const delivery = Array.from(
+    { length: 12 },
+    (_, index) => `_Bild${String(index).padStart(3, "0")}_Neg.Nr.${index + 25}.jpg`,
+  );
+
+  it("puts every scan on the frame its name carries, not on the n-th frame", () => {
+    const assignments = matchScansToFrames(delivery, roll, DM);
+
+    expect(assignments.map((assignment) => assignment.frameNo)).toEqual(
+      Array.from({ length: 12 }, (_, index) => index + 25),
+    );
+    expect(assignments[0]).toEqual({
+      fileName: "_Bild000_Neg.Nr.25.jpg",
+      sortIndex: 0,
+      frameId: roll[24]?.id,
+      frameNo: 25,
+    });
+  });
+
+  it("keeps the natural order when the pattern matches no name at all", () => {
+    expect(matchScansToFrames(["IMG_0002.JPG", "IMG_0001.JPG"], frames, DM)).toEqual(
+      matchScansToFrames(["IMG_0002.JPG", "IMG_0001.JPG"], frames),
+    );
+  });
+
+  it("leaves a name the pattern misses, and a second claim on one frame, unassigned", () => {
+    const assignments = matchScansToFrames(
+      ["_Bild000_Neg.Nr.2.jpg", "contact-sheet.jpg", "_Bild001_Neg.Nr.2.jpg"],
+      frames,
+      DM,
+    );
+
+    expect(assignments.map(({ fileName, frameNo }) => ({ fileName, frameNo }))).toEqual([
+      { fileName: "_Bild000_Neg.Nr.2.jpg", frameNo: 2 },
+      { fileName: "_Bild001_Neg.Nr.2.jpg", frameNo: null },
+      { fileName: "contact-sheet.jpg", frameNo: null },
+    ]);
+  });
+
+  it("leaves a scan unassigned whose frame the roll does not have", () => {
+    expect(matchScansToFrames(["_Bild000_Neg.Nr.7.jpg"], frames, DM)[0]?.frameNo).toBeNull();
+  });
+});
+
 describe("shiftAssignments", () => {
   const assignments = matchScansToFrames(["a1.jpg", "a2.jpg", "a3.jpg"], frames);
 

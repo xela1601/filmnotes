@@ -19,6 +19,7 @@ import { StyleSheet, Text, View } from "react-native";
 import { useShallow } from "zustand/react/shallow";
 
 import { SCANS_NAMESPACE } from "./i18n";
+import { findLabProfile } from "../../lib/presets";
 import { assignTo, buildAssignments, moveAssignment } from "./importModel";
 import { expandZip, isZip, pickScanFiles, type PickedFile } from "./pickScans";
 import { openServerSession } from "../../sync/session";
@@ -122,7 +123,8 @@ function ScanImport({ roll }: { roll: Roll }) {
       expanded.sort((a, b) => naturalCompare(a.name, b.name));
 
       setFiles(expanded);
-      setAssignments(buildAssignments(expanded, frames));
+      const pattern = findLabProfile(roll.labProfileId)?.scanFrameNumberPattern ?? null;
+      setAssignments(buildAssignments(expanded, frames, pattern));
       setResult(null);
       setAdvanced(false);
     } catch {

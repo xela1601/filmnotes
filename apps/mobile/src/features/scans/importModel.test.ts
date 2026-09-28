@@ -53,6 +53,20 @@ describe("buildAssignments", () => {
   });
 });
 
+describe("buildAssignments for a roll with a lab profile", () => {
+  it("puts dm's scans on the frames their names carry", () => {
+    const frames = [1, 2, 3].map((frameNo) =>
+      makeFrame({ id: frameId(frameNo), rollId: ROLL_ID, frameNo }),
+    );
+    const files = ["_Bild001_Neg.Nr.3.jpg", "_Bild000_Neg.Nr.2.jpg"].map(pick);
+
+    expect(mapping(buildAssignments(files, frames, "Neg\\.Nr\\.(\\d+)"))).toEqual({
+      "_Bild000_Neg.Nr.2.jpg": 2,
+      "_Bild001_Neg.Nr.3.jpg": 3,
+    });
+  });
+});
+
 describe("assignTo", () => {
   it("moves a scan onto a frame and unassigns the scan that was on it", () => {
     const frames = threeFrames();
