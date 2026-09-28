@@ -94,7 +94,7 @@ helps the existing schema, so the guard is a test and there was nothing left to 
       | `"lost"` added to `RollStatus`                        | TS2345: `Property 'lost' is missing … Record<RollStatus, true>`      |
       | `support` turned into a `select` in the migration     | unknown selects: `["frames.support"]`                                |
 
-- [ ] **Step 3: retire the prose.** The comments standing in for the guard —
+- [x] **Step 3: retire the prose.** The comments standing in for the guard —
       `packages/domain/src/scanFormats.ts:9` ("Change one, change the other") and the migration's
       header claim — become pointers at the test instead of promises nobody can keep.
 - [ ] **Step 4: find out what the live data holds.** Before writing the migration, query the
