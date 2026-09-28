@@ -26,7 +26,9 @@ PocketBase server — see [`deployment.md`](deployment.md).
       is what it is. - **"Bilder"** — 24 or 36. - **"Push/Pull (EV)"** — leave at 0 unless you are deliberately rating the film differently.
       A value here is an instruction for the lab; write it in **"Notizen"** as well, because the
       lab never sees the app.
-- [ ] Section **"Entwicklung"**: - **"Eingelegt am"** — plain text in the form `YYYY-MM-DD` (the placeholder shows it). - **"Labor"** — where the roll will go, e.g. `dm` or `Rossmann`. It may stay empty for now;
+- [ ] Section **"Entwicklung"**: - **"Eingelegt am"** — plain text in the form `YYYY-MM-DD` (the placeholder shows it). - **"Laborprofil"** — **"kein Labor (selbst gescannt)"** for a roll you scan yourself, or the
+      lab it goes to (today: **"dm Foto (Drogerie)"**). The profile is what lets the import put
+      each scan on its frame by the file name, and what `--lab-download` downloads through. - **"Labor"** — free text, e.g. the branch. It may stay empty for now;
       the field is on this screen and on **"Film bearbeiten"**. - **"Notizen"** — the free-form place for everything lab-relevant: push/pull, "please do not
       cut the negatives", the order number of the envelope.
 - [ ] **"Speichern"** → you land on the roll detail screen `/rolls/<id>`, status **"eingelegt"**.
@@ -105,26 +107,33 @@ Field tips:
 - [ ] **Rewind and take the cartridge out of the camera.** Do this before the app step if you are
       the kind of person who trusts a checklist more than a rewound leader.
 - [ ] Hand it in, then set **"Status"** → **"im Labor"**.
-- [ ] Record the lab: **"Film bearbeiten"** → **"Labor"**. There is **no separate lab date field**
-      — put the hand-in date and the envelope/order number into **"Notizen"**; the export and the
-      import do not need it, you do.
+- [ ] Record the lab: **"Film bearbeiten"** → **"Laborprofil"** (and **"Labor"** if you like).
+      There is **no separate lab date field** — put the hand-in date into **"Notizen"**.
+- [ ] **"Auftragsnummer Labor"**: the order number as printed. At dm the receipt of the order bag
+      carries it, and the slip in the pickup bag repeats it (12 digits, `NNNNNN-NNNNNN`). The
+      status poll and `--lab-download` find the order by it.
 - [ ] Later, **"entwickelt"** is set for you by the scan import (step 4), and **"archiviert"** is
       yours to set when the negatives are filed away.
 
 ### What to agree with the lab
 
-The import in step 4 matches files onto frames **by filename order**, so the file naming is the
-one thing that actually matters:
+The import in step 4 matches files onto frames **by filename order** — unless the roll's lab
+profile says where the frame number is in the name (dm: `_Bild000_Neg.Nr.25.jpg` is frame 25).
+Without such a profile the file naming is the one thing that actually matters:
 
 - [ ] **Scan resolution.** Ask for the largest they do ("groß"/"XL", ideally ≥ 3000 px on the long
       edge). The WordPress export uploads the file as it is, so this is the ceiling for the blog.
+      For comparison, measured: dm's standard scans are **2088 × 1392 px (2.9 MP)**.
 - [ ] **File naming: sequential, in shooting order**, e.g. `img001.jpg` … `img036.jpg`. Files
       named after the lab's job number in arbitrary order destroy the automatic mapping (you can
       still fix it by hand, for 36 frames, once).
 - [ ] **Format JPEG or TIFF.** **Not HEIC** — the server rejects `.heic`/`.heif` outright, and the
       app will let you pick such a file and then fail on upload.
-- [ ] **All frames, including the failures.** A lab that silently drops the blank frames shifts
-      every following file by one; the import has ▲/▼ for exactly that, but only if you notice.
+- [ ] **All frames, including the failures** — or file names that carry the frame number. A lab
+      that silently drops the blank frames shifts every following file by one when the import can
+      only count; the import has ▲/▼ for exactly that, but only if you notice. dm develops "mit
+      Bildbestimmung" by default and scans only the frames with an image, which is why its
+      profile reads the number out of the name.
 - [ ] **Delivery**: download link (ZIP), CD, or USB stick — all three work, the CD/stick just
       needs copying to the computer first.
 - [ ] If you pushed or pulled, say so **at hand-in**, not on the phone afterwards.
@@ -143,8 +152,9 @@ Without one the screen offers only **"Server einrichten"**.
 - [ ] **"Dateien wählen"** — pick the images (multi-select) **or one ZIP archive**; the ZIP is
       unpacked inside the app. To start over: **"Andere Dateien wählen"**.
 - [ ] **Check the mapping against your notes.** The files are sorted the way a file browser sorts
-      them (`img2.jpg` before `img10.jpg`) and the n-th file is assigned to the n-th frame — the
-      filename is _not_ parsed for a frame number. Each row shows the thumbnail next to the frame
+      them (`img2.jpg` before `img10.jpg`) and the n-th file is assigned to the n-th frame — unless
+      the roll's **"Laborprofil"** knows where the frame number is in the name; then `Neg.Nr.25`
+      goes onto frame 25, and a file without a number stays unassigned for you to place. Each row shows the thumbnail next to the frame
       it landed on (**"→ #{{frameNo}}"**) and that frame's notes, which is what makes the check
       possible: the note says "Hafen, Gegenlicht" and the thumbnail had better be the harbour.
 - [ ] Fix what is wrong, per row: - **"▲"** / **"▼"** shift this row **and every row after it** by one frame. This is the
@@ -194,15 +204,35 @@ still be corrected on the phone. Note: the CLI **does not** advance the roll sta
 **"entwickelt"** yourself. Running it twice creates a second set of scans, so always
 `--dry-run` first.
 
-### 4c. Automatically, when the lab mail arrives
+### 4c. Straight from the lab, with the slip from the pickup bag
 
-Optional, and it uses the same CLI: n8n watches the mailbox, takes the download link out of the
-mail, finds the roll by its order number (`Film bearbeiten` → "Auftragsnummer Labor"), runs the
-import, sets the roll to "developed" and mails you the result. Setup and the two places that need
-adjusting once your first delivery arrives: [`automation.md`](automation.md).
+For a roll with a **"Laborprofil"** that has a download (dm) and its **"Auftragsnummer Labor"**:
 
-The mapping still wants a look afterwards — open the roll's scan import screen and correct the
-pairs where the lab dropped a frame.
+```bash
+npm run import -w @filmnotes/scan-import -- --roll 7t3k9ab12cd34ef --lab-download --dry-run
+npm run import -w @filmnotes/scan-import -- --roll 7t3k9ab12cd34ef --lab-download
+```
+
+The CLI asks for the **Secure-ID** printed on the slip (hidden, never stored), downloads the ZIP
+from the lab and plans the import by the frame numbers in the file names. The code is valid for
+six weeks — the slip says until when. When the order is ready is what the optional n8n status poll
+tells you: [`automation.md`](automation.md).
+
+### 4d. Scanned at home
+
+A standalone film scanner is a route of its own, not a workaround: the roll gets **"kein Labor"**,
+and the files go in through 4a or 4b like any folder.
+
+- [ ] **One folder (or card) per roll**, nothing else in it.
+- [ ] **Scan in shooting order**, frame 1 first. A home scanner names files `IMG_0001.JPG`, … in
+      the order it scanned them, and that order is all the import has to go by. A skipped frame
+      is fine as long as you remember it — ▲/▼ in the app fix the shift.
+- [ ] **`--dry-run` first** (4b) and read the plan against your notes; then import.
+
+The trade, plainly: a standalone scanner bakes its colour conversion into a JPEG, with little
+control over it, and its resolution is whatever the device does. A lab scan is at least
+consistent. Either way **the negatives remain the archive** — a better scan later is always
+possible, a lost negative is not.
 
 ## 5. Publishing **(server)**
 

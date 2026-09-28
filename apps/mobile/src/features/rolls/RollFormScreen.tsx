@@ -15,6 +15,7 @@ import { StyleSheet, Text, View } from "react-native";
 import { useActive, useEntity } from "../../store/hooks";
 import { useStore } from "../../store/store";
 import { now } from "../../lib/clock";
+import { loadLabProfiles } from "../../lib/presets";
 import {
   Button,
   EmptyState,
@@ -43,6 +44,9 @@ import {
 
 /** Film stocks are picked in two groups, because that is how they sit in the fridge. */
 type FilmType = "color" | "bw";
+
+/** The "no lab" choice of the lab profile field; the stored value is null. */
+const NO_LAB = "none";
 
 /** Push/pull is dialled in whole stops, two either way is already extreme. */
 const PUSH_PULL_MIN = -3;
@@ -119,6 +123,12 @@ function RollFormFields({ existing }: { existing: Roll | null }) {
   const isoSourceOptions: SelectOption<IsoSource>[] = [
     { value: "DX", label: t("isoSources.DX") },
     { value: "manual", label: t("isoSources.manual") },
+  ];
+
+  // Profile names are data (like camera names), only the "none" choice is a translated text.
+  const labProfileOptions: SelectOption<string>[] = [
+    { value: NO_LAB, label: t("labProfiles.none") },
+    ...loadLabProfiles().map((profile) => ({ value: profile.id, label: profile.name })),
   ];
 
   const exposureOptions: SelectOption<Exposures>[] = [
@@ -254,6 +264,16 @@ function RollFormFields({ existing }: { existing: Roll | null }) {
           />
           {error("loadedAt")}
         </View>
+
+        <SelectField
+          label={t("fields.labProfile")}
+          value={values.labProfileId ?? NO_LAB}
+          options={labProfileOptions}
+          onChange={(next) =>
+            patch({ labProfileId: next === null || next === NO_LAB ? null : next })
+          }
+          testID="roll-form-lab-profile"
+        />
 
         <TextField
           label={t("fields.lab")}

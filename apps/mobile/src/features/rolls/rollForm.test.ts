@@ -24,6 +24,7 @@ function validValues(overrides: Partial<RollFormValues> = {}): RollFormValues {
     pushPullEv: 0,
     loadedAt: NOW,
     labOrderId: "",
+    labProfileId: null,
     lab: "",
     notes: "",
     ...overrides,
@@ -48,6 +49,7 @@ describe("defaultRollForm", () => {
       loadedAt: NOW,
       lab: "",
       labOrderId: "",
+      labProfileId: null,
       notes: "",
     });
   });
@@ -134,6 +136,15 @@ describe("rollFromForm", () => {
     expect(roll.notes).toBe("second half");
   });
 
+  it("stores the chosen lab profile, and none as null", () => {
+    expect(
+      rollFromForm(validValues({ labProfileId: "labp0dmdrogerie" }), null, NOW).labProfileId,
+    ).toBe("labp0dmdrogerie");
+    expect(
+      rollFromForm(validValues(), makeRoll({ labProfileId: "labp0dmdrogerie" }), NOW),
+    ).toMatchObject({ labProfileId: null });
+  });
+
   it("stores an empty lab as null", () => {
     expect(rollFromForm(validValues({ lab: "   " }), null, NOW).lab).toBeNull();
   });
@@ -153,6 +164,7 @@ describe("formFromRoll", () => {
       loadedAt: roll.loadedAt,
       lab: "",
       labOrderId: "",
+      labProfileId: null,
       notes: "",
     });
   });

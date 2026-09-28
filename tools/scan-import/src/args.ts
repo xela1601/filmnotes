@@ -15,8 +15,8 @@ export interface Args {
   password: string | undefined;
   /** Id of the roll the scans belong to. */
   roll: string;
-  /** Folder or `.zip` file holding the scans. */
-  source: string;
+  /** Folder, `.zip` file or URL holding the scans; null with `labDownload`. */
+  source: string | null;
   /** Skip the confirmation prompt. */
   yes: boolean;
   /** Show the plan and stop before the first upload. */
@@ -28,6 +28,12 @@ export interface Args {
    * failed, not a plan table.
    */
   json: boolean;
+  /**
+   * Download the scans through the roll's lab profile instead of reading a source (T-024). The
+   * one-time credential that needs is asked for, never taken from the command line: a flag would
+   * leave it in the shell history, and it is meant to be used once and forgotten.
+   */
+  labDownload: boolean;
 }
 
 /** A usage problem: the caller made a mistake, so `main` prints the usage and exits with 2. */
@@ -56,7 +62,8 @@ function isValueFlag(candidate: string): candidate is ValueFlag {
   return (VALUE_FLAGS as readonly string[]).includes(candidate);
 }
 
-export const USAGE = `Usage: filmnotes-import --server <url> --email <address> --roll <rollId> <folder|zip>
+export const USAGE = `Usage: filmnotes-import --server <url> --email <address> --roll <rollId> <folder|zip|url>
+       filmnotes-import --server <url> --email <address> --roll <rollId> --lab-download
 
 Imports lab scans for one roll into PocketBase: lists the roll's frames, proposes a
 file to frame mapping, asks for confirmation and uploads the files as scan records.
@@ -69,6 +76,8 @@ Options:
   -y, --yes             Do not ask for confirmation
       --dry-run         Print the plan and exit without uploading
       --json            One line of JSON instead of the report (for automation)
+      --lab-download    Fetch the scans from the roll's lab (its lab profile and order
+                        number); asks for the one-time code printed on the lab's insert
   -h, --help            Show this help
 
 Environment (from .env, see .env.example; an explicit flag always wins):
@@ -94,6 +103,7 @@ export function parseArgs(
   let yes = false;
   let dryRun = false;
   let json = false;
+  let labDownload = false;
 
   for (let index = 0; index < argv.length; index += 1) {
     const token = argv[index] as string;
@@ -108,6 +118,10 @@ export function parseArgs(
     }
     if (token === "--json") {
       json = true;
+      continue;
+    }
+    if (token === "--lab-download") {
+      labDownload = true;
       continue;
     }
 
@@ -149,7 +163,10 @@ export function parseArgs(
   const email = required("--email", EMAIL_ENV);
   const roll = required("--roll");
 
-  if (positional.length === 0) {
+  if (labDownload && positional.length > 0) {
+    throw new ArgumentError("give either a source or --lab-download, not both");
+  }
+  if (positional.length === 0 && !labDownload) {
     throw new ArgumentError("the source folder or zip file is missing");
   }
   if (positional.length > 1) {
@@ -160,7 +177,8 @@ export function parseArgs(
   const fromEnv = env[PASSWORD_ENV];
   const password = blank(fromFlag) ? (blank(fromEnv) ? undefined : fromEnv) : fromFlag;
 
-  return { server, email, password, roll, source: positional[0] as string, yes, dryRun, json };
+  const source = positional[0] ?? null;
+  return { server, email, password, roll, source, yes, dryRun, json, labDownload };
 }
 
 /** True when the argument list only asks for the usage text. */

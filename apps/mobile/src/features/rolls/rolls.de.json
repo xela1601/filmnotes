@@ -34,7 +34,8 @@
     "loadedAt": "Eingelegt am",
     "lab": "Labor",
     "notes": "Notizen",
-    "labOrderId": "Auftragsnummer Labor"
+    "labOrderId": "Auftragsnummer Labor",
+    "labProfile": "Laborprofil"
   },
   "filmTypes": {
     "color": "Farbe",
@@ -57,6 +58,9 @@
     "iso_range": "ISO muss zwischen 6 und 12800 liegen."
   },
   "placeholders": {
-    "labOrderId": "z. B. 540996 – für den automatischen Import"
+    "labOrderId": "12-stellig, vom Zettel in der Abholtüte"
+  },
+  "labProfiles": {
+    "none": "kein Labor (selbst gescannt)"
   }
 }

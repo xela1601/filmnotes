@@ -133,6 +133,7 @@ const ALL_FIELDS = {
     unloadedAt: true,
     lab: true,
     labOrderId: true,
+    labProfileId: true,
     notes: true,
   },
   frames: {

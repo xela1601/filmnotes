@@ -1,0 +1,16 @@
+[
+  {
+    "id": "labp0dmdrogerie",
+    "name": "dm Foto (Drogerie)",
+    "status": {
+      "urlTemplate": "https://spot.photoprintit.com/spotapi/orderInfo/forShop?config={config}&shop={shop}&order={orderId}",
+      "params": ["config", "shop", "orderId"]
+    },
+    "download": {
+      "urlTemplate": "https://api.cewe-myphotos.com/api/imageCD/{orderId}/{secureId}/download?aak=54a614716eb29ef3a3f004a6241e5e19&clientVersion=1.0.0",
+      "params": ["orderId", "secureId"]
+    },
+    "scanFrameNumberPattern": "Neg\\.Nr\\.(\\d+)",
+    "notes": "Development at a dm branch; CEWE scans only the frames that carry an image, as 2088 x 1392 px JPEGs named _BildNNN_Neg.Nr.<frame>.jpg. orderId is the 12-digit number on the insert in the pickup bag, as printed; the Secure-ID is printed next to it and valid for six weeks. config and shop identify the branch and are kept out of this file."
+  }
+]

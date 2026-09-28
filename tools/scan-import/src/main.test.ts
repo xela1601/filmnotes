@@ -2,10 +2,12 @@ import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
+import { zipSync } from "fflate";
+
 import type { Frame, Id } from "@filmnotes/domain";
 import { makeFrame } from "@filmnotes/domain/testing";
 
-import type { Deps, ImportClient, Io, PromptOptions } from "./main";
+import type { Deps, ImportClient, Io, PromptOptions, RollLab } from "./main";
 import { main } from "./main";
 import { jpegBytes } from "./testImages";
 
@@ -59,7 +61,11 @@ interface Fake {
   logins: { email: string; password: string }[];
   created: Record<string, unknown>[];
   servers: string[];
+  fetched: string[];
 }
+
+const DM_PROFILE = "labp0dmdrogerie";
+const SECURE_ID = "SECRET42";
 
 function frames(count: number): Frame[] {
   return Array.from({ length: count }, (_, index) =>
@@ -77,11 +83,14 @@ function fakeDeps(
     frames?: Frame[];
     loginError?: string;
     failCreate?: string[];
+    roll?: RollLab | null;
+    download?: { status: number; body?: Uint8Array };
   } = {},
 ): Fake {
   const logins: { email: string; password: string }[] = [];
   const created: Record<string, unknown>[] = [];
   const servers: string[] = [];
+  const fetched: string[] = [];
 
   const client: ImportClient = {
     async authWithPassword(email, password) {
@@ -91,6 +100,9 @@ function fakeDeps(
     },
     async listFrames() {
       return options.frames ?? frames(3);
+    },
+    async getRoll() {
+      return options.roll === undefined ? { labProfileId: null, labOrderId: null } : options.roll;
     },
     collection: () => ({
       async create(data) {
@@ -110,10 +122,18 @@ function fakeDeps(
     logins,
     created,
     servers,
+    fetched,
     deps: {
       async createClient(server) {
         servers.push(server);
         return client;
+      },
+      fetch: async (url) => {
+        fetched.push(url instanceof Request ? url.url : url.toString());
+        const download = options.download ?? { status: 404 };
+        return new Response(download.body ? Uint8Array.from(download.body) : null, {
+          status: download.status,
+        });
       },
     },
   };
@@ -294,4 +314,93 @@ describe("main", () => {
       else process.env.FILMNOTES_PASSWORD = previous;
     }
   });
+
+  describe("with the roll's lab profile", () => {
+    const dmFrames = () => frames(36);
+    const dmRoll: RollLab = { labProfileId: DM_PROFILE, labOrderId: "123456-654321" };
+    const dmZip = () =>
+      zipSync({
+        "_Bild000_Neg.Nr.25.jpg": jpegBytes(),
+        "_Bild001_Neg.Nr.26.jpg": jpegBytes(),
+      });
+
+    it("puts the scans on the frames their names carry", async () => {
+      rmSync(source, { recursive: true, force: true });
+      mkdirSync(source);
+      writeFileSync(join(source, "_Bild000_Neg.Nr.25.jpg"), jpegBytes());
+      const io = recordIo();
+      const fake = fakeDeps({ frames: dmFrames(), roll: dmRoll });
+
+      const code = await main(argv(["--password", "secret", "--yes"]), io.io, fake.deps);
+
+      expect(code).toBe(0);
+      expect(fake.created[0]).toMatchObject({ fileName: "_Bild000_Neg.Nr.25.jpg" });
+      expect(io.out.join("\n")).toMatch(/_Bild000_Neg\.Nr\.25\.jpg\s*\|\s*#25/);
+    });
+
+    it("downloads through the profile with the order number and the asked-for Secure-ID", async () => {
+      const io = recordIo([SECURE_ID]);
+      const fake = fakeDeps({
+        frames: dmFrames(),
+        roll: dmRoll,
+        download: { status: 200, body: dmZip() },
+      });
+
+      const code = await main(labArgv(["--password", "secret", "--yes"]), io.io, fake.deps);
+
+      expect(code).toBe(0);
+      expect(fake.fetched).toHaveLength(1);
+      expect(fake.fetched[0]).toContain(`/imageCD/123456-654321/${SECURE_ID}/download`);
+      expect(io.prompts).toEqual([
+        { question: expect.stringMatching(/secure-id/i), options: { hidden: true } },
+      ]);
+      expect(fake.created.map((record) => record.fileName)).toEqual([
+        "_Bild000_Neg.Nr.25.jpg",
+        "_Bild001_Neg.Nr.26.jpg",
+      ]);
+      expect([...io.out, ...io.err].join("\n")).not.toContain(SECURE_ID);
+    });
+
+    it("keeps the Secure-ID out of a failed download's message", async () => {
+      const io = recordIo([SECURE_ID]);
+      const fake = fakeDeps({ frames: dmFrames(), roll: dmRoll, download: { status: 404 } });
+
+      const code = await main(labArgv(["--password", "secret", "--yes"]), io.io, fake.deps);
+
+      expect(code).toBe(1);
+      expect(io.err.join("\n")).toMatch(/could not download from dm Foto \(Drogerie\): HTTP 404/);
+      expect([...io.out, ...io.err].join("\n")).not.toContain(SECURE_ID);
+      expect(fake.created).toEqual([]);
+    });
+
+    it("refuses --lab-download for a roll without a lab, or without an order number", async () => {
+      for (const roll of [
+        { labProfileId: null, labOrderId: "123456-654321" },
+        { labProfileId: DM_PROFILE, labOrderId: null },
+      ]) {
+        const io = recordIo([SECURE_ID]);
+        const fake = fakeDeps({ roll });
+
+        const code = await main(labArgv(["--password", "secret", "--yes"]), io.io, fake.deps);
+
+        expect(code).toBe(1);
+        expect(io.err.join("\n")).toMatch(roll.labProfileId ? /order number/ : /lab profile/);
+        expect(fake.fetched).toEqual([]);
+        expect(io.prompts).toEqual([]);
+      }
+    });
+  });
 });
+
+function labArgv(extra: string[] = []): string[] {
+  return [
+    "--server",
+    SERVER,
+    "--email",
+    "me@example.com",
+    "--roll",
+    ROLL,
+    "--lab-download",
+    ...extra,
+  ];
+}

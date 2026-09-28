@@ -7,9 +7,12 @@
  *
  * Exit codes: 0 success, 1 the import did not (fully) happen, 2 a usage mistake.
  */
-import type { Frame, Id } from "@filmnotes/domain";
+import type { Frame, Id, LabProfile } from "@filmnotes/domain";
+import { fillLabTemplate } from "@filmnotes/domain";
+import { findLabProfile } from "@filmnotes/presets";
 
 import { ArgumentError, PASSWORD_ENV, USAGE, parseArgs, wantsHelp } from "./args";
+import type { ImageFile } from "./files";
 import { cleanupTempDirs, downloadSource, isUrl, listImageFiles } from "./files";
 import { planImport, renderPlan, unassignedCount } from "./plan";
 import type { PocketBaseLike } from "./upload";
@@ -28,12 +31,20 @@ export interface Io {
   prompt(question: string, options?: PromptOptions): Promise<string>;
 }
 
+/** What the import needs to know about the roll itself: which lab, which order. */
+export interface RollLab {
+  labProfileId: Id | null;
+  labOrderId: string | null;
+}
+
 /** Everything the import needs from the server. */
 export interface ImportClient extends PocketBaseLike {
   /** Logs in as the app user and returns the id that becomes the `owner` of the scans. */
   authWithPassword(email: string, password: string): Promise<{ userId: Id }>;
   /** The roll's frames, including the deleted ones (the matching filters them out). */
   listFrames(rollId: Id): Promise<Frame[]>;
+  /** The roll's lab fields, or null when the roll does not exist for this user. */
+  getRoll(rollId: Id): Promise<RollLab | null>;
 }
 
 /**
@@ -43,6 +54,8 @@ export interface ImportClient extends PocketBaseLike {
  */
 export interface Deps {
   createClient(server: string): Promise<ImportClient>;
+  /** The network for a URL source and the lab download; the global `fetch` when omitted. */
+  fetch?: typeof fetch;
 }
 
 const EXIT_OK = 0;
@@ -87,15 +100,24 @@ export async function main(argv: string[], io: Io, deps: Deps): Promise<number> 
     return EXIT_USAGE;
   }
 
+  const fetchImpl = deps.fetch ?? fetch;
+  const noImages = (where: string): number => {
+    io.stderr(`filmnotes-import: no image files in ${where}`);
+    if (args.json) io.stdout(summary({ uploaded: 0, skipped: 0, failed: [], files: 0 }));
+    return EXIT_FAILED;
+  };
+
   try {
     // A URL source is downloaded first, so the automation can hand over the lab's link and the
-    // import still runs through exactly one code path (see docs/automation.md).
-    const source = isUrl(args.source) ? await downloadSource(args.source) : args.source;
-    const files = await listImageFiles(source);
-    if (files.length === 0) {
-      io.stderr(`filmnotes-import: no image files in ${args.source}`);
-      if (args.json) io.stdout(summary({ uploaded: 0, skipped: 0, failed: [], files: 0 }));
-      return EXIT_FAILED;
+    // import still runs through exactly one code path (see docs/automation.md). The lab download
+    // has to wait for the login: it needs the roll's profile and order number.
+    let files: ImageFile[] = [];
+    if (args.source !== null) {
+      const source = isUrl(args.source)
+        ? await downloadSource(args.source, fetchImpl)
+        : args.source;
+      files = await listImageFiles(source);
+      if (files.length === 0) return noImages(args.source);
     }
 
     const password =
@@ -114,6 +136,17 @@ export async function main(argv: string[], io: Io, deps: Deps): Promise<number> 
       return EXIT_FAILED;
     }
 
+    const roll = await client.getRoll(args.roll);
+    const profile = findLabProfile(roll?.labProfileId ?? null);
+    let sourceLabel = args.source ?? "";
+    if (args.labDownload) {
+      const downloaded = await downloadFromLab(args.roll, roll, profile, io, fetchImpl);
+      if (typeof downloaded === "number") return downloaded;
+      files = downloaded.files;
+      sourceLabel = `the lab (${downloaded.profile.name})`;
+      if (files.length === 0) return noImages(sourceLabel);
+    }
+
     const frames = await client.listFrames(args.roll);
     const alive = frames.filter((frame) => frame.deleted === null);
     if (alive.length === 0) {
@@ -123,11 +156,11 @@ export async function main(argv: string[], io: Io, deps: Deps): Promise<number> 
       return EXIT_FAILED;
     }
 
-    const assignments = planImport(files, frames);
+    const assignments = planImport(files, frames, profile?.scanFrameNumberPattern ?? null);
     const unassigned = unassignedCount(assignments);
     if (!args.json)
       io.stdout(
-        `Roll ${args.roll}: ${files.length} file(s) from ${args.source}, ${alive.length} frame(s) on the server`,
+        `Roll ${args.roll}: ${files.length} file(s) from ${sourceLabel}, ${alive.length} frame(s) on the server`,
       );
     if (!args.json) {
       io.stdout("");
@@ -186,5 +219,67 @@ export async function main(argv: string[], io: Io, deps: Deps): Promise<number> 
     return EXIT_FAILED;
   } finally {
     cleanupTempDirs();
+  }
+}
+
+/**
+ * Fetches the roll's scans through its lab profile's download endpoint (T-024).
+ *
+ * The Secure-ID is asked for here, used for this one request and dropped: it is not returned,
+ * not logged, and cut out of any error message, because the URL it is part of would otherwise
+ * end up on the screen. Returns an exit code when the download cannot or did not happen.
+ */
+async function downloadFromLab(
+  rollId: Id,
+  roll: RollLab | null,
+  profile: LabProfile | null,
+  io: Io,
+  fetchImpl: typeof fetch,
+): Promise<{ files: ImageFile[]; profile: LabProfile } | number> {
+  if (roll === null) {
+    io.stderr(`filmnotes-import: roll ${rollId} not found for this user`);
+    return EXIT_FAILED;
+  }
+  if (profile?.download == null) {
+    io.stderr(
+      `filmnotes-import: roll ${rollId} has no lab profile with a download - set the lab on the roll, or import from a folder or zip`,
+    );
+    return EXIT_FAILED;
+  }
+  if (!roll.labOrderId?.trim()) {
+    io.stderr(
+      `filmnotes-import: roll ${rollId} has no lab order number - enter the one from the lab's insert on the roll first`,
+    );
+    return EXIT_FAILED;
+  }
+
+  const secureId = (
+    await io.prompt(`Secure-ID from the ${profile.name} insert: `, { hidden: true })
+  ).trim();
+  if (secureId === "") {
+    io.stderr("filmnotes-import: no Secure-ID given");
+    return EXIT_USAGE;
+  }
+  const filled = fillLabTemplate(profile.download, { orderId: roll.labOrderId, secureId });
+  if (!filled.ok) {
+    io.stderr(
+      `filmnotes-import: the ${profile.name} download needs more than an order number and a Secure-ID`,
+    );
+    return EXIT_FAILED;
+  }
+
+  try {
+    return { files: await listImageFiles(await downloadSource(filled.url, fetchImpl)), profile };
+  } catch (error) {
+    const message = messageOf(error)
+      .split(`download ${filled.url}`)
+      .join(`download from ${profile.name}`)
+      .split(filled.url)
+      .join(`the ${profile.name} download`)
+      .split(secureId)
+      .join("<Secure-ID>");
+    io.stderr(`filmnotes-import: ${message}`);
+    io.stderr("Check the order number on the roll and the Secure-ID; lab downloads also expire.");
+    return EXIT_FAILED;
   }
 }

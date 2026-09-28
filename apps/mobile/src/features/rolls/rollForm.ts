@@ -34,6 +34,8 @@ export interface RollFormValues {
   lab: string;
   /** The lab's order number; the automation finds the roll by it (docs/automation.md). */
   labOrderId: string;
+  /** The lab profile the roll goes through (T-024); null for a roll without a lab. */
+  labProfileId: Id | null;
   notes: string;
 }
 
@@ -62,6 +64,7 @@ export function defaultRollForm(
     loadedAt: now,
     lab: "",
     labOrderId: "",
+    labProfileId: null,
     notes: "",
   };
 }
@@ -121,6 +124,7 @@ export function rollFromForm(
     unloadedAt: existing?.unloadedAt ?? null,
     lab: lab === "" ? null : lab,
     labOrderId: labOrderId === "" ? null : labOrderId,
+    labProfileId: values.labProfileId,
     notes: values.notes,
   };
 }
@@ -137,6 +141,7 @@ export function formFromRoll(roll: Roll): RollFormValues {
     loadedAt: roll.loadedAt,
     lab: roll.lab ?? "",
     labOrderId: roll.labOrderId ?? "",
+    labProfileId: roll.labProfileId,
     notes: roll.notes,
   };
 }

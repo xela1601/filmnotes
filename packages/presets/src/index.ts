@@ -14,13 +14,16 @@ import type {
   Flash,
   Id,
   ISODateTime,
+  LabProfile,
   Lens,
   SyncedRecord,
 } from "@filmnotes/domain";
 import minoltaKit from "../data/minolta-7000af-kit.json";
 import filmStockCatalogue from "../data/film-stocks.json";
+import labProfileData from "../data/lab-profiles.json";
 import {
   filmStockPresetsSchema,
+  labProfilePresetsSchema,
   presetBundleSchema,
   type PresetBundle,
   type PresetRecord,
@@ -39,6 +42,7 @@ export interface SeedRecords {
 
 let equipmentBundles: PresetBundle[] | null = null;
 let filmStockPresets: PresetRecord<FilmStock>[] | null = null;
+let labProfiles: LabProfile[] | null = null;
 
 /** All equipment bundles shipped in `data/`. */
 export function loadEquipmentPresets(): PresetBundle[] {
@@ -50,6 +54,21 @@ export function loadEquipmentPresets(): PresetBundle[] {
 export function loadFilmStockPresets(): PresetRecord<FilmStock>[] {
   filmStockPresets ??= filmStockPresetsSchema.parse(filmStockCatalogue);
   return filmStockPresets;
+}
+
+/**
+ * The lab profiles shipped in `data/` (T-024). They are not seeded into the store: a roll names
+ * one by `labProfileId`, and this list is where the id is looked up.
+ */
+export function loadLabProfiles(): LabProfile[] {
+  labProfiles ??= labProfilePresetsSchema.parse(labProfileData);
+  return labProfiles;
+}
+
+/** The profile a roll names, or null for a roll without a lab (or with an unknown id). */
+export function findLabProfile(id: Id | null): LabProfile | null {
+  if (id === null) return null;
+  return loadLabProfiles().find((profile) => profile.id === id) ?? null;
 }
 
 /**

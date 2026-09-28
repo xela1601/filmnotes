@@ -3,15 +3,23 @@
  * or a dangling id reference fails here instead of at runtime in the app.
  */
 import type { z } from "zod";
-import { filmStockPresetsSchema, presetBundleSchema, type PresetBundle } from "./schema";
+import { fillLabTemplate, frameNumberFromFileName, labProfileIssues } from "@filmnotes/domain";
+import {
+  filmStockPresetsSchema,
+  labProfilePresetsSchema,
+  presetBundleSchema,
+  type PresetBundle,
+} from "./schema";
 
 // `require` keeps the JSON out of the emitted declaration types; the schemas
 // below are the only thing that gives these values a type.
 const rawKit: unknown = require("../data/minolta-7000af-kit.json");
 const rawFilmStocks: unknown = require("../data/film-stocks.json");
+const rawLabProfiles: unknown = require("../data/lab-profiles.json");
 
 const kitResult = presetBundleSchema.safeParse(rawKit);
 const filmStockResult = filmStockPresetsSchema.safeParse(rawFilmStocks);
+const labProfileResult = labProfilePresetsSchema.safeParse(rawLabProfiles);
 
 function describeIssues(error: z.ZodError): string {
   return JSON.stringify(error.issues, null, 2);
@@ -124,5 +132,53 @@ describe("film-stocks.json", () => {
   it("contains Kodak Gold 200 as a colour C41 film", () => {
     const gold = parsed(filmStockResult).find((stock) => stock.name === "Kodak Gold 200");
     expect(gold).toMatchObject({ iso: 200, process: "C41", color: true });
+  });
+});
+
+describe("lab-profiles.json", () => {
+  const dm = () => parsed(labProfileResult).find((profile) => profile.id === "labp0dmdrogerie");
+
+  it("matches the lab profile schema", () => {
+    if (!labProfileResult.success) console.error(describeIssues(labProfileResult.error));
+    expect(labProfileResult.success).toBe(true);
+  });
+
+  it("uses unique ids", () => {
+    expect(duplicates(parsed(labProfileResult).map((profile) => profile.id))).toEqual([]);
+  });
+
+  it.each(parsed(labProfileResult).map((profile) => profile.id))("%s is usable", (id) => {
+    const profile = parsed(labProfileResult).find((candidate) => candidate.id === id);
+    expect(profile && labProfileIssues(profile)).toEqual([]);
+  });
+
+  it("reads the frame number out of every name of the first dm delivery", () => {
+    // The twelve files of order 540996, collected 2026-09-28: negatives 25-36 of a 36 roll.
+    const names = Array.from(
+      { length: 12 },
+      (_, index) => `_Bild${String(index).padStart(3, "0")}_Neg.Nr.${index + 25}.jpg`,
+    );
+    const pattern = dm()?.scanFrameNumberPattern ?? null;
+
+    expect(names.map((name) => frameNumberFromFileName(pattern, name))).toEqual(
+      Array.from({ length: 12 }, (_, index) => index + 25),
+    );
+  });
+
+  it("downloads with the order number and the Secure-ID from the insert, and nothing else", () => {
+    expect(dm()?.download?.params).toEqual(["orderId", "secureId"]);
+    const filled = fillLabTemplate(dm()?.download ?? null, {
+      orderId: "123456-123456",
+      secureId: "a1b2c3d4",
+    });
+    expect(filled).toMatchObject({ ok: true });
+    expect(filled.ok && filled.url).toMatch(
+      /^https:\/\/api\.cewe-myphotos\.com\/api\/imageCD\/123456-123456\/a1b2c3d4\/download\?/,
+    );
+  });
+
+  it("keeps the branch out of the public data: shop and config are parameters, not values", () => {
+    // They say which branch, and therefore roughly where, the owner lives (docs/automation.md).
+    expect(dm()?.status?.params).toEqual(["config", "shop", "orderId"]);
   });
 });

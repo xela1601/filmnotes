@@ -58,7 +58,12 @@ setup:
     # Login shell (-l) so /etc/sandbox-persistent.sh with the proxy variables is loaded;
     # absolute path because PATH does not contain ~/.local/bin at start. Output goes to
     # /tmp/claude-update.log in case it does not work.
-    - command: ["sh", "-lc", "timeout 180 /home/agent/.local/bin/claude update >/tmp/claude-update.log 2>&1 || true"]
+    - command:
+        [
+          "sh",
+          "-lc",
+          "timeout 180 /home/agent/.local/bin/claude update >/tmp/claude-update.log 2>&1 || true",
+        ]
       description: Bring Claude Code up to date
   files:
     # Mirrors ~/.gitconfig-github-xela1601 on the host. No GPG signing in the sandbox: the private key stays on the host.

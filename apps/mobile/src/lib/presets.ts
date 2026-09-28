@@ -7,7 +7,9 @@
  */
 export type { PresetBundle, PresetRecord } from "@filmnotes/presets";
 export {
+  findLabProfile,
   loadEquipmentPresets,
+  loadLabProfiles,
   loadFilmStockPresets,
   materialize,
   seedRecords,
