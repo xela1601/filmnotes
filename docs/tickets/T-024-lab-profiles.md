@@ -185,7 +185,7 @@ same day to read it (see "Decisions taken"); it is step 3b.
       land on frames 25–36, a name the pattern misses and a roll without pattern keep the
       natural order, two files claiming one frame leave the second unassigned rather than
       guessing. The app import and `filmnotes-import` both pass the roll's profile through.
-- [ ] **Step 3c: the roll form offers the lab.** "Labor": _kein Labor_ or one of the profiles,
+- [x] **Step 3c: the roll form offers the lab.** "Labor": _kein Labor_ or one of the profiles,
       default none. Without it nothing ever sets `labProfileId` and the "Done when" below is not
       reachable; no step had it. T-022 step 3 adds the lab-specific fields next to it.
 - [x] **Step 3d: the CLI downloads through the profile.** `filmnotes-import --roll <id>

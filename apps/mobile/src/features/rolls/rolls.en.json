@@ -34,7 +34,8 @@
     "loadedAt": "Loaded on",
     "lab": "Lab",
     "notes": "Notes",
-    "labOrderId": "Lab order number"
+    "labOrderId": "Lab order number",
+    "labProfile": "Lab profile"
   },
   "filmTypes": {
     "color": "Colour",
@@ -57,6 +58,9 @@
     "iso_range": "ISO has to be between 6 and 12800."
   },
   "placeholders": {
-    "labOrderId": "e.g. 540996 – used by the automated import"
+    "labOrderId": "12 digits, from the slip in the pickup bag"
+  },
+  "labProfiles": {
+    "none": "no lab (scanned yourself)"
   }
 }

@@ -97,6 +97,18 @@ describe("RollForm", () => {
     expect(router.replace).toHaveBeenCalledWith(`/rolls/${roll?.id ?? ""}`);
   });
 
+  it("offers no lab by default, and stores the lab profile that is chosen", () => {
+    render(<RollForm mode="create" />);
+
+    pickFilmStock(KODAK_GOLD_200);
+    expect(screen.getByTestId("roll-form-lab-profile-option-none")).toBeOnTheScreen();
+    fireEvent.press(screen.getByTestId("roll-form-lab-profile-option-labp0dmdrogerie"));
+    fireEvent.press(screen.getByTestId("roll-form-save"));
+
+    const [roll] = Object.values(useStore.getState().entities.rolls);
+    expect(roll?.labProfileId).toBe("labp0dmdrogerie");
+  });
+
   it("only offers black and white stocks once that film type is chosen", () => {
     render(<RollForm mode="create" />);
 
