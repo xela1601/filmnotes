@@ -79,6 +79,48 @@ the documentation. What needs generalising is the _lab_ side.
   1.5 MP. Opening one downloaded file settles it and belongs in `docs/workflow.md` next to the
   self-scan route, so the choice between routes rests on a number rather than on hearsay.
 
+## Measured on 2026-09-28, with order 540996 collected
+
+The owner photographed the insert from the pickup bag; the download was fetched once from the
+sandbox with its credentials. The Secure-ID and the full order number are deliberately **not**
+recorded here — they are live credentials until the deletion date, and this repository is public.
+
+**1. The download is a plain URL — answered, yes.**
+
+- The insert says: open `foto.dm.de/download` (the QR code encodes only
+  `https://foto.dm.de/fotos/analog/download.html?ofqrscan=true`, no credentials), enter the
+  **12-digit order number** and the **Secure-ID**, and the images arrive "als ZIP-Ordner". It
+  also prints the deletion date — six weeks, as expected.
+- The form is not a session. Its page script builds
+  `https://api.cewe-myphotos.com/api/imageCD/{orderId}/{secureId}` and
+  - `GET` on it, with the headers `apiAccessKey` and `clientVersion: 1.0.0`, is the availability
+    check: `200` and `{"labId":"<orderId>","orderTs":…,"deletedAtTs":…}` (epoch milliseconds).
+  - appending `/download?aak=<apiAccessKey>&clientVersion=1.0.0` returns the ZIP
+    (`application/zip`, 47 MB for 12 images), no cookie, no redirect chain.
+  - `apiAccessKey` is one constant in dm's public page source, not per customer.
+- It lives on **CEWE** (`api.cewe-myphotos.com`), not on `spot.photoprintit.com` like the status
+  API. A profile therefore needs a download template of its own; the CLI's existing URL source
+  can take the result as it is.
+- **The order number has two halves**, `NNNNNN-NNNNNN`. The second half is the `order` the status
+  API knows (540996); the first half is _not_ the `shop` parameter of the status URL — what it
+  identifies is unknown. So the roll has to keep the full 12 digits, and the status check uses the
+  part after the dash.
+
+**2. Does `config` vary per branch?** Not answered by this delivery — one order, one branch.
+
+**3. Resolution — answered: 2088 × 1392 px (2.9 MP), JPEG**, 2.4–4.9 MB each. Twice the
+third-party figure of 1.5 MP, still far below a home film scanner. `docs/workflow.md` gets the
+number (step 6).
+
+**Found on the way — the file names carry the negative number.** The ZIP holds
+`_Bild000_Neg.Nr.25.jpg` … `_Bild011_Neg.Nr.36.jpg`: a running index from 0 and the edge number
+of the negative. dm scans only frames that carry an image — this roll had 12, on negatives 25–36,
+and 12 prints came with it. `matchScansToFrames` hands the n-th file to the n-th frame, so today
+the file of negative 25 is proposed for frame 1 and the whole roll is off by 24. The number is
+right there in the name; reading it is a profile property ("scan file names carry the frame
+number, pattern `Neg\.Nr\.(\d+)`"), not a dm special case in code. **Not in this ticket's steps
+yet** — see the question to the owner below.
+
 ## Steps
 
 - [ ] **Step 0: measure.** Answer the three questions above and record the findings _in this
