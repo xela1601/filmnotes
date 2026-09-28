@@ -10,6 +10,19 @@ const BASE = [
 ];
 
 describe("parseArgs", () => {
+  it("takes --lab-download instead of a source", () => {
+    expect(parseArgs([...BASE, "--lab-download"], {})).toMatchObject({
+      source: null,
+      labDownload: true,
+    });
+  });
+
+  it("refuses a source and --lab-download together", () => {
+    expect(() => parseArgs([...BASE, "--lab-download", "/scans/roll-42"], {})).toThrow(
+      new ArgumentError("give either a source or --lab-download, not both"),
+    );
+  });
+
   it("reads every flag plus the source argument", () => {
     expect(
       parseArgs([...BASE, "--password", "secret", "--yes", "--dry-run", "/scans/roll-42"], {}),
@@ -22,6 +35,7 @@ describe("parseArgs", () => {
       yes: true,
       dryRun: true,
       json: false,
+      labDownload: false,
     });
   });
 
@@ -119,6 +133,7 @@ describe("parseArgs with a credentials file loaded into the environment", () => 
       yes: false,
       dryRun: false,
       json: false,
+      labDownload: false,
     });
   });
 

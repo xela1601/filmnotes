@@ -8,7 +8,7 @@
  */
 import type { Frame, Id, ISODateTime } from "@filmnotes/domain";
 
-import type { ImportClient } from "./main";
+import type { ImportClient, RollLab } from "./main";
 
 /** A record as PocketBase returns it: unset text/date fields are `''`, unset json is `null`. */
 interface RemoteRecord {
@@ -19,6 +19,7 @@ interface RemoteRecord {
 /** The auth collection the single app user lives in (see `backend/README.md`). */
 const USERS_COLLECTION = "users";
 const FRAMES_COLLECTION = "frames";
+const ROLLS_COLLECTION = "rolls";
 
 const TIMEZONE = /(?:Z|[+-]\d{2}:?\d{2})$/;
 
@@ -107,6 +108,18 @@ export async function createPocketBaseClient(server: string): Promise<ImportClie
     async authWithPassword(email: string, password: string): Promise<{ userId: Id }> {
       const auth = await pb.collection(USERS_COLLECTION).authWithPassword(email, password);
       return { userId: auth.record.id };
+    },
+
+    async getRoll(rollId: Id): Promise<RollLab | null> {
+      try {
+        const record = await pb.collection(ROLLS_COLLECTION).getOne<RemoteRecord>(rollId);
+        const text = (value: unknown): string | null =>
+          asText(value) === "" ? null : asText(value);
+        return { labProfileId: text(record.labProfileId), labOrderId: text(record.labOrderId) };
+      } catch {
+        // 404 for a foreign or unknown id; the owner rule makes both look the same.
+        return null;
+      }
     },
 
     async listFrames(rollId: Id): Promise<Frame[]> {

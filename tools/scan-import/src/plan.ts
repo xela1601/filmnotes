@@ -12,11 +12,19 @@ import type { ImageFile } from "./files";
 /** How much of a frame's notes the table shows, including the ellipsis. */
 const NOTES_WIDTH = 40;
 
-/** Proposes one frame per file: n-th file in natural order → n-th frame of the roll. */
-export function planImport(files: ImageFile[], frames: Frame[]): ScanAssignment[] {
+/**
+ * Proposes one frame per file: n-th file in natural order → n-th frame of the roll, or the frame
+ * each file name carries when the roll's lab profile has a pattern for it (T-024).
+ */
+export function planImport(
+  files: ImageFile[],
+  frames: Frame[],
+  frameNumberPattern: string | null = null,
+): ScanAssignment[] {
   return matchScansToFrames(
     files.map((file) => file.name),
     frames,
+    frameNumberPattern,
   );
 }
 
