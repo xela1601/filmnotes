@@ -62,13 +62,38 @@ helps the existing schema, so the guard is a test and there was nothing left to 
 
 ## Steps
 
-- [ ] **Step 1: the guard test.** Failing test first, in `packages/domain`. It reads
+- [x] **Step 1: the guard test.** Failing test first, in `packages/domain`. It reads
       `backend/pb_migrations/1758150000_init_collections.js` as text and asserts against the
       domain: the four enum lists (`status`, `process`, `isoSource`, `afCompatible`), the
       `scans.file` MIME list, and every collection's field names. Commit
       `test(domain): the backend schema has to match the domain types`.
-- [ ] **Step 2: watch it fail on purpose.** Change one side, confirm the test breaks and names
+
+      _Delivered 2026-09-28 as `packages/domain/src/backendSchema.test.ts`, with one change to
+      the plan:_ it does not read the init migration as text but **replays every file in
+      `backend/pb_migrations` in order** (in `node:vm`, against a small stand-in for PocketBase's
+      migration API) and compares the resulting schema. Reading one file as text was already
+      wrong on the day it was written — `rolls.labOrderId` exists only in the third migration —
+      and after step 5 the init file would still say `text("exposureMode")`. The stand-in throws
+      on any API call it does not implement, so a future migration cannot slip past it silently.
+      The domain side is two object literals typed against `types.ts` (`Record<keyof …, true>`),
+      so a new field or union member does not compile until the test lists it. On top of the
+      plan it also fails on a `select` field the domain has no union for, and checks that every
+      collection carries the sync fields.
+
+- [x] **Step 2: watch it fail on purpose.** Change one side, confirm the test breaks and names
       which list and which value, restore. A guard nobody has seen fail is not known to work.
+
+      _Done 2026-09-28, six mutations, each restored afterwards:_
+
+      | Mutation                                             | What the gate said                                                   |
+      | ---------------------------------------------------- | -------------------------------------------------------------------- |
+      | `"at_lab"` → `"atlab"` in the init migration          | `rolls.status` values: `- "at_lab"` / `+ "atlab"`                    |
+      | `text("lab")` deleted from the init migration         | `rolls`: `missingOnServer: ["lab"]`                                  |
+      | `"image/webp"` deleted from `SERVER_SCAN_MIME_TYPES`  | scan formats: `+ "image/webp"`                                       |
+      | `labProfileId` added to `Roll` in `types.ts`          | TS2741: `Property 'labProfileId' is missing … DomainFields<"rolls">` |
+      | `"lost"` added to `RollStatus`                        | TS2345: `Property 'lost' is missing … Record<RollStatus, true>`      |
+      | `support` turned into a `select` in the migration     | unknown selects: `["frames.support"]`                                |
+
 - [ ] **Step 3: retire the prose.** The comments standing in for the guard —
       `packages/domain/src/scanFormats.ts:9` ("Change one, change the other") and the migration's
       header claim — become pointers at the test instead of promises nobody can keep.
