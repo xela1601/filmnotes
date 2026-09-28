@@ -4,7 +4,9 @@
 **Depends on:** nothing (but T-022 is rebased onto this one, see "What this does to T-022")
 **Owns:** `packages/domain/src/labProfile.*`, `packages/domain/src/types.ts` (`Roll`),
 `packages/presets/data/lab-profiles.json`, `packages/presets/src/schema.ts`,
-`automation/n8n/filmnotes-scan-import.json`, `docs/automation.md`, `docs/workflow.md`
+`automation/n8n/filmnotes-scan-import.json`, `docs/automation.md`, `docs/workflow.md`;
+since 2026-09-28 also `packages/domain/src/scanMatching.*` and a new migration in
+`backend/pb_migrations/` for `rolls.labProfileId`
 
 **Goal:** make the way a roll gets from the camera to its digital frames a _choice_ — a drugstore
 lab, a mail-order lab, or a scanner on the owner's own desk — instead of one path with dm wired
@@ -65,6 +67,22 @@ the documentation. What needs generalising is the _lab_ side.
   Secure-ID on paper and the owner scanning at home, the import is a command the owner runs — as
   `docs/automation.md` always said it could be. The status poll keeps telling them when to go.
 
+- **Scan file names decide the frame, where the profile says how.** A profile may carry a pattern
+  that pulls the frame number out of a scan's file name — dm's is `Neg\.Nr\.(\d+)`, from
+  `_Bild000_Neg.Nr.25.jpg`. When it matches, the file goes to the frame with that number; where
+  it does not (a home scanner's `IMG_0001.JPG`, a roll without profile), the natural order stays
+  exactly as it is. Owner's decision, 2026-09-28, after the first dm roll: 12 scans on negatives
+  25–36 that the natural order would have put on frames 1–12. The cost: the edge number printed
+  on a negative and the camera's frame counter can differ by one — a camera that winds a little
+  further than the lab expects shifts every frame. The review screen's existing shift is the
+  correction for that, and the profile is where an offset would go once one is measured.
+
+- **The dm download template goes into the public profile, `apiAccessKey` included.** The key is a
+  single constant in dm's own public page source, the same for every customer, so it identifies
+  nothing about the owner. Owner's decision, 2026-09-28. What is _not_ public is the Secure-ID —
+  a per-order credential — and the branch identifiers `config`/`shop`, which stay out of tracked
+  files as `docs/automation.md` already requires.
+
 ## Open questions, to be answered by measurement rather than by the owner
 
 - **Can the dm download be fetched with the Secure-ID?** To be measured when order 540996 is
@@ -118,16 +136,20 @@ of the negative. dm scans only frames that carry an image — this roll had 12, 
 and 12 prints came with it. `matchScansToFrames` hands the n-th file to the n-th frame, so today
 the file of negative 25 is proposed for frame 1 and the whole roll is off by 24. The number is
 right there in the name; reading it is a profile property ("scan file names carry the frame
-number, pattern `Neg\.Nr\.(\d+)`"), not a dm special case in code. **Not in this ticket's steps
-yet** — see the question to the owner below.
+number, pattern `Neg\.Nr\.(\d+)`"), not a dm special case in code. The owner decided the
+same day to read it (see "Decisions taken"); it is step 3b.
 
 ## Steps
 
 - [ ] **Step 0: measure.** Answer the three questions above and record the findings _in this
       ticket_ before writing code. The shape of steps 1 and 2 depends on the first two.
 - [ ] **Step 1: the domain type.** `LabProfile` in `packages/domain` — id, name, an optional
-      status endpoint (URL template plus the names of the parameters it needs) and notes. `Roll`
-      gains `labProfileId: Id | null`. Failing test first: a profile without a status endpoint is
+      status endpoint (URL template plus the names of the parameters it needs), an optional
+      download endpoint (URL template; for dm `…/imageCD/{orderId}/{secureId}/download?aak=…`),
+      an optional file-name frame pattern, and notes. The status template takes the part of the
+      order number after the dash; the profile says so rather than code knowing dm's format.
+      `Roll` gains `labProfileId: Id | null`, and the backend a migration for it — the schema
+      guard of T-023 fails otherwise. Failing test first: a profile without any endpoint is
       valid, and a roll with no profile is valid.
 - [ ] **Step 2: the profile data.** `packages/presets/data/lab-profiles.json` with dm as the first
       entry, a `labProfilePresetSchema` in `packages/presets/src/schema.ts` (strict, like every
@@ -137,6 +159,11 @@ yet** — see the question to the owner below.
       returning `{ stateCode, stateText, date, orderNo, deliveryText }` or a typed error (no
       profile, no status endpoint, no order, network down, unexpected shape). Tested against the
       recorded `DELIVERED` fixture from order 540996 and against a profile that has no endpoint.
+- [ ] **Step 3b: scans find their frame by name.** `matchScansToFrames` takes the profile's
+      pattern (or none). Failing test first, with the twelve real dm names: `Neg.Nr.25` … `36`
+      land on frames 25–36, a name the pattern misses and a roll without pattern keep the
+      natural order, two files claiming one frame leave the second unassigned rather than
+      guessing. The app import and `filmnotes-import` both pass the roll's profile through.
 - [ ] **Step 4: the workflow loses its mail branch.** Delete the twelve nodes from "Lab mail
       arrives" to "Mail: needs a human" in `automation/n8n/filmnotes-scan-import.json`. The
       schedule branch stays exactly as it is. Import the result into n8n once to prove the JSON
