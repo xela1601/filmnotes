@@ -7,7 +7,7 @@
  * for minutes and then reported a file name without a reason.
  *
  * `SERVER_SCAN_MIME_TYPES` mirrors the `mimeTypes` of the `scans.file` field in
- * `backend/pb_migrations/1758150000_init_collections.js`. Change one, change the other.
+ * `backend/pb_migrations`; `backendSchema.test.ts` fails when the two disagree.
  */
 
 /** Extension (without the dot) → MIME type, for everything a lab might hand out. */

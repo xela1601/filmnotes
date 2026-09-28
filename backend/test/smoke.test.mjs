@@ -132,6 +132,45 @@ if (!hasPocketBase()) {
       assert.equal(listed.body.items[0].rollId, ROLL_ID);
     });
 
+    await t.test("3b. frames only take the values the domain's unions allow", async () => {
+      const frame = (id, values) =>
+        api(pb.url, "/api/collections/frames/records", {
+          token: sessionA.token,
+          method: "POST",
+          body: { id, rollId: ROLL_ID, frameNo: 2, owner: sessionA.user.id, ...values },
+        });
+
+      const valid = await frame("fram0smokeunion", {
+        exposureMode: "M",
+        focusMode: "AF",
+        afResult: "red_blink",
+        driveMode: "ST",
+        flashHead: "bounce",
+        support: "beanbag",
+      });
+      assert.equal(valid.status, 200, JSON.stringify(valid.body));
+
+      // One field at a time, so a failure says which one the server still takes as free text.
+      const invalid = {
+        exposureMode: "Av",
+        focusMode: "MF",
+        afResult: "blink",
+        driveMode: "continuous",
+        flashHead: "up",
+        support: "monopod",
+      };
+      for (const [field, value] of Object.entries(invalid)) {
+        const refused = await frame(`fram0bad${field.slice(0, 7).toLowerCase()}`, {
+          [field]: value,
+        });
+        assert.equal(refused.status, 400, `${field} = ${value} must be refused`);
+        assert.ok(
+          refused.body.data?.[field],
+          `the error names ${field}: ${JSON.stringify(refused.body)}`,
+        );
+      }
+    });
+
     await t.test("4. rolls are invisible to other users and to anonymous callers", async () => {
       const other = await api(pb.url, "/api/collections/rolls/records", { token: sessionB.token });
       assert.equal(other.status, 200);

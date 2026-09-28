@@ -1,8 +1,9 @@
 /**
  * Initial filmnotes schema.
  *
- * Field names mirror `packages/domain/src/types.ts` exactly (camelCase); only the
- * id/created/updated system fields follow PocketBase conventions.
+ * Field names mirror `packages/domain/src/types.ts` (camelCase); only the id/created/updated
+ * system fields follow PocketBase conventions. `packages/domain/src/backendSchema.test.ts`
+ * replays every migration and fails when field names or select values drift from the domain.
  *
  * Design decisions worth remembering:
  *  - References between our own records (`cameraId`, `rollId`, `filterIds`, ...) are plain

@@ -62,26 +62,96 @@ helps the existing schema, so the guard is a test and there was nothing left to 
 
 ## Steps
 
-- [ ] **Step 1: the guard test.** Failing test first, in `packages/domain`. It reads
+- [x] **Step 1: the guard test.** Failing test first, in `packages/domain`. It reads
       `backend/pb_migrations/1758150000_init_collections.js` as text and asserts against the
       domain: the four enum lists (`status`, `process`, `isoSource`, `afCompatible`), the
       `scans.file` MIME list, and every collection's field names. Commit
       `test(domain): the backend schema has to match the domain types`.
-- [ ] **Step 2: watch it fail on purpose.** Change one side, confirm the test breaks and names
+
+      _Delivered 2026-09-28 as `packages/domain/src/backendSchema.test.ts`, with one change to
+      the plan:_ it does not read the init migration as text but **replays every file in
+      `backend/pb_migrations` in order** (in `node:vm`, against a small stand-in for PocketBase's
+      migration API) and compares the resulting schema. Reading one file as text was already
+      wrong on the day it was written — `rolls.labOrderId` exists only in the third migration —
+      and after step 5 the init file would still say `text("exposureMode")`. The stand-in throws
+      on any API call it does not implement, so a future migration cannot slip past it silently.
+      The domain side is two object literals typed against `types.ts` (`Record<keyof …, true>`),
+      so a new field or union member does not compile until the test lists it. On top of the
+      plan it also fails on a `select` field the domain has no union for, and checks that every
+      collection carries the sync fields.
+
+- [x] **Step 2: watch it fail on purpose.** Change one side, confirm the test breaks and names
       which list and which value, restore. A guard nobody has seen fail is not known to work.
-- [ ] **Step 3: retire the prose.** The comments standing in for the guard —
+
+      _Done 2026-09-28, six mutations, each restored afterwards:_
+
+      | Mutation                                             | What the gate said                                                   |
+      | ---------------------------------------------------- | -------------------------------------------------------------------- |
+      | `"at_lab"` → `"atlab"` in the init migration          | `rolls.status` values: `- "at_lab"` / `+ "atlab"`                    |
+      | `text("lab")` deleted from the init migration         | `rolls`: `missingOnServer: ["lab"]`                                  |
+      | `"image/webp"` deleted from `SERVER_SCAN_MIME_TYPES`  | scan formats: `+ "image/webp"`                                       |
+      | `labProfileId` added to `Roll` in `types.ts`          | TS2741: `Property 'labProfileId' is missing … DomainFields<"rolls">` |
+      | `"lost"` added to `RollStatus`                        | TS2345: `Property 'lost' is missing … Record<RollStatus, true>`      |
+      | `support` turned into a `select` in the migration     | unknown selects: `["frames.support"]`                                |
+
+- [x] **Step 3: retire the prose.** The comments standing in for the guard —
       `packages/domain/src/scanFormats.ts:9` ("Change one, change the other") and the migration's
       header claim — become pointers at the test instead of promises nobody can keep.
 - [ ] **Step 4: find out what the live data holds.** Before writing the migration, query the
       distinct values of `exposureMode`, `focusMode`, `afResult`, `driveMode` and `support` in
       `pb_data`. Record them here. If anything outside the unions is already stored, decide what
       happens to it — the migration cannot simply be applied over it.
-- [ ] **Step 5: the migration.** A new file turning those five fields into `select()` with the
+
+      _Open, 2026-09-28: it needs the owner's server._ The live `pb_data` is a Docker volume on
+      the home server and not reachable from the sandbox, so the values were not queried. What
+      stands in for the query meanwhile: the migration checks the data itself before it changes
+      anything, and on a value outside the unions it **refuses to run and names every record**
+      (`<id>: exposureMode = "Av"; …`). Measured with the real binary: the migration runs in one
+      transaction, so nothing is half-converted, and PocketBase then does not start. What to do
+      with such a value was therefore _not_ decided on the owner's behalf — the default is "stop
+      and ask", not "clear it".
+
+      To answer this step without touching the server, run the new migration against a copy of
+      a volume snapshot (`docs/deployment.md`, "6. Backup and restore"):
+
+      ```bash
+      mkdir -p /tmp/pb-check && tar -xzf filmnotes-pb-<date>.tar.gz -C /tmp/pb-check
+      backend/bin/pocketbase migrate up --dir /tmp/pb-check --migrationsDir backend/pb_migrations
+      ```
+
+      `Applied 1759050000_frames_select_unions.js` means the live data is clean; otherwise the
+      error lists the records. The values found belong in this step, and the box ticked with them.
+
+- [x] **Step 5: the migration.** A new file turning those five fields into `select()` with the
       domain's values, up and down. The backend smoke test covers that a valid record still
       writes and an invalid one is now refused. Commit
       `feat(backend): the server enforces the domain's unions`.
-- [ ] **Step 6:** changeset (`minor` — it carries a migration), and a line in the backend docs
+
+      _Delivered 2026-09-28 as `backend/pb_migrations/1759050000_frames_select_unions.js`._
+      Three things the plan did not say:
+      - **Six fields, not five.** `flashHead` (`direct`/`bounce`) is a union field stored as
+        free text too; the survey above missed it. The owner's decision — the server rejects
+        invalid values — covers it for the same reason, so it is in.
+      - **A type cannot be changed in place.** PocketBase answers `Field type cannot be changed`
+        for a select with the text field's id, and a new field under the old name drops the
+        column with its data. So the migration renames each field out of the way, adds the
+        select, copies the values in SQL and removes the old field; `down` does the same back.
+      - **A second backend test**, `backend/test/frame-unions.test.mjs`, because the smoke test
+        only sees an empty database. It brings a database to the migration before, seeds frames,
+        then applies the new one the way a deploy does: valid values survive, `down` restores
+        text fields with their values, a foreign value stops it with the record named and leaves
+        the schema untouched. The smoke test got `3b`: all six valid values write, each foreign
+        one is refused with a `400` naming the field.
+
+      `backend/test/**` and `backend/README.md` are outside this ticket's **Owns**; step 5 and 6
+      name them, so they were taken as included.
+
+- [x] **Step 6:** changeset (`minor` — it carries a migration), and a line in the backend docs
       saying that adding a union member now needs one too.
+
+      _Done 2026-09-28:_ `.changeset/frames-refuse-foreign-values.md`, and "Changing the schema"
+      in `backend/README.md` names the guard test, the enforced unions and what to do when the
+      migration refuses to run.
 
 **Done when:** changing an enum value on one side and not the other fails the gate, and the
 server refuses a roll whose `exposureMode` is not one of the four the domain allows.

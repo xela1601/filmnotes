@@ -9,7 +9,7 @@ the same session; a handoff that lies is worse than none.
 
 The application is built and merged. T-001 to T-014 delivered the monorepo, the domain rules,
 the presets, the PocketBase backend, the Expo app with roll/frame/equipment/scan/export UI, the
-sync engine, the CLI and the docs; T-017 added themes. The gate is green: **695 tests**, ESLint
+sync engine, the CLI and the docs; T-017 added themes. The gate is green: **717 tests**, ESLint
 and Prettier clean.
 
 The three sandbox tickets are closed too. Inside the sandbox you can `ssh` and `git push` over
@@ -19,7 +19,7 @@ the deploy key, and open PRs with `gh`, all from an ordinary Bash tool call.
 
 | Ticket                                            | What it is                                  | Note                                               |
 | ------------------------------------------------- | ------------------------------------------- | -------------------------------------------------- |
-| [T-023](tickets/T-023-backend-domain-drift.md)    | Guard the backend schema against `types.ts` | smallest; protects the other three                 |
+| [T-023](tickets/T-023-backend-domain-drift.md)    | Guard the backend schema against `types.ts` | built; **step 4 needs the owner's backup**         |
 | [T-022](tickets/T-022-lab-order-status-in-app.md) | Lab order status in the app                 | step 0 measures the `config` parameter first       |
 | [T-015](tickets/T-015-scan-metadata.md)           | Frame metadata into the scans (EXIF)        | XMP is a later pass                                |
 | [T-016](tickets/T-016-native-tab-bar.md)          | Native tab bar                              | **step 4 needs the owner's Mac**, not this sandbox |
