@@ -2,7 +2,7 @@
 # Build and load into the sandbox runtime's own image store (on the host, outside any sandbox):
 #   make -C sandbox sbx-build      (= docker build + sbx template load)
 # Use:
-#   make -C sandbox sbx-run        (sbxenv.yaml references this tag)
+#   sbx tui / sbx run --name filmnotes   (sbxenv.yaml references this tag)
 #   sbx run -t filmnotes-sbx:latest claude --kit ./sandbox/kit
 FROM docker/sandbox-templates:claude-code
 
@@ -40,5 +40,8 @@ ENV FILMNOTES_PB_BIN=/opt/pocketbase/pocketbase \
 
 # User-level tools: agent. Expo needs Node >= 20; fail the build early if the base image is older.
 USER agent
+# The base image bakes in one Claude Code version; update at build time so fresh sandboxes
+# do not start with a version that lacks current models (the kit also updates at every start).
+RUN claude update || true; claude --version
 RUN node -e 'const v=+process.versions.node.split(".")[0]; if (v<20) { console.error("Node >= 20 required, got", process.version); process.exit(1) } console.log("node", process.version)' \
  && npm --version

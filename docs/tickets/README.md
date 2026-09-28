@@ -52,8 +52,9 @@ Wave 3 (parallel)
 Backlog - the owner's decisions were taken on 2026-09-25, so these are ready to pick up
   T-015 Frame metadata into the scans     packages/domain, packages/exporters, tools/scan-import
   T-016 Native tab bar (Liquid Glass)     apps/mobile/app/(tabs), apps/mobile/e2e   (step 4 needs the owner's Mac)
-  T-022 Lab order status in the app       packages/domain, apps/mobile/src/features/rolls
   T-023 Backend copies the domain's constants   backend/pb_migrations, packages/domain
+  T-024 Lab profiles                      packages/domain, packages/presets, automation/n8n, docs
+    └─ T-022 Lab order status in the app  apps/mobile/src/features/rolls   (needs T-024)
 ```
 
 Integrator merges each finished ticket branch into `main` in wave order, runs `npm test`, then starts the next wave. Waves 0-3 are merged. A backlog ticket is only startable once the owner has answered the questions it opens with; every open one was answered on 2026-09-25.
@@ -76,6 +77,14 @@ On 2026-09-25 the owner answered every open question that was holding a backlog 
 costs, in the ticket itself. T-018 was decided by closing it: the domain package stays
 source-only, and the survey behind that answer turned up a new ticket, T-023 - decided the same
 day, so nothing on this board is waiting on the owner any more.
+
+On 2026-09-27 the first developed film came back, and two things the board believed turned out to
+be wrong. The lab mail the scan-import automation waits for does not exist - dm hands the download
+credential over on paper, in the pickup bag - and the owner has since decided that a lab is one
+route among several, because they scan at home too and other people will use this app. That is
+**T-024**, which deletes the mail branch and turns the dm wiring into profile data; **T-022 now
+depends on it** and lost its own data design in the process. Both changes are recorded in the
+tickets, with the date and what they cost.
 
 The three infrastructure tickets are all closed as of 2026-09-25. T-019 and T-021 give the
 sandbox `ssh` and `git push` over a deploy key from an ordinary Bash tool call; T-020 adds
@@ -111,5 +120,6 @@ looked at.
 | [T-019](done/T-019-sandbox-push-access.md)       | Repository-scoped push access                           | `sbxenv.yaml`, `sandbox/kit/spec.yaml`, `.git/config` (the remote)                                              | done   |
 | [T-020](done/T-020-sandbox-gh-cli-access.md)     | A scoped token so `gh` works from the sandbox           | `CLAUDE.md`; the rest is host steps for the owner                                                               | done   |
 | [T-021](done/T-021-sandbox-ssh-double-proxy.md)  | SSH to GitHub double-proxied inside the command sandbox | `.claude/settings.json`, `sandbox/Dockerfile`, `sandbox/kit/**`, `sbxenv.yaml`, `sandbox/Makefile`              | done   |
-| [T-022](T-022-lab-order-status-in-app.md)        | Lab order status in the app                             | `packages/domain/src/types.ts` (`Roll`), `apps/mobile/src/features/rolls/**`                                    | ready  |
+| [T-022](T-022-lab-order-status-in-app.md)        | Lab order status in the app                             | `apps/mobile/src/features/rolls/**` (needs T-024)                                                               | ready  |
 | [T-023](T-023-backend-domain-drift.md)           | The backend copies the domain's constants               | `backend/pb_migrations/**` (a new migration), `packages/domain/src/**` (a guard test)                           | ready  |
+| [T-024](T-024-lab-profiles.md)                   | Lab profiles: the app stops assuming one lab            | `packages/domain/src/labProfile.*`, `packages/presets/data/lab-profiles.json`, `automation/n8n/**`, `docs/**`   | ready  |

@@ -25,7 +25,7 @@ Nothing else: no Node on the host, no secrets in any file. The environment file 
 | `mise`, `install-mise.sh`               | [mise](https://mise.jdx.dev) wrapper: fetches the binary from GitHub (mise.jdx.dev is not on the allow-list), redirects mise's data dirs to `$TMPDIR` (`$HOME` is read-only, and tar extraction fails on the virtiofs bind mount) and routes downloads through the proxy wrapper. Tools and tasks are declared in `../mise.toml`.                                                                                                                        |
 | `../sbxenv.yaml`                        | Declarative environment: agent, template, kit with its arguments, bind-mounted workspace, read-only mount of `~/.ssh/id_filmnotes_deploy` (under the `home` argument), ports 8081 (host side via the `expoPort` argument, default 8082) and 8090.                                                                                                                                                                                                        |
 | `host/bw-github-token.sh`               | Prints the GitHub token from Bitwarden ("My Vault" > GitHub > "sbx-filmnotes": login password, else a custom field `token`/`sbx-filmnotes`, else the note). `sbxenv.yaml` runs it as the `github` secret command when the sandbox is created; the proxy injects the token for `github.com`/`api.github.com`, `GH_TOKEN` inside the sandbox is a placeholder. Declarative form of `sbx secret set github --sandbox filmnotes -t ...`.                     |
-| `Makefile`                              | The host-side handgrips: `sbx-build`, `sbx-plan`, `sbx-create`, `sbx-run`, `sbx-rm`, `sbx-recreate`, `skills-import`, `doctor`, `shell`, `ports`. Passes `home` and `expoPort` so nobody forgets them. Tasks _inside_ the sandbox stay in `../mise.toml`.                                                                                                                                                                                                |
+| `Makefile`                              | The host-side handgrips: `sbx-build`, `sbx-plan`, `sbx-create`, `sbx-attach`, `sbx-rm`, `sbx-recreate`, `skills-import`, `doctor`, `shell`, `ports`. Passes `home` and `expoPort` so nobody forgets them. Tasks _inside_ the sandbox stay in `../mise.toml`.                                                                                                                                                                                             |
 | `kit/files/home/`                       | Files the kit drops under `/home/agent` at creation: `sandbox-doctor` (`make doctor`: tools, mounts, network policy, git identity, GitHub over the deploy key) and `statusline.sh`, the Claude Code status line `[filmnotes] model \| repo branch* \| ctx 42% (84k/200k)`, registered in the sandbox `settings.json` at every start.                                                                                                                     |
 
 ## One-time
@@ -47,7 +47,8 @@ commands then download the tools at sandbox creation.
 ## Every session
 
 ```bash
-make -C sandbox sbx-run          # creates (or re-attaches to) the sandbox and starts Claude Code
+sbx tui                          # dashboard; the session entered from there has the changes pane on the right
+sbx run --name filmnotes         # or: attach directly (also: make -C sandbox sbx-attach)
 ```
 
 Inside Claude Code: "Follow docs/HANDOFF.md".
