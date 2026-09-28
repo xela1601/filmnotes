@@ -83,6 +83,12 @@ the documentation. What needs generalising is the _lab_ side.
   a per-order credential — and the branch identifiers `config`/`shop`, which stay out of tracked
   files as `docs/automation.md` already requires.
 
+- **The Secure-ID is used once and never stored.** It is asked for when the download runs, fills
+  the profile's download template for that one request, and is not written to the roll, the
+  server, a log or the store. Owner's decision, 2026-09-28: "Einmal runterladen und dann
+  vergessen". The cost: a second download of the same order means typing it again from the
+  insert — within six weeks, after which it is worthless anyway.
+
 ## Open questions, to be answered by measurement rather than by the owner
 
 - **Can the dm download be fetched with the Secure-ID?** To be measured when order 540996 is
