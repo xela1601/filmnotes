@@ -45,7 +45,7 @@
 - LCD oben: mehrere schwarze Flecken (Alterungsfehler „ausgelaufenes LCD"), alle Anzeigen lesbar
 - Batteriefach war mit ausgelaufenen Alkali-Batterien korrodiert, wurde gereinigt; Kamera schaltet mit frischen Batterien ein
 - Funktionstests Autofokus / Verschluss / Blendenschluss / Lichtdichtungen: angeleitet, Ergebnis **nicht berichtet**
-- Beim Kauf des neuen Films befand sich ein **alter, teilbelichteter Film unbekannter Sorte** im Gehäuse; Rückspulen angeleitet, Ergebnis nicht berichtet
+- Die Kamera ist ein Erbstück vom Vater des Besitzers, nicht gekauft. Der alte Film, der darin lag, war sein Film; er ist längst entnommen (korrigiert 2026-09-28 – hier stand vorher „Vorbesitzer“ und „Rückspulen, Ergebnis nicht berichtet“)
 - Bekannte typische Defekte des Modells, die die App ggf. als „Kamera-Notizen" vorhalten sollte: klebende Blendenmagnete (Überbelichtung bei kleinen Blenden), LCD-Bleeding, Batteriekorrosion, gealterte Lichtdichtungen der Rückwand
 
 ---
@@ -156,8 +156,8 @@ Regel für die App: Filter der Größe 49 mm nur mit 35-70 und 50 kombinierbar; 
 
 | Feld                              | Wert                                                                                                                                                                                                                            |
 | --------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Aktuell gekauft                   | **AgfaPhoto APX 400 Professional**, 135-36, Schwarzweiß-Negativfilm, ISO 400, klassischer S/W-Prozess (nicht C-41); DX-Code wahrscheinlich vorhanden, **nach Einlegen ISO-Anzeige im LCD prüfen**, sonst manuell ISO 400 setzen |
-| Zuvor im Gehäuse                  | alter, teilbelichteter Film unbekannter Sorte (Vorbesitzer), wird zurückgespult und ggf. entwickelt                                                                                                                             |
+| Katalogeintrag (nicht gekauft)    | **AgfaPhoto APX 400 Professional**, 135-36, Schwarzweiß-Negativfilm, ISO 400, klassischer S/W-Prozess (nicht C-41); DX-Code wahrscheinlich vorhanden, **nach Einlegen ISO-Anzeige im LCD prüfen**, sonst manuell ISO 400 setzen |
+| Zuvor im Gehäuse                  | alter Film des Vaters des Besitzers, längst entnommen                                                                                                                                                                           |
 | Empfehlung für Farbe              | Kodak Ultramax 400 / Fujifilm 400 (Universal), Kodak Gold 200 (Sonne)                                                                                                                                                           |
 | Filmpreise (Sept. 2026, Drogerie) | Fomapan 200 Creative 7,99 € · AgfaPhoto APX 400 8,99 € · Fomapan 400 Action 8,99 € · Wolfen Farbfilm 200 14,99 €                                                                                                                |
 | Entwicklung                       | Drogerie (Rossmann: Kleinbild 5–8 Werktage, CD möglich) oder Online-Labor mit Downloadlink (z. B. Urbanfilmlab: Entwicklung + Scan Large 13 €, XL 17 €; MeinFilmLab; Fotobrell; Onfilmlab)                                      |
@@ -470,17 +470,17 @@ Frame { id, roll_id, frame_no, taken_at, lens_id, focal_length_mm, exposure_mode
       "process": "BW",
       "exposures": 36,
       "dx_coded": "wahrscheinlich – nach Einlegen im LCD prüfen",
-      "in_stock": true
+      "in_stock": false
     },
     {
       "id": "unknown_old_roll",
-      "name": "Alter Film des Vorbesitzers",
+      "name": "Alter Film aus der Kamera des Vaters",
       "maker": null,
       "iso": null,
       "process": null,
       "exposures": null,
       "dx_coded": null,
-      "note": "teilbelichtet, zurückgespult, ggf. entwickeln"
+      "note": "längst entnommen"
     }
   ],
   "defaults_for_new_frame": {
@@ -519,4 +519,4 @@ Frame { id, roll_id, frame_no, taken_at, lens_id, focal_length_mm, exposure_mode
 - DX-Codierung des APX 400 nicht bestätigt.
 - Zweiter Blitz auf dem Blitzschuh: unklar, ob vorhanden.
 - Seriennummern von Gehäuse und Objektiven nicht erfasst.
-- Ergebnisse der Funktionstests (AF, Verschluss, Blende, Lichtdichtungen) und der Rückspulaktion nicht berichtet.
+- Ergebnisse der Funktionstests (AF, Verschluss, Blende, Lichtdichtungen) nicht berichtet. Der erste entwickelte Farbfilm (dm, 2026-09) hatte auf Negativ 1–24 kein Bild und auf 25–36 zwölf korrekt belichtete – Ursache offen.
