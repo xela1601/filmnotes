@@ -189,7 +189,7 @@ same day to read it (see "Decisions taken"); it is step 3b.
       default none. Without it nothing ever sets `labProfileId` and the "Done when" below is not
       reachable; no step had it. T-022 step 3 adds the lab-specific fields next to it.
 - [x] **Step 3d: the CLI downloads through the profile.** `filmnotes-import --roll <id>
-    --lab-download` fills the roll's profile download template with the roll's order number and
+  --lab-download` fills the roll's profile download template with the roll's order number and
       the Secure-ID and imports the result as a URL source. The Secure-ID is used for that one
       request and never written anywhere (decision above) — not to the roll, a log, or the
       `--json` output.
@@ -201,10 +201,18 @@ same day to read it (see "Decisions taken"); it is step 3b.
       without a number, a second claim on one frame, or a frame the roll does not have stays
       unassigned; only a pattern that matches _no_ name falls back to the natural order.
 
-- [ ] **Step 4: the workflow loses its mail branch.** Delete the twelve nodes from "Lab mail
+- [x] **Step 4: the workflow loses its mail branch.** Delete the twelve nodes from "Lab mail
       arrives" to "Mail: needs a human" in `automation/n8n/filmnotes-scan-import.json`. The
       schedule branch stays exactly as it is. Import the result into n8n once to prove the JSON
       still loads.
+
+      _Done 2026-09-28:_ 20 nodes → 8, every remaining connection checked to point at an existing
+      node, the workflow renamed "filmnotes – lab order status" and its description and the one
+      code comment that pointed at the mail branch rewritten. **Not done: the import into n8n** —
+      there is no n8n in the sandbox (and no Docker to run one). The owner's re-import is the
+      check; the JSON is valid and the schedule branch's nodes are unchanged byte for byte apart
+      from that comment.
+
 - [ ] **Step 5: `docs/automation.md` says what is true.** The mail section goes; the Secure-ID
       insert, the measured status sequence and the profile concept take its place. The five
       environment variables lose the ones only the mail branch used.
