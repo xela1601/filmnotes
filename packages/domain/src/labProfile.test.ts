@@ -1,5 +1,6 @@
 import { makeRoll } from "./fixtures";
 import {
+  fetchLabOrderStatus,
   fillLabTemplate,
   frameNumberFromFileName,
   labProfileIssues,
@@ -101,5 +102,85 @@ describe("frameNumberFromFileName", () => {
 describe("Roll.labProfileId", () => {
   it("is empty by default: a roll needs no lab at all", () => {
     expect(makeRoll().labProfileId).toBeNull();
+  });
+});
+
+// The answer for order 540996 on 2026-09-28, with the branch, customer and shop numbers replaced.
+const DELIVERED = {
+  resultDateTime: "2026-09-28T18:03:44+0200",
+  summaryStateCode: "DELIVERED",
+  summaryDate: "2026-09-26",
+  summaryStateText: "Dein Auftrag liegt zur Abholung bereit.",
+  summaryPrice: 391,
+  customerNo: "000000",
+  shopNo: "00000",
+  orderNo: "540996",
+  orderDate: "2026-09-21",
+  deliveryType: 0,
+  deliveryText: "dm-drogerie markt\nMusterstraße 1\n00000 Musterstadt",
+  subOrders: [{ orderNo: "540996", stateCode: "DELIVERED", trackingNumber: null }],
+};
+
+describe("fetchLabOrderStatus", () => {
+  const values = { config: "1", shop: "X", orderId: "004304-540996" };
+  const answering = (answer: unknown) => {
+    const urls: string[] = [];
+    return {
+      urls,
+      fetchJson: (url: string) => {
+        urls.push(url);
+        return Promise.resolve(answer);
+      },
+    };
+  };
+
+  it("reads state, date, order and branch out of a real answer", async () => {
+    const port = answering(DELIVERED);
+
+    await expect(fetchLabOrderStatus(drugstore, values, port.fetchJson)).resolves.toEqual({
+      ok: true,
+      status: {
+        stateCode: "DELIVERED",
+        stateText: "Dein Auftrag liegt zur Abholung bereit.",
+        date: "2026-09-26",
+        orderNo: "540996",
+        deliveryText: "dm-drogerie markt\nMusterstraße 1\n00000 Musterstadt",
+      },
+    });
+    expect(port.urls).toEqual(["https://status.example/order?shop=X&order=004304-540996"]);
+  });
+
+  it("does not ask when there is nothing to ask", async () => {
+    const port = answering(DELIVERED);
+
+    await expect(fetchLabOrderStatus(null, values, port.fetchJson)).resolves.toEqual({
+      ok: false,
+      error: "no-profile",
+    });
+    await expect(fetchLabOrderStatus(bare, values, port.fetchJson)).resolves.toEqual({
+      ok: false,
+      error: "no-status-endpoint",
+    });
+    await expect(
+      fetchLabOrderStatus(drugstore, { ...values, orderId: null }, port.fetchJson),
+    ).resolves.toEqual({ ok: false, error: "no-order" });
+    await expect(
+      fetchLabOrderStatus(drugstore, { orderId: "540996" }, port.fetchJson),
+    ).resolves.toEqual({ ok: false, error: "missing-parameters", missing: ["shop"] });
+    expect(port.urls).toEqual([]);
+  });
+
+  it("tells a network failure from an answer it cannot read", async () => {
+    const offline = () => Promise.reject(new TypeError("Network request failed"));
+    await expect(fetchLabOrderStatus(drugstore, values, offline)).resolves.toEqual({
+      ok: false,
+      error: "network",
+    });
+
+    for (const answer of [null, "<html>", { summaryStateCode: 3 }, { orderNo: "540996" }]) {
+      await expect(
+        fetchLabOrderStatus(drugstore, values, answering(answer).fetchJson),
+      ).resolves.toEqual({ ok: false, error: "unexpected-answer" });
+    }
   });
 });

@@ -107,3 +107,75 @@ export function frameNumberFromFileName(pattern: string | null, fileName: string
   const frameNo = Number(captured);
   return frameNo >= 1 ? frameNo : null;
 }
+
+/** What a lab says about one order. */
+export interface LabOrderStatus {
+  /** e.g. `PROCESSING`, `SHIPPED`, `DELIVERED` - see docs/automation.md for the ones measured. */
+  stateCode: string;
+  stateText: string;
+  /** The date of the current state, `YYYY-MM-DD` as the lab gives it. */
+  date: string | null;
+  orderNo: string;
+  /** Where the order is collected or sent, as the lab words it; null when it says nothing. */
+  deliveryText: string | null;
+}
+
+export type LabStatusResult =
+  | { ok: true; status: LabOrderStatus }
+  | { ok: false; error: "no-profile" | "no-status-endpoint" | "no-order" }
+  | { ok: false; error: "missing-parameters"; missing: string[] }
+  | { ok: false; error: "network" | "unexpected-answer" };
+
+const optionalText = (value: unknown): string | null =>
+  typeof value === "string" && value.trim() !== "" ? value : null;
+
+/**
+ * Reads the answer shape the one status API measured so far uses (`summaryStateCode`,
+ * `summaryStateText`, `summaryDate`, `orderNo`, `deliveryText`). A lab that answers differently
+ * gets `unexpected-answer` here, not a guess - see the note at the top of this file.
+ */
+function readOrderStatus(answer: unknown): LabOrderStatus | null {
+  if (typeof answer !== "object" || answer === null) return null;
+  const record = answer as Record<string, unknown>;
+  const stateCode = optionalText(record.summaryStateCode);
+  const orderNo = optionalText(record.orderNo);
+  if (stateCode === null || orderNo === null) return null;
+  return {
+    stateCode,
+    stateText: optionalText(record.summaryStateText) ?? "",
+    date: optionalText(record.summaryDate),
+    orderNo,
+    deliveryText: optionalText(record.deliveryText),
+  };
+}
+
+/**
+ * Asks the profile's status endpoint about one order. `values` carries `orderId` from the roll
+ * and whatever else the endpoint declares; `fetchJson` is the network, so this stays testable
+ * and knows nothing about `fetch` itself. It never throws.
+ */
+export async function fetchLabOrderStatus(
+  profile: LabProfile | null,
+  values: Readonly<Record<string, string | null | undefined>>,
+  fetchJson: (url: string) => Promise<unknown>,
+): Promise<LabStatusResult> {
+  if (!profile) return { ok: false, error: "no-profile" };
+  if (!profile.status) return { ok: false, error: "no-status-endpoint" };
+  if (!values.orderId?.trim()) return { ok: false, error: "no-order" };
+
+  const filled = fillLabTemplate(profile.status, values);
+  if (!filled.ok) {
+    return filled.reason === "missing"
+      ? { ok: false, error: "missing-parameters", missing: filled.missing }
+      : { ok: false, error: "no-status-endpoint" };
+  }
+
+  let answer: unknown;
+  try {
+    answer = await fetchJson(filled.url);
+  } catch {
+    return { ok: false, error: "network" };
+  }
+  const status = readOrderStatus(answer);
+  return status ? { ok: true, status } : { ok: false, error: "unexpected-answer" };
+}

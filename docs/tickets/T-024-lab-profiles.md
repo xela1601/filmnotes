@@ -171,10 +171,15 @@ same day to read it (see "Decisions taken"); it is step 3b.
       T-023 guard — for a read-only list with one entry that no screen edits. A roll points at a
       profile by its preset id. When a user-defined profile is wanted, seeding is the step that
       adds it, and nothing here stands in its way.
-- [ ] **Step 3: the lab client.** A pure function taking a profile and a roll's identifiers,
+- [x] **Step 3: the lab client.** A pure function taking a profile and a roll's identifiers,
       returning `{ stateCode, stateText, date, orderNo, deliveryText }` or a typed error (no
       profile, no status endpoint, no order, network down, unexpected shape). Tested against the
       recorded `DELIVERED` fixture from order 540996 and against a profile that has no endpoint.
+      _Done 2026-09-28 as `fetchLabOrderStatus` in `labProfile.ts`, the network passed in. The
+      fixture is the answer of 2026-09-28 with branch address, customer and shop number replaced.
+      That answer also lists what was ordered: "Colorentwicklung Amateur m.Bildbest" and
+      "12 × 10x15 Farbbild" — development *with picture selection*, so the lab printed and charged
+      only the frames that carried an image. Worth knowing for the next roll's order envelope._
 - [ ] **Step 3b: scans find their frame by name.** `matchScansToFrames` takes the profile's
       pattern (or none). Failing test first, with the twelve real dm names: `Neg.Nr.25` … `36`
       land on frames 25–36, a name the pattern misses and a roll without pattern keep the
