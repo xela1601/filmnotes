@@ -6,10 +6,11 @@ this server for sync, scan storage and export logging.
 
 ```
 backend/
-  pb_migrations/1758150000_init_collections.js   the schema (up + down)
+  pb_migrations/1758150000_init_collections.js   the schema (up + down); later files change it
   scripts/fetch-pocketbase.mjs                   provides bin/pocketbase for local dev
   scripts/serve.sh                               local dev server (mise task `backend`)
   test/smoke.test.mjs                            integration test against the real binary
+  test/frame-unions.test.mjs                     the frames' select migration over existing data
   compose.yaml, .env.example                      deployment (the image is built from the repository root Dockerfile)
 ```
 
@@ -85,7 +86,20 @@ Every record the app uploads gets that user as `owner`.
 
 Never edit the collections in the admin UI on the server — the schema is versioned. Add a new
 file to `pb_migrations/` (`<unixtime>_<what>.js`) with an `up` and a `down` function; it is
-applied automatically on the next start. To try a revert locally:
+applied automatically on the next start. `packages/domain/src/backendSchema.test.ts` replays
+all migrations and fails the gate when a field name or a select's values drift from
+`packages/domain/src/types.ts`.
+
+**A new member in a union the server enforces needs a migration too**, not just a TypeScript
+edit: `status`, `process`, `isoSource`, `afCompatible` and, since `1759050000`, the frames'
+`exposureMode`, `focusMode`, `afResult`, `driveMode`, `flashHead` and `support` are `select`
+fields, and PocketBase refuses a value that is not among their `values`.
+
+`1759050000_frames_select_unions.js` refuses to run while a stored frame holds a value outside
+those unions, and names each such record in the error; PocketBase then does not start. Fix or
+clear those records (admin UI), and start again.
+
+To try a revert locally:
 
 ```bash
 backend/bin/pocketbase migrate down 1 --dir backend/pb_data --migrationsDir backend/pb_migrations
@@ -100,8 +114,11 @@ npm test -w @filmnotes/backend
 `test/smoke.test.mjs` uses `node:test` (not Jest), starts the real binary on a free port with a
 throwaway data directory, and checks that the 9 collections exist, that a client-generated id
 survives a create, that frames are filterable by `rollId`, that a second user and anonymous
-callers see nothing, and that a scan upload returns a servable `200x200` thumbnail. Without
-`bin/pocketbase` the test **skips** instead of failing, so a fresh checkout stays green.
+callers see nothing, that frames refuse values outside the domain's unions, and that a scan
+upload returns a servable `200x200` thumbnail. `test/frame-unions.test.mjs` runs the frames'
+select migration over seeded data, the way a deploy does: valid values survive, `down` restores
+the text fields, a foreign value stops it. Without `bin/pocketbase` both tests **skip** instead
+of failing, so a fresh checkout stays green.
 
 ## Deployment (home server)
 

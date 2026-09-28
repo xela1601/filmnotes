@@ -21,11 +21,17 @@ import { runInNewContext } from "node:vm";
 import { SERVER_SCAN_MIME_TYPES } from "./scanFormats";
 import type {
   AfCompatibility,
+  AfResult,
   CollectionName,
+  DriveMode,
   EntityMap,
+  ExposureMode,
   FilmProcess,
+  FlashHead,
+  FocusMode,
   IsoSource,
   RollStatus,
+  Support,
   SyncedRecord,
 } from "./types";
 import { PB_COLLECTION } from "./types";
@@ -191,6 +197,12 @@ const SELECT_VALUES: Record<string, string[]> = {
     developed: true,
     archived: true,
   }),
+  "frames.exposureMode": members<ExposureMode>({ P: true, A: true, S: true, M: true }),
+  "frames.focusMode": members<FocusMode>({ AF: true, M: true }),
+  "frames.afResult": members<AfResult>({ green: true, red_blink: true, manual: true }),
+  "frames.driveMode": members<DriveMode>({ S: true, C: true, ST: true }),
+  "frames.flashHead": members<FlashHead>({ direct: true, bounce: true }),
+  "frames.support": members<Support>({ handheld: true, braced: true, tripod: true, beanbag: true }),
 };
 
 /** Sync bookkeeping the server adds to every collection (`id` is PocketBase's own). */
@@ -303,8 +315,10 @@ function replayMigrations(): Map<string, Collection> {
       findCollectionByNameOrId: find,
       save: (collection: Collection) => void collections.set(collection.name, collection),
       delete: (collection: Collection) => void collections.delete(collection.name),
-      // The replay has no records, so a migration that checks its data finds none.
+      // The replay has no records: a migration that checks its data finds none, and one that
+      // copies it between columns has nothing to copy.
       findRecordsByFilter: () => [],
+      db: () => strict({ newQuery: () => strict({ execute: () => undefined }, "query") }, "db"),
     },
     "app",
   );

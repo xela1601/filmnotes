@@ -101,12 +101,57 @@ helps the existing schema, so the guard is a test and there was nothing left to 
       distinct values of `exposureMode`, `focusMode`, `afResult`, `driveMode` and `support` in
       `pb_data`. Record them here. If anything outside the unions is already stored, decide what
       happens to it — the migration cannot simply be applied over it.
-- [ ] **Step 5: the migration.** A new file turning those five fields into `select()` with the
+
+      _Open, 2026-09-28: it needs the owner's server._ The live `pb_data` is a Docker volume on
+      the home server and not reachable from the sandbox, so the values were not queried. What
+      stands in for the query meanwhile: the migration checks the data itself before it changes
+      anything, and on a value outside the unions it **refuses to run and names every record**
+      (`<id>: exposureMode = "Av"; …`). Measured with the real binary: the migration runs in one
+      transaction, so nothing is half-converted, and PocketBase then does not start. What to do
+      with such a value was therefore _not_ decided on the owner's behalf — the default is "stop
+      and ask", not "clear it".
+
+      To answer this step without touching the server, run the new migration against a copy of
+      a volume snapshot (`docs/deployment.md`, "6. Backup and restore"):
+
+      ```bash
+      mkdir -p /tmp/pb-check && tar -xzf filmnotes-pb-<date>.tar.gz -C /tmp/pb-check
+      backend/bin/pocketbase migrate up --dir /tmp/pb-check --migrationsDir backend/pb_migrations
+      ```
+
+      `Applied 1759050000_frames_select_unions.js` means the live data is clean; otherwise the
+      error lists the records. The values found belong in this step, and the box ticked with them.
+
+- [x] **Step 5: the migration.** A new file turning those five fields into `select()` with the
       domain's values, up and down. The backend smoke test covers that a valid record still
       writes and an invalid one is now refused. Commit
       `feat(backend): the server enforces the domain's unions`.
-- [ ] **Step 6:** changeset (`minor` — it carries a migration), and a line in the backend docs
+
+      _Delivered 2026-09-28 as `backend/pb_migrations/1759050000_frames_select_unions.js`._
+      Three things the plan did not say:
+      - **Six fields, not five.** `flashHead` (`direct`/`bounce`) is a union field stored as
+        free text too; the survey above missed it. The owner's decision — the server rejects
+        invalid values — covers it for the same reason, so it is in.
+      - **A type cannot be changed in place.** PocketBase answers `Field type cannot be changed`
+        for a select with the text field's id, and a new field under the old name drops the
+        column with its data. So the migration renames each field out of the way, adds the
+        select, copies the values in SQL and removes the old field; `down` does the same back.
+      - **A second backend test**, `backend/test/frame-unions.test.mjs`, because the smoke test
+        only sees an empty database. It brings a database to the migration before, seeds frames,
+        then applies the new one the way a deploy does: valid values survive, `down` restores
+        text fields with their values, a foreign value stops it with the record named and leaves
+        the schema untouched. The smoke test got `3b`: all six valid values write, each foreign
+        one is refused with a `400` naming the field.
+
+      `backend/test/**` and `backend/README.md` are outside this ticket's **Owns**; step 5 and 6
+      name them, so they were taken as included.
+
+- [x] **Step 6:** changeset (`minor` — it carries a migration), and a line in the backend docs
       saying that adding a union member now needs one too.
+
+      _Done 2026-09-28:_ `.changeset/frames-refuse-foreign-values.md`, and "Changing the schema"
+      in `backend/README.md` names the guard test, the enforced unions and what to do when the
+      migration refuses to run.
 
 **Done when:** changing an enum value on one side and not the other fails the gate, and the
 server refuses a roll whose `exposureMode` is not one of the four the domain allows.
