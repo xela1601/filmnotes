@@ -180,7 +180,7 @@ same day to read it (see "Decisions taken"); it is step 3b.
       That answer also lists what was ordered: "Colorentwicklung Amateur m.Bildbest" and
       "12 × 10x15 Farbbild" — development *with picture selection*, so the lab printed and charged
       only the frames that carried an image. Worth knowing for the next roll's order envelope._
-- [ ] **Step 3b: scans find their frame by name.** `matchScansToFrames` takes the profile's
+- [x] **Step 3b: scans find their frame by name.** `matchScansToFrames` takes the profile's
       pattern (or none). Failing test first, with the twelve real dm names: `Neg.Nr.25` … `36`
       land on frames 25–36, a name the pattern misses and a roll without pattern keep the
       natural order, two files claiming one frame leave the second unassigned rather than
@@ -188,11 +188,19 @@ same day to read it (see "Decisions taken"); it is step 3b.
 - [ ] **Step 3c: the roll form offers the lab.** "Labor": _kein Labor_ or one of the profiles,
       default none. Without it nothing ever sets `labProfileId` and the "Done when" below is not
       reachable; no step had it. T-022 step 3 adds the lab-specific fields next to it.
-- [ ] **Step 3d: the CLI downloads through the profile.** `filmnotes-import --roll <id>
---secure-id <id>` fills the roll's profile download template with the roll's order number
-      and the Secure-ID and imports the result as a URL source. The Secure-ID is used for that one
+- [x] **Step 3d: the CLI downloads through the profile.** `filmnotes-import --roll <id>
+    --lab-download` fills the roll's profile download template with the roll's order number and
+      the Secure-ID and imports the result as a URL source. The Secure-ID is used for that one
       request and never written anywhere (decision above) — not to the roll, a log, or the
       `--json` output.
+
+      _Changed while building it, 2026-09-28:_ the plan said `--secure-id <id>`; a flag would
+      have put the code into the shell history — the opposite of "use once, forget". So
+      `--lab-download` asks for it in a hidden prompt, like the password, and cuts it (and the URL
+      carrying it) out of any error message. Step 3b's rule for mixed names, as built: a name
+      without a number, a second claim on one frame, or a frame the roll does not have stays
+      unassigned; only a pattern that matches _no_ name falls back to the natural order.
+
 - [ ] **Step 4: the workflow loses its mail branch.** Delete the twelve nodes from "Lab mail
       arrives" to "Mail: needs a human" in `automation/n8n/filmnotes-scan-import.json`. The
       schedule branch stays exactly as it is. Import the result into n8n once to prove the JSON
