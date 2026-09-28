@@ -152,15 +152,22 @@ same day to read it (see "Decisions taken"); it is step 3b.
 - [ ] **Step 1: the domain type.** `LabProfile` in `packages/domain` — id, name, an optional
       status endpoint (URL template plus the names of the parameters it needs), an optional
       download endpoint (URL template; for dm `…/imageCD/{orderId}/{secureId}/download?aak=…`),
-      an optional file-name frame pattern, and notes. The status template takes the part of the
-      order number after the dash; the profile says so rather than code knowing dm's format.
+      an optional file-name frame pattern, and notes. ~~The status template takes the part of the
+      order number after the dash.~~ Measured 2026-09-28: the status API answers the same for
+      `540996`, the full `NNNNNN-540996` and the digits without the dash, so the roll keeps the
+      order number exactly as printed and nothing splits it.
       `Roll` gains `labProfileId: Id | null`, and the backend a migration for it — the schema
       guard of T-023 fails otherwise. Failing test first: a profile without any endpoint is
       valid, and a roll with no profile is valid.
 - [ ] **Step 2: the profile data.** `packages/presets/data/lab-profiles.json` with dm as the first
       entry, a `labProfilePresetSchema` in `packages/presets/src/schema.ts` (strict, like every
-      other one), the compile-time `Extends` proof, and the data test. Seeded as its own bundle
-      id, `lab-profiles`, so an existing installation picks it up.
+      other one), the compile-time `Extends` proof, and the data test. ~~Seeded as its own bundle
+      id, `lab-profiles`, so an existing installation picks it up.~~ **Changed 2026-09-28:** the
+      profiles are read from `@filmnotes/presets` directly and not seeded into the store. Seeding
+      would make them a synced collection — store, sync mapping, a PocketBase collection and the
+      T-023 guard — for a read-only list with one entry that no screen edits. A roll points at a
+      profile by its preset id. When a user-defined profile is wanted, seeding is the step that
+      adds it, and nothing here stands in its way.
 - [ ] **Step 3: the lab client.** A pure function taking a profile and a roll's identifiers,
       returning `{ stateCode, stateText, date, orderNo, deliveryText }` or a typed error (no
       profile, no status endpoint, no order, network down, unexpected shape). Tested against the
@@ -170,6 +177,14 @@ same day to read it (see "Decisions taken"); it is step 3b.
       land on frames 25–36, a name the pattern misses and a roll without pattern keep the
       natural order, two files claiming one frame leave the second unassigned rather than
       guessing. The app import and `filmnotes-import` both pass the roll's profile through.
+- [ ] **Step 3c: the roll form offers the lab.** "Labor": _kein Labor_ or one of the profiles,
+      default none. Without it nothing ever sets `labProfileId` and the "Done when" below is not
+      reachable; no step had it. T-022 step 3 adds the lab-specific fields next to it.
+- [ ] **Step 3d: the CLI downloads through the profile.** `filmnotes-import --roll <id>
+    --secure-id <id>` fills the roll's profile download template with the roll's order number
+      and the Secure-ID and imports the result as a URL source. The Secure-ID is used for that one
+      request and never written anywhere (decision above) — not to the roll, a log, or the
+      `--json` output.
 - [ ] **Step 4: the workflow loses its mail branch.** Delete the twelve nodes from "Lab mail
       arrives" to "Mail: needs a human" in `automation/n8n/filmnotes-scan-import.json`. The
       schedule branch stays exactly as it is. Import the result into n8n once to prove the JSON
