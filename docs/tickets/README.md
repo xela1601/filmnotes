@@ -54,7 +54,7 @@ Backlog - the owner's decisions were taken on 2026-09-25, so these are ready to 
   T-016 Native tab bar (Liquid Glass)     apps/mobile/app/(tabs), apps/mobile/e2e   (step 4 needs the owner's Mac)
   T-023 Backend copies the domain's constants   backend/pb_migrations, packages/domain
   T-024 Lab profiles                      packages/domain, packages/presets, automation/n8n, docs
-    └─ T-022 Lab order status in the app  apps/mobile/src/features/rolls   (needs T-024)
+    └─ T-022 Lab order status in the app  apps/mobile/src/features/rolls   (T-024 is done)
   T-025 Scans that arrive upside down     scan review + import
 ```
 
@@ -121,7 +121,7 @@ looked at.
 | [T-019](done/T-019-sandbox-push-access.md)       | Repository-scoped push access                           | `sbxenv.yaml`, `sandbox/kit/spec.yaml`, `.git/config` (the remote)                                              | done        |
 | [T-020](done/T-020-sandbox-gh-cli-access.md)     | A scoped token so `gh` works from the sandbox           | `CLAUDE.md`; the rest is host steps for the owner                                                               | done        |
 | [T-021](done/T-021-sandbox-ssh-double-proxy.md)  | SSH to GitHub double-proxied inside the command sandbox | `.claude/settings.json`, `sandbox/Dockerfile`, `sandbox/kit/**`, `sbxenv.yaml`, `sandbox/Makefile`              | done        |
-| [T-022](T-022-lab-order-status-in-app.md)        | Lab order status in the app                             | `apps/mobile/src/features/rolls/**` (needs T-024)                                                               | ready       |
+| [T-022](T-022-lab-order-status-in-app.md)        | Lab order status in the app                             | `apps/mobile/src/features/rolls/**`                                                                             | ready       |
 | [T-023](T-023-backend-domain-drift.md)           | The backend copies the domain's constants               | `backend/pb_migrations/**` (a new migration), `packages/domain/src/**` (a guard test)                           | step 4 open |
-| [T-024](T-024-lab-profiles.md)                   | Lab profiles: the app stops assuming one lab            | `packages/domain/src/labProfile.*`, `packages/presets/data/lab-profiles.json`, `automation/n8n/**`, `docs/**`   | ready       |
+| [T-024](done/T-024-lab-profiles.md)              | Lab profiles: the app stops assuming one lab            | `packages/domain/src/labProfile.*`, `packages/presets/data/lab-profiles.json`, `automation/n8n/**`, `docs/**`   | done        |
 | [T-025](T-025-scan-orientation.md)               | Scans that arrive upside down                           | `apps/mobile/src/features/scans/**`, `tools/scan-import/src/**`                                                 | ready       |

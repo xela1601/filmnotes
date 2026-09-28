@@ -2,7 +2,7 @@
 
 **Wave:** backlog, ready to start — the owner's decisions were taken on 2026-09-25, and revised
 on 2026-09-27 (see "Superseded by T-024" below)
-**Depends on:** [T-024](T-024-lab-profiles.md) — the profile and the lab client are built there
+**Depends on:** [T-024](done/T-024-lab-profiles.md) — the profile and the lab client are built there
 **Owns:** `apps/mobile/src/features/rolls/**`
 
 **Goal:** see the photo lab's order status for a roll from inside the app, not only by waiting for
@@ -33,7 +33,7 @@ On 2026-09-27 the owner decided that a lab is a **profile**, not a set of fields
 the app is to support several routes, because they now scan at home as well and expect other
 people to use it. The decision below marked _"The identifiers live on the roll"_ is therefore
 replaced: the shop id and the status URL move into a lab profile
-([T-024](T-024-lab-profiles.md)), and `Roll` carries a `labProfileId` plus only the identifiers
+([T-024](done/T-024-lab-profiles.md)), and `Roll` carries a `labProfileId` plus only the identifiers
 that genuinely differ per roll. Steps 1 and 2 of this ticket are done in T-024; steps 0, 3 and 4
 stay here and are unchanged in substance.
 
@@ -77,20 +77,20 @@ API, not a preference, so step 1 below settles it empirically instead of asking 
 
 ## Steps
 
-The three struck-through steps moved to [T-024](T-024-lab-profiles.md) and are not open work here;
+The three struck-through steps moved to [T-024](done/T-024-lab-profiles.md) and are not open work here;
 they are kept so the reasoning behind them stays readable next to the steps that remain.
 
-- ~~**Step 0: find out what `config` is.**~~ **Moved to [T-024](T-024-lab-profiles.md) step 0**,
+- ~~**Step 0: find out what `config` is.**~~ **Moved to [T-024](done/T-024-lab-profiles.md) step 0**,
   where it is measured together with the download question. The original wording: Call `orderInfo/forShop` for a known order with the
   known `config` and then with a deliberately wrong one; call it for an order from a second
   branch with the same `config`. If the answer does not depend on it, `config` is one
   constant in the app; if it does, it becomes a third field on the roll next to the order
   number and the shop id. Record the finding here before writing any code - the rest of the
   ticket's shape depends on it.
-- ~~**Step 1: the domain fields.**~~ **Moved to [T-024](T-024-lab-profiles.md) step 1.**
+- ~~**Step 1: the domain fields.**~~ **Moved to [T-024](done/T-024-lab-profiles.md) step 1.**
   The original wording: `shopId` (optional) and the cached `labShopLabel` on `Roll`,
   plus `config` if step 0 says so. Failing test first, in `packages/domain`.
-- ~~**Step 2: the lab client.**~~ **Moved to [T-024](T-024-lab-profiles.md) step 3.**
+- ~~**Step 2: the lab client.**~~ **Moved to [T-024](done/T-024-lab-profiles.md) step 3.**
   The original wording: A function that takes the identifiers and returns
   `{ stateCode, stateText, date, orderNo, deliveryText }` or a typed error (no order, network
   down, unexpected shape). Pure, tested against the recorded fixture in "Why" above.

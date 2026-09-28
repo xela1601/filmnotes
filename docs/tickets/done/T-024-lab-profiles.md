@@ -1,6 +1,11 @@
 # T-024 – Lab profiles: the app stops assuming one lab
 
-**Wave:** backlog, ready to start — the owner's decisions were taken on 2026-09-27
+**Status:** done — verified 2026-09-28: full gate green (753 Jest tests, 13 backend tests, lint,
+format, typecheck), and end to end against a throwaway PocketBase with the real dm order — 12
+scans downloaded with `--lab-download` onto frames 25–36; a wrong Secure-ID ends in `HTTP 404`
+without the code on screen. **Not verified here:** the n8n re-import of the trimmed workflow
+(no n8n in the sandbox) — the owner's step.
+**Wave:** backlog — the owner's decisions were taken on 2026-09-27 and 2026-09-28
 **Depends on:** nothing (but T-022 is rebased onto this one, see "What this does to T-022")
 **Owns:** `packages/domain/src/labProfile.*`, `packages/domain/src/types.ts` (`Roll`),
 `packages/presets/data/lab-profiles.json`, `packages/presets/src/schema.ts`,
@@ -132,7 +137,7 @@ recorded here — they are live credentials until the deletion date, and this re
 
 **2. Does `config` vary per branch?** Not answered by this delivery — one order, one branch. It
 no longer shapes this ticket: the status template takes `config` as a parameter like `shop`, so the
-answer only decides where the value is kept, and that is [T-022](T-022-lab-order-status-in-app.md)'s
+answer only decides where the value is kept, and that is [T-022](../T-022-lab-order-status-in-app.md)'s
 roll form. The question moves there.
 
 **3. Resolution — answered: 2088 × 1392 px (2.9 MP), JPEG**, 2.4–4.9 MB each. Twice the
