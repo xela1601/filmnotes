@@ -189,7 +189,7 @@ same day to read it (see "Decisions taken"); it is step 3b.
       default none. Without it nothing ever sets `labProfileId` and the "Done when" below is not
       reachable; no step had it. T-022 step 3 adds the lab-specific fields next to it.
 - [x] **Step 3d: the CLI downloads through the profile.** `filmnotes-import --roll <id>
-  --lab-download` fills the roll's profile download template with the roll's order number and
+--lab-download` fills the roll's profile download template with the roll's order number and
       the Secure-ID and imports the result as a URL source. The Secure-ID is used for that one
       request and never written anywhere (decision above) — not to the roll, a log, or the
       `--json` output.
@@ -213,10 +213,10 @@ same day to read it (see "Decisions taken"); it is step 3b.
       check; the JSON is valid and the schedule branch's nodes are unchanged byte for byte apart
       from that comment.
 
-- [ ] **Step 5: `docs/automation.md` says what is true.** The mail section goes; the Secure-ID
+- [x] **Step 5: `docs/automation.md` says what is true.** The mail section goes; the Secure-ID
       insert, the measured status sequence and the profile concept take its place. The five
       environment variables lose the ones only the mail branch used.
-- [ ] **Step 6: `docs/workflow.md` gets the self-scan route** as an equal option next to the lab:
+- [x] **Step 6: `docs/workflow.md` gets the self-scan route** as an equal option next to the lab:
       one folder per roll, scan in shooting order, `--dry-run` first, then the import. Say plainly
       what the trade is — a standalone scanner bakes its conversion into a JPEG, and the negatives
       remain the archive.

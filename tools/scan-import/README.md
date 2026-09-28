@@ -26,7 +26,8 @@ the development sandbox.
 ## Usage
 
 ```bash
-npx filmnotes-import --server <url> --email <address> --roll <rollId> <folder|zip>
+npx filmnotes-import --server <url> --email <address> --roll <rollId> <folder|zip|url>
+npx filmnotes-import --server <url> --email <address> --roll <rollId> --lab-download
 ```
 
 | Option                | Meaning                                                                                                                      |
@@ -37,6 +38,8 @@ npx filmnotes-import --server <url> --email <address> --roll <rollId> <folder|zi
 | `--roll <rollId>`     | Id of the roll the scans belong to (copy it from the app, 15 characters)                                                     |
 | `-y`, `--yes`         | Do not ask for confirmation – for cron-like scripts                                                                          |
 | `--dry-run`           | Print the plan and exit without uploading anything                                                                           |
+| `--json`              | One line of JSON instead of the report, for scripts                                                                          |
+| `--lab-download`      | Instead of a source: download the scans through the roll's lab profile and order number, asking for the one-time code        |
 | `-h`, `--help`        | Show the usage                                                                                                               |
 
 `--flag value` and `--flag=value` are both accepted.
@@ -57,11 +60,18 @@ If neither is set, the CLI asks for the password and does not echo what is typed
 
 - **Folder** – searched recursively, so the `DCIM/100LAB/` layout of a CD works as it is.
 - **`.zip`** – extracted into a temp directory that is removed again at the end.
+- **URL** – downloaded first, then treated as a folder or zip.
+- **`--lab-download`** – the roll's lab profile (`packages/presets/data/lab-profiles.json`) says
+  where; the roll's "Auftragsnummer Labor" and a Secure-ID you type in (hidden, never stored, kept
+  out of every error message) fill the download URL. The roll needs a profile with a download,
+  today dm's.
 
 Accepted extensions are `.jpg`, `.jpeg`, `.png`, `.tif`, `.tiff` and `.webp` (the mime types
 PocketBase's `scans.file` field allows); everything else in the source – `index.txt`, thumbnails,
 the `__MACOSX` resource forks of a zip – is ignored. Files are ordered like a file browser orders
-them, so `img2.jpg` comes before `img10.jpg`.
+them, so `img2.jpg` comes before `img10.jpg`, and the n-th file goes onto the n-th frame – unless
+the roll's lab profile has a file-name pattern: then each file goes onto the frame its name
+carries (dm's `_Bild000_Neg.Nr.25.jpg` onto frame 25), and a file without one stays unassigned.
 
 ## The routine: a drugstore CD
 
