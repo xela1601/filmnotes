@@ -11,6 +11,7 @@
     "unloadedAt": null,
     "lab": null,
     "labOrderId": null,
+    "labProfileId": null,
     "notes": "",
     "id": "roll0smoketest2",
     "created": "2026-09-18T10:00:00.000Z",

@@ -130,7 +130,10 @@ recorded here — they are live credentials until the deletion date, and this re
   identifies is unknown. So the roll has to keep the full 12 digits, and the status check uses the
   part after the dash.
 
-**2. Does `config` vary per branch?** Not answered by this delivery — one order, one branch.
+**2. Does `config` vary per branch?** Not answered by this delivery — one order, one branch. It
+no longer shapes this ticket: the status template takes `config` as a parameter like `shop`, so the
+answer only decides where the value is kept, and that is [T-022](T-022-lab-order-status-in-app.md)'s
+roll form. The question moves there.
 
 **3. Resolution — answered: 2088 × 1392 px (2.9 MP), JPEG**, 2.4–4.9 MB each. Twice the
 third-party figure of 1.5 MP, still far below a home film scanner. `docs/workflow.md` gets the
@@ -147,9 +150,9 @@ same day to read it (see "Decisions taken"); it is step 3b.
 
 ## Steps
 
-- [ ] **Step 0: measure.** Answer the three questions above and record the findings _in this
+- [x] **Step 0: measure.** Answer the three questions above and record the findings _in this
       ticket_ before writing code. The shape of steps 1 and 2 depends on the first two.
-- [ ] **Step 1: the domain type.** `LabProfile` in `packages/domain` — id, name, an optional
+- [x] **Step 1: the domain type.** `LabProfile` in `packages/domain` — id, name, an optional
       status endpoint (URL template plus the names of the parameters it needs), an optional
       download endpoint (URL template; for dm `…/imageCD/{orderId}/{secureId}/download?aak=…`),
       an optional file-name frame pattern, and notes. ~~The status template takes the part of the
@@ -181,7 +184,7 @@ same day to read it (see "Decisions taken"); it is step 3b.
       default none. Without it nothing ever sets `labProfileId` and the "Done when" below is not
       reachable; no step had it. T-022 step 3 adds the lab-specific fields next to it.
 - [ ] **Step 3d: the CLI downloads through the profile.** `filmnotes-import --roll <id>
-    --secure-id <id>` fills the roll's profile download template with the roll's order number
+  --secure-id <id>` fills the roll's profile download template with the roll's order number
       and the Secure-ID and imports the result as a URL source. The Secure-ID is used for that one
       request and never written anywhere (decision above) — not to the roll, a log, or the
       `--json` output.

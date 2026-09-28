@@ -121,6 +121,7 @@ export function rollFromForm(
     unloadedAt: existing?.unloadedAt ?? null,
     lab: lab === "" ? null : lab,
     labOrderId: labOrderId === "" ? null : labOrderId,
+    labProfileId: existing?.labProfileId ?? null,
     notes: values.notes,
   };
 }

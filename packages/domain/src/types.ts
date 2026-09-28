@@ -139,6 +139,11 @@ export interface Roll extends SyncedRecord {
    * a roll without an order number is imported by hand, exactly as before.
    */
   labOrderId: string | null;
+  /**
+   * The lab profile this roll goes through (`@filmnotes/presets`, T-024), or null for a roll
+   * developed or scanned without a lab - the normal case for a home scanner.
+   */
+  labProfileId: Id | null;
   notes: string;
 }
 

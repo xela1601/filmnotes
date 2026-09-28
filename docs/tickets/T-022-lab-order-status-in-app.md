@@ -94,7 +94,9 @@ they are kept so the reasoning behind them stays readable next to the steps that
   The original wording: A function that takes the identifiers and returns
   `{ stateCode, stateText, date, orderNo, deliveryText }` or a typed error (no order, network
   down, unexpected shape). Pure, tested against the recorded fixture in "Why" above.
-- [ ] **Step 3: the roll form.** Shop id next to the existing order number. The label shown is
+- [ ] **Step 3: the roll form.** _Open question, moved here from T-024 on 2026-09-28: does the
+      status API's `config` differ per branch? If it does, it is kept per roll next to `shop`;
+      if not, once, in local settings. Measure with an order from a second branch first._ Shop id next to the existing order number. The label shown is
       the cached one where there is one, the raw code otherwise.
 - [ ] **Step 4: the action.** "Laborstatus prüfen" on the roll detail screen: fetch, show
       `summaryStateText` + `summaryDate`, store `deliveryText` as the label. Offline and
