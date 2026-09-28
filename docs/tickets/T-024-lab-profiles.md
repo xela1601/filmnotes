@@ -162,7 +162,7 @@ same day to read it (see "Decisions taken"); it is step 3b.
       `Roll` gains `labProfileId: Id | null`, and the backend a migration for it — the schema
       guard of T-023 fails otherwise. Failing test first: a profile without any endpoint is
       valid, and a roll with no profile is valid.
-- [ ] **Step 2: the profile data.** `packages/presets/data/lab-profiles.json` with dm as the first
+- [x] **Step 2: the profile data.** `packages/presets/data/lab-profiles.json` with dm as the first
       entry, a `labProfilePresetSchema` in `packages/presets/src/schema.ts` (strict, like every
       other one), the compile-time `Extends` proof, and the data test. ~~Seeded as its own bundle
       id, `lab-profiles`, so an existing installation picks it up.~~ **Changed 2026-09-28:** the
@@ -184,7 +184,7 @@ same day to read it (see "Decisions taken"); it is step 3b.
       default none. Without it nothing ever sets `labProfileId` and the "Done when" below is not
       reachable; no step had it. T-022 step 3 adds the lab-specific fields next to it.
 - [ ] **Step 3d: the CLI downloads through the profile.** `filmnotes-import --roll <id>
-  --secure-id <id>` fills the roll's profile download template with the roll's order number
+--secure-id <id>` fills the roll's profile download template with the roll's order number
       and the Secure-ID and imports the result as a URL source. The Secure-ID is used for that one
       request and never written anywhere (decision above) — not to the roll, a log, or the
       `--json` output.

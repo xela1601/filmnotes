@@ -1,5 +1,12 @@
 import { ID_PATTERN, type Camera, type SyncedRecord } from "@filmnotes/domain";
-import { loadEquipmentPresets, loadFilmStockPresets, materialize, seedRecords } from "./index";
+import {
+  findLabProfile,
+  loadEquipmentPresets,
+  loadFilmStockPresets,
+  loadLabProfiles,
+  materialize,
+  seedRecords,
+} from "./index";
 
 const NOW = "2026-09-18T10:00:00.000Z";
 
@@ -91,5 +98,21 @@ describe("seedRecords", () => {
       ...seed.filmStocks,
     ].map((record) => record.id);
     expect(new Set(ids).size).toBe(ids.length);
+  });
+});
+
+describe("lab profiles", () => {
+  it("ships dm as the first profile", () => {
+    expect(loadLabProfiles()[0]?.name).toMatch(/^dm/);
+  });
+
+  it("finds a profile by id, and nothing for a roll without a lab or an unknown id", () => {
+    expect(findLabProfile("labp0dmdrogerie")?.id).toBe("labp0dmdrogerie");
+    expect(findLabProfile(null)).toBeNull();
+    expect(findLabProfile("labp0nosuchlab0")).toBeNull();
+  });
+
+  it("does not seed profiles into the store", () => {
+    expect(Object.keys(seedRecords("2026-09-28T00:00:00.000Z"))).not.toContain("labProfiles");
   });
 });

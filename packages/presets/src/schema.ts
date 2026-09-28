@@ -7,7 +7,15 @@
  * misspelled key) fails the data tests instead of silently disappearing.
  */
 import { z } from "zod";
-import type { Camera, Filter, FilmStock, Flash, Lens, SyncedRecord } from "@filmnotes/domain";
+import type {
+  Camera,
+  Filter,
+  FilmStock,
+  Flash,
+  LabProfile,
+  Lens,
+  SyncedRecord,
+} from "@filmnotes/domain";
 
 /** A preset record carries a stable id but none of the sync fields. */
 export type PresetRecord<T extends SyncedRecord> = Omit<
@@ -145,6 +153,30 @@ export const filmStockPresetSchema = z
   })
   .strict();
 
+const labEndpointSchema = z
+  .object({
+    urlTemplate: z.string().url(),
+    params: z.array(z.string().min(1)),
+  })
+  .strict();
+
+/**
+ * A lab profile (T-024). Unlike the equipment it is not a synced record: the profiles are read
+ * from here directly and a roll points at one by its id, so the schema is the domain type itself.
+ */
+export const labProfilePresetSchema = z
+  .object({
+    id: ID_SCHEMA,
+    name: z.string().min(1),
+    status: labEndpointSchema.nullable(),
+    download: labEndpointSchema.nullable(),
+    scanFrameNumberPattern: z.string().min(1).nullable(),
+    notes: z.string(),
+  })
+  .strict();
+
+export const labProfilePresetsSchema = z.array(labProfilePresetSchema);
+
 export const presetBundleSchema = z
   .object({
     id: z.string().min(1),
@@ -177,3 +209,5 @@ type _FlashOut = Extends<z.infer<typeof flashPresetSchema>, PresetRecord<Flash>>
 type _FlashIn = Extends<PresetRecord<Flash>, z.infer<typeof flashPresetSchema>>;
 type _FilmStockOut = Extends<z.infer<typeof filmStockPresetSchema>, PresetRecord<FilmStock>>;
 type _FilmStockIn = Extends<PresetRecord<FilmStock>, z.infer<typeof filmStockPresetSchema>>;
+type _LabProfileOut = Extends<z.infer<typeof labProfilePresetSchema>, LabProfile>;
+type _LabProfileIn = Extends<LabProfile, z.infer<typeof labProfilePresetSchema>>;
