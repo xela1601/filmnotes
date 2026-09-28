@@ -368,7 +368,7 @@ describe("main", () => {
       const code = await main(labArgv(["--password", "secret", "--yes"]), io.io, fake.deps);
 
       expect(code).toBe(1);
-      expect(io.err.join("\n")).toMatch(/HTTP 404/);
+      expect(io.err.join("\n")).toMatch(/could not download from dm Foto \(Drogerie\): HTTP 404/);
       expect([...io.out, ...io.err].join("\n")).not.toContain(SECURE_ID);
       expect(fake.created).toEqual([]);
     });

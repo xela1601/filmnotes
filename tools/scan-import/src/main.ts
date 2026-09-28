@@ -272,11 +272,14 @@ async function downloadFromLab(
     return { files: await listImageFiles(await downloadSource(filled.url, fetchImpl)), profile };
   } catch (error) {
     const message = messageOf(error)
+      .split(`download ${filled.url}`)
+      .join(`download from ${profile.name}`)
       .split(filled.url)
       .join(`the ${profile.name} download`)
       .split(secureId)
       .join("<Secure-ID>");
     io.stderr(`filmnotes-import: ${message}`);
+    io.stderr("Check the order number on the roll and the Secure-ID; lab downloads also expire.");
     return EXIT_FAILED;
   }
 }
