@@ -1,3 +1,4 @@
+import { Ionicons } from "@expo/vector-icons";
 import type { ReactNode } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
@@ -12,16 +13,21 @@ export interface ListItemProps {
   testID?: string;
 }
 
+/** A row; one that leads somewhere says so with a chevron and answers the press. */
 export function ListItem({ title, subtitle, right, onPress, testID }: ListItemProps) {
   const { palette, fontSize } = useTheme();
+  const navigates = onPress !== undefined;
 
   return (
     <Pressable
       testID={testID}
-      accessibilityRole={onPress === undefined ? undefined : "button"}
-      disabled={onPress === undefined}
+      accessibilityRole={navigates ? "button" : undefined}
+      disabled={!navigates}
       onPress={onPress}
-      style={[styles.row, { borderColor: palette.border }]}
+      style={({ pressed }) => [
+        styles.row,
+        { borderColor: palette.border, backgroundColor: pressed ? palette.surface : "transparent" },
+      ]}
     >
       <View style={styles.texts}>
         <Text style={[styles.title, { color: palette.text, fontSize: fontSize.md }]}>{title}</Text>
@@ -29,7 +35,17 @@ export function ListItem({ title, subtitle, right, onPress, testID }: ListItemPr
           <Text style={{ color: palette.textMuted, fontSize: fontSize.sm }}>{subtitle}</Text>
         )}
       </View>
-      {right}
+      <View style={styles.end}>
+        {right}
+        {navigates && (
+          <Ionicons
+            testID={testID === undefined ? undefined : `chevron-${testID}`}
+            name="chevron-forward"
+            size={18}
+            color={palette.textMuted}
+          />
+        )}
+      </View>
     </Pressable>
   );
 }
@@ -41,8 +57,10 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "space-between",
     gap: spacing.md,
+    paddingVertical: spacing.sm,
     borderBottomWidth: StyleSheet.hairlineWidth,
   },
   texts: { flexShrink: 1, gap: spacing.xs },
   title: { fontWeight: fontWeight.semibold },
+  end: { flexDirection: "row", alignItems: "center", gap: spacing.sm },
 });

@@ -259,4 +259,89 @@ describe("ui kit", () => {
       expect(screen.queryByTestId("issues")).toBeNull();
     });
   });
+
+  describe("polish (T-026)", () => {
+    it("draws a danger Button as an outline, not as the loudest fill on the screen", () => {
+      render(<Button title="Film löschen" variant="danger" onPress={jest.fn()} testID="delete" />);
+
+      const style = Object.assign({}, ...[screen.getByTestId("delete").props.style].flat(3));
+      expect(style.backgroundColor).toBe("transparent");
+      expect(style.borderColor).not.toBe("transparent");
+    });
+
+    it("gives a navigating ListItem a chevron, and a static one none", () => {
+      render(<ListItem title="Server" onPress={jest.fn()} testID="nav" />);
+      expect(screen.getByTestId("chevron-nav")).toBeOnTheScreen();
+      screen.unmount();
+
+      render(<ListItem title="Minolta" testID="static" />);
+      expect(screen.queryByTestId("chevron-static")).toBeNull();
+    });
+
+    it("hides a field label that repeats its section, but keeps it for the screen reader", () => {
+      render(
+        <>
+          <SelectField
+            label="Sprache"
+            hideLabel
+            value="de"
+            options={[{ value: "de", label: "Deutsch" }]}
+            onChange={jest.fn()}
+            testID="language"
+          />
+          <TextField label="Notizen" hideLabel value="" onChangeText={jest.fn()} testID="notes" />
+        </>,
+      );
+
+      expect(screen.queryByText("Sprache")).toBeNull();
+      expect(screen.queryByText("Notizen")).toBeNull();
+      expect(screen.getByLabelText("Sprache")).toBeOnTheScreen();
+      expect(screen.getByLabelText("Notizen")).toBeOnTheScreen();
+    });
+
+    it("offers the next step in an EmptyState", () => {
+      const onPress = jest.fn();
+      render(
+        <EmptyState
+          title="Noch kein Film"
+          action={{ title: "Ersten Film anlegen", onPress }}
+          testID="empty"
+        />,
+      );
+
+      fireEvent.press(screen.getByTestId("empty-action"));
+      expect(onPress).toHaveBeenCalledTimes(1);
+    });
+
+    it("marks every issue with an icon, so warning and error differ by more than hue", () => {
+      render(
+        <IssueList
+          issues={[
+            {
+              level: "warning",
+              code: "handheld_shake_risk",
+              field: null,
+              params: { limit: "1/60" },
+            },
+            { level: "error", code: "bulb_only_in_m", field: null, params: {} },
+          ]}
+          testID="issues"
+        />,
+      );
+
+      expect(screen.getByTestId("issues-handheld_shake_risk-icon")).toBeOnTheScreen();
+      expect(screen.getByTestId("issues-bulb_only_in_m-icon")).toBeOnTheScreen();
+    });
+
+    it("renders a large title with its action, for the tab roots", () => {
+      render(
+        <Screen title="Filme" titleAction={<Text>+</Text>} testID="screen">
+          <Text>content</Text>
+        </Screen>,
+      );
+
+      expect(screen.getByRole("header")).toHaveTextContent("Filme");
+      expect(screen.getByText("+")).toBeOnTheScreen();
+    });
+  });
 });

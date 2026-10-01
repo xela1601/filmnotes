@@ -41,7 +41,7 @@ it has; on a device the system face is used.
 
 ## Steps
 
-- [ ] **Step 1: the shared components.** `Button`: a `danger` that is outlined, not filled; a
+- [x] **Step 1: the shared components.** `Button`: a `danger` that is outlined, not filled; a
       pressed state for every variant. `ListItem`: pressed state, a chevron when it navigates.
       `SelectField`/`TextField`: `hideLabel` (still the accessibility label). `EmptyState`: an
       optional action. `IssueList`: an icon per level. `Screen`: a large title with an optional

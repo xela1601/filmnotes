@@ -6,6 +6,8 @@ import { radius, spacing } from "./themes";
 
 export interface TextFieldProps {
   label: string;
+  /** Leave the visible label out where the section heading already says it; still announced. */
+  hideLabel?: boolean;
   value: string;
   onChangeText: (value: string) => void;
   multiline?: boolean;
@@ -17,6 +19,7 @@ export interface TextFieldProps {
 
 export function TextField({
   label,
+  hideLabel = false,
   value,
   onChangeText,
   multiline = false,
@@ -28,7 +31,7 @@ export function TextField({
 
   return (
     <View style={styles.field}>
-      <FieldLabel>{label}</FieldLabel>
+      {!hideLabel && <FieldLabel>{label}</FieldLabel>}
       <TextInput
         testID={testID}
         accessibilityLabel={label}

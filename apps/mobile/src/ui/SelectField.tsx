@@ -1,3 +1,4 @@
+import { Ionicons } from "@expo/vector-icons";
 import { useState } from "react";
 import { Modal, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 
@@ -12,6 +13,8 @@ export interface SelectOption<T> {
 
 export interface SelectFieldProps<T> {
   label: string;
+  /** Leave the visible label out where the section heading already says it; still announced. */
+  hideLabel?: boolean;
   value: T | null;
   options: SelectOption<T>[];
   onChange: (value: T | null) => void;
@@ -25,6 +28,7 @@ const SEGMENTED_MAX_OPTIONS = 4;
 
 export function SelectField<T extends string | number>({
   label,
+  hideLabel = false,
   value,
   options,
   onChange,
@@ -55,8 +59,8 @@ export function SelectField<T extends string | number>({
   if (segmented) {
     return (
       <View testID={testID} style={styles.field}>
-        <FieldLabel>{label}</FieldLabel>
-        <View style={styles.segments}>
+        {!hideLabel && <FieldLabel>{label}</FieldLabel>}
+        <View accessibilityLabel={label} style={styles.segments}>
           {nullable && (
             <Segment
               testID={testID === undefined ? undefined : `${testID}-option-none`}
@@ -81,22 +85,29 @@ export function SelectField<T extends string | number>({
 
   return (
     <View testID={testID} style={styles.field}>
-      <FieldLabel>{label}</FieldLabel>
+      {!hideLabel && <FieldLabel>{label}</FieldLabel>}
       <Pressable
         testID={testID === undefined ? undefined : `${testID}-open`}
         accessibilityRole="button"
         accessibilityLabel={label}
         onPress={() => setPickerOpen(true)}
-        style={[styles.trigger, { borderColor: palette.border }]}
+        style={({ pressed }) => [
+          styles.trigger,
+          {
+            borderColor: palette.border,
+            backgroundColor: pressed ? palette.surface : "transparent",
+          },
+        ]}
       >
         <Text
-          style={{
-            color: selected === null ? palette.textMuted : palette.text,
-            fontSize: fontSize.md,
-          }}
+          style={[
+            styles.triggerLabel,
+            { color: selected === null ? palette.textMuted : palette.text, fontSize: fontSize.md },
+          ]}
         >
           {selected?.label ?? "–"}
         </Text>
+        <Ionicons name="chevron-down" size={18} color={palette.textMuted} />
       </Pressable>
       <Modal visible={pickerOpen} animationType="slide" onRequestClose={() => setPickerOpen(false)}>
         <View style={[styles.modal, { backgroundColor: palette.background }]}>
@@ -149,15 +160,21 @@ function Segment({ label, active, onPress, testID }: OptionProps) {
       accessibilityRole="button"
       accessibilityState={{ selected: active }}
       onPress={onPress}
-      style={[
+      style={({ pressed }) => [
         styles.segment,
         {
-          borderColor: palette.border,
-          backgroundColor: active ? palette.primary : "transparent",
+          borderColor: active ? palette.primary : palette.border,
+          backgroundColor: active ? palette.primary : pressed ? palette.surface : "transparent",
         },
       ]}
     >
-      <Text style={{ color: active ? palette.onPrimary : palette.text, fontSize: fontSize.md }}>
+      <Text
+        style={{
+          color: active ? palette.onPrimary : palette.text,
+          fontSize: fontSize.md,
+          fontWeight: active ? fontWeight.semibold : undefined,
+        }}
+      >
         {label}
       </Text>
     </Pressable>
@@ -172,17 +189,22 @@ function ModalOption({ label, active, onPress, testID }: OptionProps) {
       accessibilityRole="button"
       accessibilityState={{ selected: active }}
       onPress={onPress}
-      style={[styles.modalOption, { borderColor: palette.border }]}
+      style={({ pressed }) => [
+        styles.modalOption,
+        { borderColor: palette.border, backgroundColor: pressed ? palette.surface : "transparent" },
+      ]}
     >
       <Text
         style={{
+          flexShrink: 1,
           color: active ? palette.primary : palette.text,
           fontSize: fontSize.md,
-          fontWeight: active ? "700" : "400",
+          fontWeight: active ? fontWeight.bold : undefined,
         }}
       >
         {label}
       </Text>
+      {active && <Ionicons name="checkmark" size={20} color={palette.primary} />}
     </Pressable>
   );
 }
@@ -201,7 +223,10 @@ const styles = StyleSheet.create({
   },
   trigger: {
     minHeight: 44,
-    justifyContent: "center",
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    gap: spacing.sm,
     paddingHorizontal: spacing.md,
     borderWidth: StyleSheet.hairlineWidth,
     borderRadius: radius.sm,
@@ -209,9 +234,14 @@ const styles = StyleSheet.create({
   modal: { flex: 1, padding: spacing.lg, gap: spacing.sm },
   modalOptions: { gap: spacing.sm, paddingBottom: spacing.xl },
   modalTitle: { fontWeight: fontWeight.bold, marginBottom: spacing.sm },
+  triggerLabel: { flexShrink: 1 },
   modalOption: {
     minHeight: 48,
-    justifyContent: "center",
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    gap: spacing.sm,
+    paddingHorizontal: spacing.xs,
     borderBottomWidth: StyleSheet.hairlineWidth,
   },
 });
