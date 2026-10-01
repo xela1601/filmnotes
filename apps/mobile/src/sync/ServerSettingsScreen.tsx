@@ -78,7 +78,7 @@ export function ServerSettingsScreen() {
   const muted = { color: palette.textMuted, fontSize: fontSize.sm };
 
   return (
-    <Screen title={t("server")} testID="server-settings-screen">
+    <Screen testID="server-settings-screen">
       <Section title={t("connection")}>
         {isConfigured ? (
           <Text testID="sync-connected" style={{ color: palette.text, fontSize: fontSize.md }}>

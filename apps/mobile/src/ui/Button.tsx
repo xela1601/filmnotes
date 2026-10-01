@@ -13,6 +13,14 @@ export interface ButtonProps {
   testID?: string;
 }
 
+/**
+ * The app's one button.
+ *
+ * `danger` is an outline in the danger colour, not a filled block: deleting a roll is the action
+ * the screen should be least eager to offer, and a red fill made it the loudest thing on it
+ * (T-026). Every variant answers a press - outdoors, one-handed, a tap without feedback reads as
+ * a tap that missed.
+ */
 export function Button({
   title,
   onPress,
@@ -22,9 +30,9 @@ export function Button({
 }: ButtonProps) {
   const { palette, fontSize } = useTheme();
 
-  const background =
-    variant === "primary" ? palette.primary : variant === "danger" ? palette.danger : "transparent";
-  const label = variant === "secondary" ? palette.text : palette.onPrimary;
+  const filled = variant === "primary";
+  const label = filled ? palette.onPrimary : variant === "danger" ? palette.danger : palette.text;
+  const border = filled ? palette.primary : variant === "danger" ? palette.danger : palette.border;
 
   return (
     <Pressable
@@ -33,12 +41,12 @@ export function Button({
       accessibilityState={{ disabled }}
       disabled={disabled}
       onPress={onPress}
-      style={[
+      style={({ pressed }) => [
         styles.button,
         {
-          backgroundColor: background,
-          borderColor: variant === "secondary" ? palette.border : background,
-          opacity: disabled ? 0.5 : 1,
+          backgroundColor: filled ? palette.primary : pressed ? palette.surface : "transparent",
+          borderColor: border,
+          opacity: disabled ? 0.45 : pressed && filled ? 0.82 : 1,
         },
       ]}
     >
@@ -52,7 +60,7 @@ const styles = StyleSheet.create({
     minHeight: 48,
     paddingHorizontal: spacing.lg,
     borderRadius: radius.sm,
-    borderWidth: StyleSheet.hairlineWidth,
+    borderWidth: 1,
     alignItems: "center",
     justifyContent: "center",
   },

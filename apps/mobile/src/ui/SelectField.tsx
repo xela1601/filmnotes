@@ -1,5 +1,8 @@
+import { Ionicons } from "@expo/vector-icons";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Modal, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { FieldLabel } from "./FieldLabel";
 import { useTheme } from "./theme";
@@ -8,10 +11,14 @@ import { fontWeight, radius, spacing } from "./themes";
 export interface SelectOption<T> {
   value: T;
   label: string;
+  /** Colours shown next to the label - a theme's own background, surface and accent. */
+  swatch?: string[];
 }
 
 export interface SelectFieldProps<T> {
   label: string;
+  /** Leave the visible label out where the section heading already says it; still announced. */
+  hideLabel?: boolean;
   value: T | null;
   options: SelectOption<T>[];
   onChange: (value: T | null) => void;
@@ -25,6 +32,7 @@ const SEGMENTED_MAX_OPTIONS = 4;
 
 export function SelectField<T extends string | number>({
   label,
+  hideLabel = false,
   value,
   options,
   onChange,
@@ -32,6 +40,8 @@ export function SelectField<T extends string | number>({
   testID,
 }: SelectFieldProps<T>) {
   const { palette, fontSize } = useTheme();
+  const { t } = useTranslation();
+  const insets = useSafeAreaInsets();
   const [pickerOpen, setPickerOpen] = useState(false);
 
   // A value the option list does not contain has to stay visible. It happens when the value was
@@ -55,8 +65,8 @@ export function SelectField<T extends string | number>({
   if (segmented) {
     return (
       <View testID={testID} style={styles.field}>
-        <FieldLabel>{label}</FieldLabel>
-        <View style={styles.segments}>
+        {!hideLabel && <FieldLabel>{label}</FieldLabel>}
+        <View accessibilityLabel={label} style={styles.segments}>
           {nullable && (
             <Segment
               testID={testID === undefined ? undefined : `${testID}-option-none`}
@@ -81,28 +91,58 @@ export function SelectField<T extends string | number>({
 
   return (
     <View testID={testID} style={styles.field}>
-      <FieldLabel>{label}</FieldLabel>
+      {!hideLabel && <FieldLabel>{label}</FieldLabel>}
       <Pressable
         testID={testID === undefined ? undefined : `${testID}-open`}
         accessibilityRole="button"
         accessibilityLabel={label}
         onPress={() => setPickerOpen(true)}
-        style={[styles.trigger, { borderColor: palette.border }]}
+        style={({ pressed }) => [
+          styles.trigger,
+          {
+            borderColor: palette.border,
+            backgroundColor: pressed ? palette.surface : "transparent",
+          },
+        ]}
       >
         <Text
-          style={{
-            color: selected === null ? palette.textMuted : palette.text,
-            fontSize: fontSize.md,
-          }}
+          style={[
+            styles.triggerLabel,
+            { color: selected === null ? palette.textMuted : palette.text, fontSize: fontSize.md },
+          ]}
         >
           {selected?.label ?? "–"}
         </Text>
+        {selected?.swatch !== undefined && <Swatch colors={selected.swatch} />}
+        <Ionicons name="chevron-down" size={18} color={palette.textMuted} />
       </Pressable>
       <Modal visible={pickerOpen} animationType="slide" onRequestClose={() => setPickerOpen(false)}>
-        <View style={[styles.modal, { backgroundColor: palette.background }]}>
-          <Text style={[styles.modalTitle, { color: palette.text, fontSize: fontSize.lg }]}>
-            {label}
-          </Text>
+        <View
+          style={[
+            styles.modal,
+            {
+              backgroundColor: palette.background,
+              paddingTop: insets.top + spacing.lg,
+              paddingBottom: insets.bottom,
+            },
+          ]}
+        >
+          {/* A way out that is not a choice: before T-026 the only exit was picking something. */}
+          <View style={styles.modalHeader}>
+            <Text style={[styles.modalTitle, { color: palette.text, fontSize: fontSize.lg }]}>
+              {label}
+            </Text>
+            <Pressable
+              testID={testID === undefined ? undefined : `${testID}-close`}
+              accessibilityRole="button"
+              accessibilityLabel={t("actions.close")}
+              hitSlop={spacing.sm}
+              onPress={() => setPickerOpen(false)}
+              style={({ pressed }) => [styles.close, { opacity: pressed ? 0.6 : 1 }]}
+            >
+              <Ionicons name="close" size={26} color={palette.text} />
+            </Pressable>
+          </View>
           {/*
            * Scrollable, because a list can be longer than the screen: the Minolta offers 18
            * manual shutter speeds, and on a phone the last of them - "bulb" - sat below the
@@ -123,6 +163,7 @@ export function SelectField<T extends string | number>({
                 key={String(option.value)}
                 testID={optionTestID(option)}
                 label={option.label}
+                swatch={option.swatch}
                 active={option.value === value}
                 onPress={() => select(option.value)}
               />
@@ -136,6 +177,7 @@ export function SelectField<T extends string | number>({
 
 interface OptionProps {
   label: string;
+  swatch?: string[];
   active: boolean;
   onPress: () => void;
   testID?: string;
@@ -149,22 +191,45 @@ function Segment({ label, active, onPress, testID }: OptionProps) {
       accessibilityRole="button"
       accessibilityState={{ selected: active }}
       onPress={onPress}
-      style={[
+      style={({ pressed }) => [
         styles.segment,
         {
-          borderColor: palette.border,
-          backgroundColor: active ? palette.primary : "transparent",
+          borderColor: active ? palette.primary : palette.border,
+          backgroundColor: active ? palette.primary : pressed ? palette.surface : "transparent",
         },
       ]}
     >
-      <Text style={{ color: active ? palette.onPrimary : palette.text, fontSize: fontSize.md }}>
+      <Text
+        style={{
+          color: active ? palette.onPrimary : palette.text,
+          fontSize: fontSize.md,
+          fontWeight: active ? fontWeight.semibold : undefined,
+        }}
+      >
         {label}
       </Text>
     </Pressable>
   );
 }
 
-function ModalOption({ label, active, onPress, testID }: OptionProps) {
+/** A row of overlapping dots, each with a hairline so a white or black one stays visible. */
+function Swatch({ colors }: { colors: string[] }) {
+  const { palette } = useTheme();
+  return (
+    <View style={styles.swatch}>
+      {colors.map((color, index) => (
+        <View
+          // The same colour can appear twice in one theme (OLED's background and surface).
+          // eslint-disable-next-line @eslint-react/no-array-index-key
+          key={`${color}-${index}`}
+          style={[styles.dot, { backgroundColor: color, borderColor: palette.border }]}
+        />
+      ))}
+    </View>
+  );
+}
+
+function ModalOption({ label, swatch, active, onPress, testID }: OptionProps) {
   const { palette, fontSize } = useTheme();
   return (
     <Pressable
@@ -172,17 +237,23 @@ function ModalOption({ label, active, onPress, testID }: OptionProps) {
       accessibilityRole="button"
       accessibilityState={{ selected: active }}
       onPress={onPress}
-      style={[styles.modalOption, { borderColor: palette.border }]}
+      style={({ pressed }) => [
+        styles.modalOption,
+        { borderColor: palette.border, backgroundColor: pressed ? palette.surface : "transparent" },
+      ]}
     >
+      {swatch !== undefined && <Swatch colors={swatch} />}
       <Text
         style={{
+          flex: 1,
           color: active ? palette.primary : palette.text,
           fontSize: fontSize.md,
-          fontWeight: active ? "700" : "400",
+          fontWeight: active ? fontWeight.bold : undefined,
         }}
       >
         {label}
       </Text>
+      {active && <Ionicons name="checkmark" size={20} color={palette.primary} />}
     </Pressable>
   );
 }
@@ -201,17 +272,41 @@ const styles = StyleSheet.create({
   },
   trigger: {
     minHeight: 44,
-    justifyContent: "center",
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    gap: spacing.sm,
     paddingHorizontal: spacing.md,
     borderWidth: StyleSheet.hairlineWidth,
     borderRadius: radius.sm,
   },
   modal: { flex: 1, padding: spacing.lg, gap: spacing.sm },
   modalOptions: { gap: spacing.sm, paddingBottom: spacing.xl },
-  modalTitle: { fontWeight: fontWeight.bold, marginBottom: spacing.sm },
+  modalHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    gap: spacing.md,
+    marginBottom: spacing.sm,
+  },
+  modalTitle: { flexShrink: 1, fontWeight: fontWeight.bold },
+  close: { minWidth: 44, minHeight: 44, alignItems: "center", justifyContent: "center" },
+  triggerLabel: { flex: 1 },
+  swatch: { flexDirection: "row" },
+  dot: {
+    width: spacing.lg,
+    height: spacing.lg,
+    marginRight: -spacing.xs,
+    borderRadius: radius.full,
+    borderWidth: StyleSheet.hairlineWidth,
+  },
   modalOption: {
     minHeight: 48,
-    justifyContent: "center",
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    gap: spacing.sm,
+    paddingHorizontal: spacing.xs,
     borderBottomWidth: StyleSheet.hairlineWidth,
   },
 });

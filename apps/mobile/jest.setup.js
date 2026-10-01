@@ -19,3 +19,12 @@ jest.mock(
   "react-native-safe-area-context",
   () => require("react-native-safe-area-context/jest/mock").default,
 );
+
+// Icons as plain views. The real ones load their font asynchronously (an `act` warning per icon)
+// and render their glyph as text, which would end up in every `toHaveTextContent` of the control
+// they sit in. A test asserts that an icon is there, by its testID, not what it looks like.
+jest.mock("@expo/vector-icons", () => {
+  const { View } = require("react-native");
+  const icon = (props) => require("react").createElement(View, { testID: props.testID });
+  return { Ionicons: Object.assign(icon, { glyphMap: {} }) };
+});

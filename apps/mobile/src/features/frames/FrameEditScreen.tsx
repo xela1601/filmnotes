@@ -189,7 +189,7 @@ function FrameEditor({ initial, roll, camera }: FrameEditorProps) {
   };
 
   return (
-    <Screen title={title} testID="frame-edit">
+    <Screen testID="frame-edit">
       <Stack.Screen options={{ title }} />
 
       <ExposureSection
@@ -265,6 +265,9 @@ function FrameEditor({ initial, roll, camera }: FrameEditorProps) {
           onPress={() => router.push(`/export/frame/${frame.id}`)}
           testID="frame-export"
         />
+      </View>
+
+      <View style={styles.apart}>
         <Button title={t("delete")} variant="danger" onPress={onDelete} testID="frame-delete" />
       </View>
     </Screen>
@@ -273,5 +276,7 @@ function FrameEditor({ initial, roll, camera }: FrameEditorProps) {
 
 const styles = StyleSheet.create({
   actions: { gap: spacing.sm },
+  // Deleting is set apart from saving, so a hurried thumb does not find it where "save" was.
+  apart: { marginTop: spacing.lg },
   details: { gap: spacing.lg },
 });

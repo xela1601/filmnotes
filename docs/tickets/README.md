@@ -125,3 +125,4 @@ looked at.
 | [T-023](T-023-backend-domain-drift.md)           | The backend copies the domain's constants               | `backend/pb_migrations/**` (a new migration), `packages/domain/src/**` (a guard test)                           | step 4 open |
 | [T-024](done/T-024-lab-profiles.md)              | Lab profiles: the app stops assuming one lab            | `packages/domain/src/labProfile.*`, `packages/presets/data/lab-profiles.json`, `automation/n8n/**`, `docs/**`   | done        |
 | [T-025](T-025-scan-orientation.md)               | Scans that arrive upside down                           | `apps/mobile/src/features/scans/**`, `tools/scan-import/src/**`                                                 | ready       |
+| [T-026](done/T-026-ui-polish.md)                 | UI polish: one title per screen, quiet destruction      | `apps/mobile/src/ui/**`, the screens that use it                                                                | done        |

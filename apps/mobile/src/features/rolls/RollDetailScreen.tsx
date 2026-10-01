@@ -145,15 +145,14 @@ function RollDetail({ roll }: { roll: Roll }) {
         </Text>
       </View>
 
-      <Section title={t("status.label")}>
-        <SelectField
-          label={t("status.label")}
-          value={roll.status}
-          options={statusOptions}
-          onChange={changeStatus}
-          testID="roll-detail-status"
-        />
-      </Section>
+      {/* The status belongs to the roll itself, not to a section of its own (T-026). */}
+      <SelectField
+        label={t("status.label")}
+        value={roll.status}
+        options={statusOptions}
+        onChange={changeStatus}
+        testID="roll-detail-status"
+      />
 
       <Section title={t("frames")}>
         {frames.length === 0 ? (
@@ -169,32 +168,34 @@ function RollDetail({ roll }: { roll: Roll }) {
         />
       </Section>
 
+      {/* Places to go, so they read as rows that lead somewhere - not as four equal buttons. */}
       <Section title={t("sections.actions")}>
-        <Button
+        <ListItem
           title={t("importScans")}
-          variant="secondary"
           onPress={() => router.push(`/scans/${roll.id}`)}
           testID="roll-detail-import-scans"
         />
-        <Button
+        <ListItem
           title={t("exportRoll")}
-          variant="secondary"
           onPress={() => router.push(`/export/roll/${roll.id}`)}
           testID="roll-detail-export"
         />
-        <Button
+        <ListItem
           title={t("edit")}
-          variant="secondary"
           onPress={() => router.push(`/rolls/${roll.id}/edit`)}
+          last
           testID="roll-detail-edit"
         />
+      </Section>
+
+      <View style={styles.apart}>
         <Button
           title={t("deleteRoll")}
           variant="danger"
           onPress={deleteRoll}
           testID="roll-detail-delete"
         />
-      </Section>
+      </View>
     </Screen>
   );
 }
@@ -211,5 +212,6 @@ function FrameRow({ frame }: { frame: Frame }) {
 
 const styles = StyleSheet.create({
   head: { gap: spacing.xs },
+  apart: { marginTop: spacing.lg },
   title: { fontWeight: fontWeight.bold },
 });

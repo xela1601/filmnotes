@@ -17,10 +17,18 @@ import { FIXTURE_NOW, makeRoll } from "../../testing/fixtures";
 import { FrameEditScreen } from "./FrameEditScreen";
 
 jest.mock("expo-router", () => ({
-  Stack: { Screen: () => null },
+  Stack: { Screen: jest.fn(() => null) },
   router: { back: jest.fn(), replace: jest.fn(), push: jest.fn() },
   useLocalSearchParams: jest.fn(),
 }));
+
+/** The title the screen hands to the navigation header - where it lives since T-026. */
+function headerTitle(): unknown {
+  const calls = jest.requireMock("expo-router").Stack.Screen.mock.calls as [
+    { options: { title: string } },
+  ][];
+  return calls.at(-1)?.[0].options.title;
+}
 
 jest.mock("expo-location", () => ({
   Accuracy: { Balanced: 3 },
@@ -78,7 +86,7 @@ describe("FrameEditScreen", () => {
   it("1. shows the frame number with the roll length and the time of the shot", () => {
     renderWithDetails();
 
-    expect(screen.getByText(i18n.t("frames:title", { no: 1, total: 36 }))).toBeOnTheScreen();
+    expect(headerTitle()).toBe(i18n.t("frames:title", { no: 1, total: 36 }));
     // The fixture is 10:00 UTC and the suite runs in Europe/Berlin: the photographer reads 12:00.
     expect(screen.getByDisplayValue("2026-09-18")).toBeOnTheScreen();
     expect(screen.getByDisplayValue("12:00")).toBeOnTheScreen();

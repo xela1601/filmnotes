@@ -277,12 +277,7 @@ function EquipmentFields({
   };
 
   return (
-    <Screen
-      title={
-        existing === null ? t("newTitle", { type: singular }) : t("editTitle", { type: singular })
-      }
-      testID="equipment-editor"
-    >
+    <Screen testID="equipment-editor">
       <Section title={singular}>
         {DESCRIPTORS[type].map((field) => (
           <View key={field.key}>
@@ -307,12 +302,14 @@ function EquipmentFields({
         testID="equipment-cancel"
       />
       {existing !== null && (
-        <Button
-          title={t("deleteOf", { type: singular })}
-          variant="danger"
-          onPress={remove}
-          testID="equipment-delete"
-        />
+        <View style={styles.apart}>
+          <Button
+            title={t("deleteOf", { type: singular })}
+            variant="danger"
+            onPress={remove}
+            testID="equipment-delete"
+          />
+        </View>
       )}
     </Screen>
   );
@@ -320,4 +317,5 @@ function EquipmentFields({
 
 const styles = StyleSheet.create({
   error: { fontWeight: fontWeight.semibold, marginTop: spacing.xs },
+  apart: { marginTop: spacing.lg },
 });

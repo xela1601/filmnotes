@@ -11,8 +11,9 @@ export default function TabsLayout() {
   return (
     <Tabs
       screenOptions={{
-        headerStyle: { backgroundColor: palette.background },
-        headerTintColor: palette.text,
+        // The tab roots show a large title of their own (Screen `title`); a header above it would
+        // say the same word twice (T-026).
+        headerShown: false,
         tabBarStyle: { backgroundColor: palette.background, borderTopColor: palette.border },
         tabBarActiveTintColor: palette.primary,
         tabBarInactiveTintColor: palette.textMuted,

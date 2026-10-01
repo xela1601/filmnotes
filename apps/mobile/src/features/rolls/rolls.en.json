@@ -62,5 +62,7 @@
   },
   "labProfiles": {
     "none": "no lab (scanned yourself)"
-  }
+  },
+  "emptyAction": "Create your first roll",
+  "detailTitle": "Roll"
 }
