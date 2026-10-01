@@ -1,5 +1,9 @@
 # T-026 – UI polish: one title per screen, quiet destruction, visible feedback
 
+**Status:** done — verified 2026-10-01: `npm test` 760/760, lint, format, typecheck; the
+screenshot tour in light and dark before and after, plus four themes and the theme picker driven
+in Chromium; `docs/screenshots` regenerated. **Not verified here:** the native iOS look (no
+simulator in the sandbox).
 **Wave:** backlog — requested by the owner on 2026-10-01: _"mach einfach, dass es schöner aussieht
 und die UX besser wird. Es gibt ja mehrere verschiedene UI-Themes …"_
 **Depends on:** T-017 (themes and tokens), T-024 (the roll form it touches)
@@ -57,6 +61,6 @@ it has; on a device the system face is used.
       close button, and on iOS its title sat under the status bar (no safe-area inset). It has
       both now. The theme picker shows each theme's background, surface and accent as dots, so
       the eight themes can be told apart before one is chosen.
-- [ ] **Step 4: verify.** `npm test`, lint, format; the screenshot tour in light and dark, before
+- [x] **Step 4: verify.** `npm test`, lint, format; the screenshot tour in light and dark, before
       and after, and the screenshots in `docs/screenshots` regenerated. A changeset (`minor` — the
       look changes everywhere).
