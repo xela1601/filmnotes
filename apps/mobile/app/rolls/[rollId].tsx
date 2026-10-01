@@ -12,7 +12,7 @@ export default function RollDetailRoute() {
 
   return (
     <>
-      <Stack.Screen options={{ title: t("title") }} />
+      <Stack.Screen options={{ title: t("detailTitle") }} />
       <RollDetailScreen rollId={rollId ?? ""} />
     </>
   );

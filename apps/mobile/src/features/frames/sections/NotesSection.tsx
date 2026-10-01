@@ -22,6 +22,7 @@ export function NotesSection({ frame, patch }: NotesSectionProps) {
     <Section title={t("sections.notes")} testID="frame-section-notes">
       <TextField
         label={t("fields.notes")}
+        hideLabel
         value={frame.notes}
         onChangeText={(notes) => patch({ notes })}
         placeholder={t("placeholders.notes")}

@@ -46,13 +46,17 @@ it has; on a device the system face is used.
       `SelectField`/`TextField`: `hideLabel` (still the accessibility label). `EmptyState`: an
       optional action. `IssueList`: an icon per level. `Screen`: a large title with an optional
       header action, for the tab roots. Tests first, in `ui.test.tsx`.
-- [ ] **Step 2: one title per screen.** Tab roots: large title in the content, no header. Pushed
+- [x] **Step 2: one title per screen.** Tab roots: large title in the content, no header. Pushed
       screens: the title in the header only. The server route gets its title; the roll detail
       header says "Film".
-- [ ] **Step 3: the screens.** Roll detail: status next to the roll, actions as navigable rows,
+- [x] **Step 3: the screens.** Roll detail: status next to the roll, actions as navigable rows,
       delete set apart. Frame edit and the other forms: delete set apart at the end. Single-field
       sections drop the repeated label. The empty roll list offers "Ersten Film anlegen".
       Settings rows say what is configured.
+      _Found while doing it, and fixed:_ the option picker had **no way out but a choice** — no
+      close button, and on iOS its title sat under the status bar (no safe-area inset). It has
+      both now. The theme picker shows each theme's background, surface and accent as dots, so
+      the eight themes can be told apart before one is chosen.
 - [ ] **Step 4: verify.** `npm test`, lint, format; the screenshot tour in light and dark, before
       and after, and the screenshots in `docs/screenshots` regenerated. A changeset (`minor` — the
       look changes everywhere).

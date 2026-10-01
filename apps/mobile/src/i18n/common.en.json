@@ -13,7 +13,8 @@
     "delete": "Delete",
     "add": "Add",
     "back": "Back",
-    "confirm": "Confirm"
+    "confirm": "Confirm",
+    "close": "Close"
   },
   "settings": {
     "language": "Language",
@@ -38,7 +39,8 @@
       "darkroom": "Darkroom – safelight red",
       "contrast": "Maximum contrast",
       "oled": "OLED – true black"
-    }
+    },
+    "notSetUp": "not set up"
   },
   "validation": {
     "bulb_only_in_m": "Bulb is only available in mode M.",

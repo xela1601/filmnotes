@@ -23,8 +23,11 @@ describe("settings screen", () => {
   it("shows the language picker, the links and the app version", () => {
     render(<SettingsScreen />);
 
-    expect(screen.getByText(i18n.t("settings.language"))).toBeOnTheScreen();
-    expect(screen.getByTestId("settings-server")).toBeOnTheScreen();
+    // The section says "Sprache"; the field keeps the word for the screen reader only (T-026).
+    expect(screen.getByLabelText(i18n.t("settings.language"))).toBeOnTheScreen();
+    expect(screen.getByTestId("settings-server")).toHaveTextContent(i18n.t("settings.notSetUp"), {
+      exact: false,
+    });
     expect(screen.getByTestId("settings-wordpress")).toBeOnTheScreen();
     expect(screen.getByTestId("settings-version")).toBeOnTheScreen();
   });
@@ -32,7 +35,7 @@ describe("settings screen", () => {
   it("offers every theme and remembers the chosen one", () => {
     render(<SettingsScreen />);
 
-    expect(screen.getByText(i18n.t("settings.theme"))).toBeOnTheScreen();
+    expect(screen.getByLabelText(i18n.t("settings.theme"))).toBeOnTheScreen();
 
     // Eight themes are past the segmented-control threshold, so they live behind the picker.
     fireEvent.press(screen.getByTestId("settings-theme-open"));

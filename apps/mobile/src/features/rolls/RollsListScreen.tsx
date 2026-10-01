@@ -7,7 +7,8 @@ import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
 
 import { ROLLS_NAMESPACE } from "./i18n";
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
+import { Pressable, StyleSheet, Text } from "react-native";
 import { useShallow } from "zustand/react/shallow";
 
 import { useActive } from "../../store/hooks";
@@ -26,14 +27,18 @@ export function RollsListScreen() {
   );
 
   return (
-    <Screen testID="rolls-screen">
-      <View style={styles.header}>
-        <ScreenTitle title={t("title")} />
-        <NewRollAction label={t("new")} />
-      </View>
-
+    <Screen
+      title={t("title")}
+      titleAction={<NewRollAction label={t("new")} />}
+      testID="rolls-screen"
+    >
       {sorted.length === 0 ? (
-        <EmptyState title={t("empty")} hint={t("emptyHint")} testID="rolls-empty" />
+        <EmptyState
+          title={t("empty")}
+          hint={t("emptyHint")}
+          action={{ title: t("emptyAction"), onPress: () => router.push("/rolls/new") }}
+          testID="rolls-empty"
+        />
       ) : (
         sorted.map((roll) => <RollRow key={roll.id} roll={roll} />)
       )}
@@ -41,29 +46,21 @@ export function RollsListScreen() {
   );
 }
 
-function ScreenTitle({ title }: { title: string }) {
-  const { palette, fontSize } = useTheme();
-  return (
-    <Text style={[styles.title, { color: palette.text, fontSize: fontSize.xl }]}>{title}</Text>
-  );
-}
-
-/** The "+" in the header; labelled for screen readers because the glyph is not. */
+/** The "+" next to the title; labelled for screen readers because the icon is not. */
 function NewRollAction({ label }: { label: string }) {
-  const { palette, fontSize } = useTheme();
+  const { palette } = useTheme();
   return (
     <Pressable
       testID="rolls-new"
       accessibilityRole="button"
       accessibilityLabel={label}
       onPress={() => router.push("/rolls/new")}
-      style={[styles.action, { borderColor: palette.border, backgroundColor: palette.primary }]}
+      style={({ pressed }) => [
+        styles.action,
+        { backgroundColor: palette.primary, opacity: pressed ? 0.82 : 1 },
+      ]}
     >
-      <Text
-        style={{ color: palette.onPrimary, fontSize: fontSize.lg, fontWeight: fontWeight.bold }}
-      >
-        +
-      </Text>
+      <Ionicons name="add" size={26} color={palette.onPrimary} />
     </Pressable>
   );
 }
@@ -109,18 +106,10 @@ export function StatusChip({ status, testID }: { status: string; testID?: string
 }
 
 const styles = StyleSheet.create({
-  header: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    gap: spacing.md,
-  },
-  title: { fontWeight: fontWeight.bold },
   action: {
-    minWidth: 48,
-    minHeight: 48,
-    borderRadius: radius.sm,
-    borderWidth: StyleSheet.hairlineWidth,
+    width: 48,
+    height: 48,
+    borderRadius: radius.full,
     alignItems: "center",
     justifyContent: "center",
   },

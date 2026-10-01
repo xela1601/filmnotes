@@ -5,6 +5,7 @@
  * The screen knows nothing about the individual fields; it renders `displayName` and a
  * short technical summary and hands over to the generic editor.
  */
+import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -84,12 +85,11 @@ export function EquipmentListScreen() {
   const singular = t(`typesSingular.${type}`);
 
   return (
-    <Screen testID="equipment-screen">
-      <View style={styles.header}>
-        <ScreenTitle title={t("title")} />
-        <AddAction label={t("addOf", { type: singular })} type={type} />
-      </View>
-
+    <Screen
+      title={t("title")}
+      titleAction={<AddAction label={t("addOf", { type: singular })} type={type} />}
+      testID="equipment-screen"
+    >
       <TypeSwitch value={type} onChange={setType} />
 
       {sorted.length === 0 ? (
@@ -109,29 +109,21 @@ export function EquipmentListScreen() {
   );
 }
 
-function ScreenTitle({ title }: { title: string }) {
-  const { palette, fontSize } = useTheme();
-  return (
-    <Text style={[styles.title, { color: palette.text, fontSize: fontSize.xl }]}>{title}</Text>
-  );
-}
-
-/** The "+" in the header; labelled for screen readers because the glyph is not. */
+/** The "+" next to the title; labelled for screen readers because the icon is not. */
 function AddAction({ label, type }: { label: string; type: EquipmentType }) {
-  const { palette, fontSize } = useTheme();
+  const { palette } = useTheme();
   return (
     <Pressable
       testID="equipment-new"
       accessibilityRole="button"
       accessibilityLabel={label}
       onPress={() => router.push(`/equipment/${type}/new`)}
-      style={[styles.action, { borderColor: palette.border, backgroundColor: palette.primary }]}
+      style={({ pressed }) => [
+        styles.action,
+        { backgroundColor: palette.primary, opacity: pressed ? 0.82 : 1 },
+      ]}
     >
-      <Text
-        style={{ color: palette.onPrimary, fontSize: fontSize.lg, fontWeight: fontWeight.bold }}
-      >
-        +
-      </Text>
+      <Ionicons name="add" size={26} color={palette.onPrimary} />
     </Pressable>
   );
 }
@@ -161,16 +153,24 @@ function TypeSwitch({
             accessibilityRole="button"
             accessibilityState={{ selected: active }}
             onPress={() => onChange(type)}
-            style={[
+            style={({ pressed }) => [
               styles.segment,
               {
-                borderColor: palette.border,
-                backgroundColor: active ? palette.primary : "transparent",
+                borderColor: active ? palette.primary : palette.border,
+                backgroundColor: active
+                  ? palette.primary
+                  : pressed
+                    ? palette.surface
+                    : "transparent",
               },
             ]}
           >
             <Text
-              style={{ color: active ? palette.onPrimary : palette.text, fontSize: fontSize.sm }}
+              style={{
+                color: active ? palette.onPrimary : palette.text,
+                fontSize: fontSize.sm,
+                fontWeight: active ? fontWeight.semibold : undefined,
+              }}
             >
               {t(`types.${type}`)}
             </Text>
@@ -182,18 +182,10 @@ function TypeSwitch({
 }
 
 const styles = StyleSheet.create({
-  header: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    gap: spacing.md,
-  },
-  title: { fontWeight: fontWeight.bold },
   action: {
-    minWidth: 48,
-    minHeight: 48,
-    borderRadius: radius.sm,
-    borderWidth: StyleSheet.hairlineWidth,
+    width: 48,
+    height: 48,
+    borderRadius: radius.full,
     alignItems: "center",
     justifyContent: "center",
   },

@@ -343,5 +343,20 @@ describe("ui kit", () => {
       expect(screen.getByRole("header")).toHaveTextContent("Filme");
       expect(screen.getByText("+")).toBeOnTheScreen();
     });
+
+    it("lets the picker be left without choosing anything", () => {
+      const onChange = jest.fn();
+      const options = ["a", "b", "c", "d", "e"].map((value) => ({ value, label: value }));
+      render(
+        <SelectField label="Film" value="a" options={options} onChange={onChange} testID="f" />,
+      );
+
+      fireEvent.press(screen.getByTestId("f-open"));
+      expect(screen.getByTestId("f-option-e")).toBeOnTheScreen();
+      fireEvent.press(screen.getByTestId("f-close"));
+
+      expect(screen.queryByTestId("f-option-e")).toBeNull();
+      expect(onChange).not.toHaveBeenCalled();
+    });
   });
 });

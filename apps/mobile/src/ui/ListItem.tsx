@@ -10,11 +10,13 @@ export interface ListItemProps {
   subtitle?: string;
   right?: ReactNode;
   onPress?: () => void;
+  /** The last row of a card: the card's own edge ends it, a divider there would be a second line. */
+  last?: boolean;
   testID?: string;
 }
 
 /** A row; one that leads somewhere says so with a chevron and answers the press. */
-export function ListItem({ title, subtitle, right, onPress, testID }: ListItemProps) {
+export function ListItem({ title, subtitle, right, onPress, last = false, testID }: ListItemProps) {
   const { palette, fontSize } = useTheme();
   const navigates = onPress !== undefined;
 
@@ -26,7 +28,11 @@ export function ListItem({ title, subtitle, right, onPress, testID }: ListItemPr
       onPress={onPress}
       style={({ pressed }) => [
         styles.row,
-        { borderColor: palette.border, backgroundColor: pressed ? palette.surface : "transparent" },
+        {
+          borderColor: palette.border,
+          borderBottomWidth: last ? 0 : StyleSheet.hairlineWidth,
+          backgroundColor: pressed ? palette.surface : "transparent",
+        },
       ]}
     >
       <View style={styles.texts}>
@@ -58,7 +64,6 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     gap: spacing.md,
     paddingVertical: spacing.sm,
-    borderBottomWidth: StyleSheet.hairlineWidth,
   },
   texts: { flexShrink: 1, gap: spacing.xs },
   title: { fontWeight: fontWeight.semibold },

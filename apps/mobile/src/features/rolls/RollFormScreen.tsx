@@ -182,7 +182,7 @@ function RollFormFields({ existing }: { existing: Roll | null }) {
   };
 
   return (
-    <Screen title={existing === null ? t("new") : t("edit")} testID="roll-form">
+    <Screen testID="roll-form">
       <Section title={t("sections.film")}>
         <View>
           <SelectField

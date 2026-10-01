@@ -14,6 +14,7 @@ import {
   SelectField,
   THEMES,
   THEME_IDS,
+  paletteFor,
   useTheme,
   type SelectOption,
   type ThemeId,
@@ -21,7 +22,9 @@ import {
 
 export default function SettingsScreen() {
   const { t } = useTranslation();
-  const { palette, fontSize } = useTheme();
+  const { palette, fontSize, scheme } = useTheme();
+  const serverUrl = useStore((state) => state.settings.serverUrl);
+  const wordpressSiteUrl = useStore((state) => state.settings.wordpressSiteUrl);
   const locale = useStore((state) => state.settings.locale);
   const themeId = useStore((state) => state.settings.themeId);
   const updateSettings = useStore((state) => state.updateSettings);
@@ -38,10 +41,15 @@ export default function SettingsScreen() {
   ];
 
   // Built from THEME_IDS rather than listed here, so a new theme appears by existing.
-  const themeOptions: SelectOption<ThemeId>[] = THEME_IDS.map((id) => ({
-    value: id,
-    label: t(THEMES[id].nameKey),
-  }));
+  // Each theme previews itself: its background, surface and accent in the scheme it would render.
+  const themeOptions: SelectOption<ThemeId>[] = THEME_IDS.map((id) => {
+    const preview = paletteFor(id, scheme);
+    return {
+      value: id,
+      label: t(THEMES[id].nameKey),
+      swatch: [preview.background, preview.surface, preview.primary],
+    };
+  });
 
   const changeLanguage = (next: LocaleSetting | null) => {
     const value = next ?? "system";
@@ -60,10 +68,11 @@ export default function SettingsScreen() {
   };
 
   return (
-    <Screen testID="settings-screen">
+    <Screen title={t("tabs.settings")} testID="settings-screen">
       <Section title={t("settings.language")}>
         <SelectField
           label={t("settings.language")}
+          hideLabel
           value={locale}
           options={languageOptions}
           onChange={changeLanguage}
@@ -74,6 +83,7 @@ export default function SettingsScreen() {
       <Section title={t("settings.theme")}>
         <SelectField
           label={t("settings.theme")}
+          hideLabel
           value={themeId}
           options={themeOptions}
           onChange={(next) => updateSettings({ themeId: next ?? "classic" })}
@@ -87,12 +97,15 @@ export default function SettingsScreen() {
       <Section title={t("app.title")}>
         <ListItem
           title={t("settings.server")}
+          subtitle={serverUrl ?? t("settings.notSetUp")}
           onPress={() => router.push("/settings/server")}
           testID="settings-server"
         />
         <ListItem
           title={t("settings.wordpress")}
+          subtitle={wordpressSiteUrl ?? t("settings.notSetUp")}
           onPress={() => router.push("/settings/wordpress")}
+          last
           testID="settings-wordpress"
         />
       </Section>

@@ -13,7 +13,8 @@
     "delete": "Löschen",
     "add": "Hinzufügen",
     "back": "Zurück",
-    "confirm": "Bestätigen"
+    "confirm": "Bestätigen",
+    "close": "Schließen"
   },
   "settings": {
     "language": "Sprache",
@@ -38,7 +39,8 @@
       "darkroom": "Dunkelkammer – Rotlicht",
       "contrast": "Maximaler Kontrast",
       "oled": "OLED – echtes Schwarz"
-    }
+    },
+    "notSetUp": "nicht eingerichtet"
   },
   "validation": {
     "bulb_only_in_m": "Bulb ist nur im Modus M verfügbar.",

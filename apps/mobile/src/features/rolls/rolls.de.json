@@ -62,5 +62,7 @@
   },
   "labProfiles": {
     "none": "kein Labor (selbst gescannt)"
-  }
+  },
+  "emptyAction": "Ersten Film anlegen",
+  "detailTitle": "Film"
 }
